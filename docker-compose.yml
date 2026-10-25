@@ -1,6 +1,7 @@
 services:
   db:
-    image: pgvector/pgvector:pg16
+    build: ./db
+    image: gka-postgres-pgvector:16
     container_name: gka-db
     restart: unless-stopped
     environment:
