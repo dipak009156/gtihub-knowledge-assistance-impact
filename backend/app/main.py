@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from sqlalchemy import create_engine, text
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.config import settings
 
@@ -17,6 +18,6 @@ def health_db():
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
-    except Exception:
-        raise HTTPException(status_code=503, detail="Database unavailable")
+    except SQLAlchemyError:
+        raise HTTPException(status_code=503, detail="Database unavailable") from None
     return {"status": "ok", "database": "connected"}
