@@ -24,4 +24,4 @@ pythonpath = ["."]
 testpaths = ["tests"]
 
 [tool.ruff]
-extend-exclude = ["migrations"]
+extend-exclude = ["migrations", "tests/fixtures"]
