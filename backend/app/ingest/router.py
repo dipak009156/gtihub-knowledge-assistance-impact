@@ -4,7 +4,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, s
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.db.models import Edge, File, Repo, Symbol
+from app.db.models import Commit, Edge, File, Repo, Symbol
 from app.db.session import get_db
 from app.ingest.service import run_pipeline
 from app.ingest.url import parse_github_url
@@ -245,12 +245,16 @@ def get_repo_overview(repo_id: int, db: Annotated[Session, Depends(get_db)]):
     )
     calls_count = db.query(Edge).filter(Edge.repo_id == repo_id).count()
 
-    commits_count = 0
+    commits_count = db.query(Commit).filter(Commit.repo_id == repo_id).count()
     hotspots = []
     try:
         from app.history import top_files as history_top_files
 
-        commits_count, hotspots = history_top_files(repo_id, limit=10)
+        res = history_top_files(db, repo_id, limit=10)
+        if isinstance(res, tuple):
+            hotspots = res[1]
+        elif isinstance(res, list):
+            hotspots = res
     except (ImportError, AttributeError):
         pass
 
