@@ -1,14 +1,20 @@
+import hashlib
 from collections.abc import Generator
 from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import create_engine
+from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
+from sqlalchemy.schema import Computed
 
 from app.db.models import (
     Base,
+    Chunk,
     Commit,
     CommitFile,
     Edge,
@@ -19,8 +25,45 @@ from app.db.models import (
 )
 from app.db.session import get_db
 from app.main import app
+from app.retrieval import embedder as ret_embedder
+from app.retrieval import indexer as ret_indexer
+from app.retrieval import search as ret_search
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "sample_project"
+
+
+def fake_embed(texts: list[str]) -> list[list[float]]:
+    out = []
+    for t in texts:
+        vec = [0.0] * 384
+        for word in t.lower().split():
+            slot = int(hashlib.md5(word.encode()).hexdigest(), 16) % 384
+            vec[slot] += 1.0
+        norm = sum(v * v for v in vec) ** 0.5 or 1.0
+        out.append([v / norm for v in vec])
+    return out
+
+
+# Replace embedders with fast fake embedder globally for test suite
+ret_embedder.embed = fake_embed
+ret_indexer.embed = fake_embed
+ret_search.embed = fake_embed
+
+
+# SQLite DDL compatibility for Postgres-specific types
+@compiles(TSVECTOR, "sqlite")
+def compile_tsvector_sqlite(type_, compiler, **kw):
+    return "TEXT"
+
+
+@compiles(Vector, "sqlite")
+def compile_vector_sqlite(type_, compiler, **kw):
+    return "JSON"
+
+
+@compiles(Computed, "sqlite")
+def compile_computed_sqlite(element, compiler, **kw):
+    return ""
 
 
 @pytest.fixture(scope="session")
@@ -40,6 +83,7 @@ def test_engine():
             Commit.__table__,
             CommitFile.__table__,
             ValidationRun.__table__,
+            Chunk.__table__,
         ],
     )
     return engine
