@@ -26,6 +26,27 @@ def health():
     return {"status": "ok"}
 
 
+@app.get("/api/demo-repos")
+def list_demo_repos():
+    return [
+        {
+            "name": "click",
+            "url": "https://github.com/pallets/click",
+            "description": "Composable command line interface toolkit for Python.",
+        },
+        {
+            "name": "flask",
+            "url": "https://github.com/pallets/flask",
+            "description": "The Python micro framework for building web applications.",
+        },
+        {
+            "name": "requests",
+            "url": "https://github.com/psf/requests",
+            "description": "A simple, yet elegant, HTTP library for Python.",
+        },
+    ]
+
+
 @app.get("/api/health/db")
 def health_db():
     try:

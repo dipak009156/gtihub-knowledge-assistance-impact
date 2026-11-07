@@ -1,4 +1,9 @@
-export const USE_MOCKS = import.meta.env.VITE_USE_MOCKS !== 'false'
+// Tests run against the mock layer for standalone CI/Vitest execution.
+// In dev and production, USE_MOCKS is FALSE by default (connecting directly to the live backend).
+export const USE_MOCKS =
+  import.meta.env.MODE === 'test'
+    ? true
+    : import.meta.env.VITE_USE_MOCKS === 'true'
 
 export interface DevMockOptions {
   slowNetwork: boolean
@@ -27,4 +32,3 @@ export const subscribeDevMockOptions = (cb: (opts: DevMockOptions) => void) => {
     listeners.delete(cb)
   }
 }
-
