@@ -11,7 +11,7 @@ def clone_repo(repo_id: int, url: str) -> Path:
     shutil.rmtree(target, ignore_errors=True)
     BASE.mkdir(parents=True, exist_ok=True)
     subprocess.run(
-        ["git", "clone", url, str(target)],
+        ["git", "clone", "--depth", "50", url, str(target)],
         check=True,
         capture_output=True,
         timeout=CLONE_TIMEOUT_SECONDS,

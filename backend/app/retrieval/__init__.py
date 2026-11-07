@@ -1,5 +1,6 @@
-"""Retrieval module stubs for team handoff."""
+from app.retrieval.chunker import chunk_file
+from app.retrieval.embedder import embed
+from app.retrieval.indexer import index
+from app.retrieval.search import search
 
-
-def index(repo_id: int) -> None:
-    """Stub for Task D retrieval indexing."""
+__all__ = ["chunk_file", "embed", "index", "search"]

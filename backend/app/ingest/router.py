@@ -1,10 +1,11 @@
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.db.models import Edge, File, Repo, Symbol
+from app.db.models import Commit, Edge, File, Repo, Symbol
 from app.db.session import get_db
 from app.ingest.service import run_pipeline
 from app.ingest.url import parse_github_url
@@ -163,6 +164,12 @@ def get_repo_file(repo_id: int, file_id: int, db: Annotated[Session, Depends(get
         .all()
     )
     content = getattr(f, "content", "") or ""
+    disk_path = Path("/tmp/gka") / str(repo_id) / f.path
+    if not content and disk_path.exists():
+        try:
+            content = disk_path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            pass
 
     return {
         "id": f.id,
@@ -179,6 +186,40 @@ def get_repo_file(repo_id: int, file_id: int, db: Annotated[Session, Depends(get
             }
             for s in symbols
         ],
+    }
+
+
+@router.get("/{repo_id}/file")
+def get_repo_file_by_path(
+    repo_id: int,
+    path: str,
+    db: Annotated[Session, Depends(get_db)],
+):
+    repo = db.query(Repo).filter(Repo.id == repo_id).first()
+    if not repo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
+        )
+
+    f = db.query(File).filter(File.path == path, File.repo_id == repo_id).first()
+    if not f:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
+        )
+
+    content = getattr(f, "content", "") or ""
+    disk_path = Path("/tmp/gka") / str(repo_id) / f.path
+    if not content and disk_path.exists():
+        try:
+            content = disk_path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            pass
+
+    return {
+        "id": f.id,
+        "path": f.path,
+        "line_count": f.line_count,
+        "content": content,
     }
 
 
@@ -245,12 +286,16 @@ def get_repo_overview(repo_id: int, db: Annotated[Session, Depends(get_db)]):
     )
     calls_count = db.query(Edge).filter(Edge.repo_id == repo_id).count()
 
-    commits_count = 0
+    commits_count = db.query(Commit).filter(Commit.repo_id == repo_id).count()
     hotspots = []
     try:
         from app.history import top_files as history_top_files
 
-        commits_count, hotspots = history_top_files(repo_id, limit=10)
+        res = history_top_files(db, repo_id, limit=10)
+        if isinstance(res, tuple):
+            hotspots = res[1]
+        elif isinstance(res, list):
+            hotspots = res
     except (ImportError, AttributeError):
         pass
 
