@@ -18,7 +18,7 @@ SKIP_DIRS = {
     "dist",
 }
 MAX_FILE_SIZE = 1024 * 1024  # 1 MB
-MAX_FILES = 3000
+MAX_FILES = 500
 
 
 def parse_repo(

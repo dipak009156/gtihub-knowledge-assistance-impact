@@ -1,7 +1,7 @@
 import subprocess
 from pathlib import Path
 
-MAX_COMMITS = 2000
+MAX_COMMITS = 50
 BULK_LIMIT = 30  # a commit touching more files than this is a mass edit
 MARK = "@@COMMIT@@"
 
