@@ -63,5 +63,4 @@ def run_pipeline(repo_id: int) -> None:
             "error",
             "Something went wrong while analysing this project.",
         )
-    finally:
         delete_clone(repo_id)
