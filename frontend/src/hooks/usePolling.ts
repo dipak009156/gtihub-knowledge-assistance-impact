@@ -19,12 +19,18 @@ export function usePolling(
   } = options
 
   const savedCallback = useRef(callback)
+  const savedOnTimeout = useRef(onTimeout)
   const [timedOut, setTimedOut] = useState(false)
   const startTimeRef = useRef<number | null>(null)
 
+  // Always keep refs up-to-date without triggering a re-run of the polling effect.
   useEffect(() => {
     savedCallback.current = callback
   }, [callback])
+
+  useEffect(() => {
+    savedOnTimeout.current = onTimeout
+  }, [onTimeout])
 
   useEffect(() => {
     if (!enabled) {
@@ -49,7 +55,7 @@ export function usePolling(
         Date.now() - startTimeRef.current > maxDuration
       ) {
         setTimedOut(true)
-        onTimeout?.()
+        savedOnTimeout.current?.()
         return
       }
 
@@ -70,8 +76,9 @@ export function usePolling(
       isMounted = false
       if (timerId) clearTimeout(timerId)
     }
-  }, [enabled, interval, maxDuration, onTimeout])
+    // onTimeout intentionally omitted — it's captured via savedOnTimeout ref
+    // to prevent restarting the polling loop when the caller passes an inline fn.
+  }, [enabled, interval, maxDuration])
 
   return { timedOut }
 }
-

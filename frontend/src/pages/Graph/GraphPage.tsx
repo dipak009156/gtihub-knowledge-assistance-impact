@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getFiles, getGraph, getSymbols } from '../../api/client'
 import type { FileInfo, Graph, GraphNode, Symbol } from '../../api/types'
@@ -45,8 +45,8 @@ export const GraphPage: React.FC = () => {
     getSymbols(repoId).then(setSymbols).catch(() => {})
   }, [repoId])
 
-  // Fetch graph data
-  const loadGraph = async () => {
+  // Fetch graph data — stable reference so it can safely be in useEffect deps
+  const loadGraph = useCallback(async () => {
     if (!repoId) return
     setLoading(true)
     setError(null)
@@ -60,11 +60,11 @@ export const GraphPage: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [repoId, viewLevel, selectedFolder])
 
   useEffect(() => {
     loadGraph()
-  }, [repoId, viewLevel, selectedFolder])
+  }, [loadGraph])
 
   // Initialize and mount Cytoscape when data arrives
   useEffect(() => {
@@ -481,4 +481,3 @@ export const GraphPage: React.FC = () => {
     </div>
   )
 }
-
