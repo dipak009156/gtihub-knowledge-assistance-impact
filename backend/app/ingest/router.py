@@ -18,6 +18,7 @@ class RepoCreateRequest(BaseModel):
 
 
 @router.post("", status_code=status.HTTP_202_ACCEPTED)
+@router.post("/", status_code=status.HTTP_202_ACCEPTED, include_in_schema=False)
 def create_repo(
     payload: RepoCreateRequest,
     background_tasks: BackgroundTasks,
@@ -207,7 +208,12 @@ def get_repo_file_by_path(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
         )
 
-    f = db.query(File).filter(File.path == path, File.repo_id == repo_id).first()
+    norm_path = path.lstrip("/")
+    f = (
+        db.query(File)
+        .filter(File.path.in_([path, norm_path]), File.repo_id == repo_id)
+        .first()
+    )
     if not f:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
@@ -297,6 +303,16 @@ def get_repo_overview(repo_id: int, db: Annotated[Session, Depends(get_db)]):
         .count()
     )
     calls_count = db.query(Edge).filter(Edge.repo_id == repo_id).count()
+    uncertain_calls_count = (
+        db.query(Edge)
+        .filter(Edge.repo_id == repo_id, Edge.certainty == "uncertain")
+        .count()
+    )
+    skipped_files_count = (
+        db.query(File)
+        .filter(File.repo_id == repo_id, File.parse_error.is_(True))
+        .count()
+    )
 
     commits_count = db.query(Commit).filter(Commit.repo_id == repo_id).count()
     hotspots = []
@@ -312,10 +328,20 @@ def get_repo_overview(repo_id: int, db: Annotated[Session, Depends(get_db)]):
         pass
 
     return {
+        "repo": {
+            "id": repo.id,
+            "url": repo.url,
+            "owner": repo.owner,
+            "name": repo.name,
+            "status": repo.status,
+            "error_message": repo.error_message,
+        },
         "files": files_count,
         "functions": functions_count,
         "classes": classes_count,
         "calls": calls_count,
+        "uncertain_calls": uncertain_calls_count,
         "commits": commits_count,
+        "skipped_files": skipped_files_count,
         "hotspots": hotspots,
     }

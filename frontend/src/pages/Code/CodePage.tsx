@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { getFileContent, getFiles, getRelations, getSymbols } from '../../api/client'
 import type { FileInfo, Relations, Symbol } from '../../api/types'
@@ -53,8 +53,15 @@ export const CodePage: React.FC = () => {
   const monacoRef = useRef<any>(null)
   const decorationsRef = useRef<string[]>([])
 
+  // Keep activeSymbol in a ref so handleCursorChange (registered once in Monaco
+  // onMount) can always read the latest value without being re-registered.
+  const activeSymbolRef = useRef(activeSymbol)
+  useEffect(() => {
+    activeSymbolRef.current = activeSymbol
+  }, [activeSymbol])
+
   // Load files list (API 5)
-  const loadFiles = async () => {
+  const loadFiles = useCallback(async () => {
     if (!repoId) return
     setLoadingFiles(true)
     setFilesError(null)
@@ -73,10 +80,10 @@ export const CodePage: React.FC = () => {
     } finally {
       setLoadingFiles(false)
     }
-  }
+  }, [repoId, activePath, navigate])
 
   // Load symbols for active file (API 7)
-  const loadSymbols = async () => {
+  const loadSymbols = useCallback(async () => {
     if (!repoId) return
     try {
       const data = await getSymbols(repoId)
@@ -84,10 +91,10 @@ export const CodePage: React.FC = () => {
     } catch {
       // Ignore
     }
-  }
+  }, [repoId])
 
   // Load content of active file (API 6)
-  const loadContent = async (path: string) => {
+  const loadContent = useCallback(async (path: string) => {
     if (!repoId || !path) return
     setLoadingContent(true)
     setContentError(null)
@@ -100,10 +107,10 @@ export const CodePage: React.FC = () => {
     } finally {
       setLoadingContent(false)
     }
-  }
+  }, [repoId])
 
   // Load callers / callees for active symbol (API 8)
-  const loadRelations = async (symId: number) => {
+  const loadRelations = useCallback(async (symId: number) => {
     if (!repoId) return
     setLoadingRelations(true)
     try {
@@ -114,7 +121,7 @@ export const CodePage: React.FC = () => {
     } finally {
       setLoadingRelations(false)
     }
-  }
+  }, [repoId])
 
   useEffect(() => {
     loadFiles()
@@ -180,25 +187,39 @@ export const CodePage: React.FC = () => {
     if (content && lineParam) {
       applyHighlights(lineParam, endParam)
     }
+    // applyHighlights uses refs (editorRef, monacoRef, decorationsRef) so it
+    // doesn't need to be in the deps array — the ref values are always current.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content, lineParam, endParam])
 
-  // Cursor change: find matching symbol and load callers/callees
-  const handleCursorChange = (lineNumber: number) => {
-    const matched = symbols.find(
+  // Cursor change: find matching symbol and load callers/callees.
+  // Uses activeSymbolRef so we can avoid re-registering the Monaco listener
+  // on every render while still getting the latest value.
+  const symbolsRef = useRef(symbols)
+  const activePathRef = useRef(activePath)
+  useEffect(() => { symbolsRef.current = symbols }, [symbols])
+  useEffect(() => { activePathRef.current = activePath }, [activePath])
+
+  const handleCursorChange = useCallback((lineNumber: number) => {
+    const matched = symbolsRef.current.find(
       (s) =>
-        s.file_path === activePath &&
+        s.file_path === activePathRef.current &&
         lineNumber >= s.start_line &&
         lineNumber <= s.end_line
     )
 
-    if (matched && matched.id !== activeSymbol?.id) {
+    // Skip if still on the same symbol — avoids cascading API calls while
+    // the user moves the cursor within a function body.
+    if (matched && matched.id === activeSymbolRef.current?.id) return
+
+    if (matched) {
       setActiveSymbol(matched)
       loadRelations(matched.id)
-    } else if (!matched && activeSymbol) {
+    } else if (activeSymbolRef.current) {
       setActiveSymbol(null)
       setRelations(null)
     }
-  }
+  }, [loadRelations])
 
   const handleSelectFile = (path: string) => {
     navigate(`/repos/${repoId}/code?path=${encodeURIComponent(path)}`)
@@ -571,4 +592,3 @@ export const CodePage: React.FC = () => {
     </div>
   )
 }
-

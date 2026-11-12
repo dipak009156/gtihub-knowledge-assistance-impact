@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { getImpact, getSymbols } from '../../api/client'
 import type { Impact, Symbol } from '../../api/types'
@@ -41,7 +41,37 @@ export const ImpactPage: React.FC = () => {
 
   const [activeFilter, setActiveFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all')
 
-  // Search symbols (API 7)
+  // Fetch impact analysis (API 10) — stable via useCallback so it can be safely
+  // listed in useEffect deps without causing infinite re-renders.
+  const runImpactAnalysis = useCallback(async (symId?: number, d?: number) => {
+    if (!repoId) return
+
+    // We receive symId/d explicitly so we don't close over selectedSymbol/depth
+    // (those may be stale when called from a useEffect).
+    if (!symId) return
+
+    const targetDepth = d ?? depthParam
+    setLoadingImpact(true)
+    setImpactError(null)
+
+    // Sync URL query params
+    navigate(
+      `/repos/${repoId}/impact?symbol_id=${symId}&depth=${targetDepth}`,
+      { replace: true }
+    )
+
+    try {
+      const data = await getImpact(repoId, symId, targetDepth)
+      setImpactData(data)
+    } catch (err: unknown) {
+      const apiErr = err as { message?: string }
+      setImpactError(apiErr.message || 'Could not calculate impact analysis.')
+    } finally {
+      setLoadingImpact(false)
+    }
+  }, [repoId, navigate, depthParam])
+
+  // Search symbols (API 7) — debounced 300 ms
   useEffect(() => {
     if (!repoId || !searchTerm.trim()) {
       setSearchResults([])
@@ -59,7 +89,7 @@ export const ImpactPage: React.FC = () => {
       } finally {
         setSearching(false)
       }
-    }, 200)
+    }, 300)
 
     return () => clearTimeout(timer)
   }, [repoId, searchTerm])
@@ -79,38 +109,12 @@ export const ImpactPage: React.FC = () => {
       .catch(() => {})
   }, [repoId, symbolIdParam])
 
-  // Fetch impact analysis (API 10)
-  const runImpactAnalysis = async (symId?: number, d?: number) => {
-    const targetId = symId ?? selectedSymbol?.id
-    if (!repoId || !targetId) return
-
-    const targetDepth = d ?? depth
-    setLoadingImpact(true)
-    setImpactError(null)
-
-    // Sync URL query params
-    navigate(
-      `/repos/${repoId}/impact?symbol_id=${targetId}&depth=${targetDepth}`,
-      { replace: true }
-    )
-
-    try {
-      const data = await getImpact(repoId, targetId, targetDepth)
-      setImpactData(data)
-    } catch (err: unknown) {
-      const apiErr = err as { message?: string }
-      setImpactError(apiErr.message || 'Could not calculate impact analysis.')
-    } finally {
-      setLoadingImpact(false)
-    }
-  }
-
-  // Trigger analysis when symbolIdParam changes
+  // Trigger analysis when symbolIdParam changes (e.g. navigated here from Graph page)
   useEffect(() => {
     if (symbolIdParam) {
       runImpactAnalysis(symbolIdParam, depthParam)
     }
-  }, [symbolIdParam, depthParam])
+  }, [symbolIdParam, depthParam, runImpactAnalysis])
 
   const handleSelectSymbol = (sym: Symbol) => {
     setSelectedSymbol(sym)
@@ -308,11 +312,16 @@ export const ImpactPage: React.FC = () => {
               max={5}
               value={depth}
               onChange={(e) => {
-                const nextDepth = Number(e.target.value)
-                setDepth(nextDepth)
-                if (selectedSymbol) {
-                  runImpactAnalysis(selectedSymbol.id, nextDepth)
-                }
+                // Only update visual state while dragging — API call fires on release
+                setDepth(Number(e.target.value))
+              }}
+              onMouseUp={(e) => {
+                const nextDepth = Number((e.target as HTMLInputElement).value)
+                if (selectedSymbol) runImpactAnalysis(selectedSymbol.id, nextDepth)
+              }}
+              onTouchEnd={(e) => {
+                const nextDepth = Number((e.target as HTMLInputElement).value)
+                if (selectedSymbol) runImpactAnalysis(selectedSymbol.id, nextDepth)
               }}
               style={{
                 width: '100%',
@@ -358,7 +367,7 @@ export const ImpactPage: React.FC = () => {
             </div>
             <button
               className="btn btn-primary btn-sm"
-              onClick={() => runImpactAnalysis()}
+              onClick={() => runImpactAnalysis(selectedSymbol.id, depth)}
               disabled={loadingImpact}
             >
               {loadingImpact ? 'Analyzing...' : 'Re-analyze ⚡'}
@@ -404,7 +413,7 @@ export const ImpactPage: React.FC = () => {
       {loadingImpact ? (
         <LoadingBox height={160} lines={4} text="Computing call graph distances and co-change weights..." />
       ) : impactError ? (
-        <ErrorBox message={impactError} onRetry={() => runImpactAnalysis()} />
+        <ErrorBox message={impactError} onRetry={() => selectedSymbol && runImpactAnalysis(selectedSymbol.id, depth)} />
       ) : !selectedSymbol ? (
         <EmptyState
           icon="⚡"
@@ -557,4 +566,3 @@ export const ImpactPage: React.FC = () => {
     </div>
   )
 }
-

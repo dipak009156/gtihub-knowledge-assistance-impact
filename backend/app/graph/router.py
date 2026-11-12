@@ -79,6 +79,8 @@ def get_repo_graph(
     repo_id: int,
     db: Annotated[Session, Depends(get_db)],
     view: Annotated[str, Query(pattern="^(call|module)$")] = "call",
+    level: Annotated[str | None, Query(pattern="^(call|module)$")] = None,
+    folder: str | None = None,
 ):
     repo = db.query(Repo).filter(Repo.id == repo_id).first()
     if not repo:
@@ -86,13 +88,18 @@ def get_repo_graph(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
         )
 
-    if view == "call":
-        all_symbols = (
+    active_view = level or view
+    folder_prefix = f"{folder.strip('/')}/" if folder and folder.strip("/") else None
+
+    if active_view == "call":
+        sym_query = (
             db.query(Symbol, File.path.label("file_path"))
             .join(File, Symbol.file_id == File.id)
             .filter(Symbol.repo_id == repo_id)
-            .all()
         )
+        if folder_prefix:
+            sym_query = sym_query.filter(File.path.startswith(folder_prefix))
+        all_symbols = sym_query.all()
         edges = db.query(Edge).filter(Edge.repo_id == repo_id).all()
 
         degree: dict[int, int] = {s.id: 0 for s, _ in all_symbols}
@@ -102,6 +109,7 @@ def get_repo_graph(
             if e.callee_id in degree:
                 degree[e.callee_id] += 1
 
+        total_nodes = len(all_symbols)
         sorted_symbols = sorted(
             all_symbols,
             key=lambda pair: degree.get(pair[0].id, 0),
@@ -129,10 +137,18 @@ def get_repo_graph(
             if e.caller_id in selected_ids and e.callee_id in selected_ids
         ]
 
-        return {"nodes": nodes, "edges": graph_edges}
+        return {
+            "nodes": nodes,
+            "edges": graph_edges,
+            "total_nodes": total_nodes,
+            "truncated": total_nodes > 300,
+        }
 
     # view == 'module'
-    files = db.query(File).filter(File.repo_id == repo_id).all()
+    file_query = db.query(File).filter(File.repo_id == repo_id)
+    if folder_prefix:
+        file_query = file_query.filter(File.path.startswith(folder_prefix))
+    files = file_query.all()
     edge_rows = (
         db.query(
             Symbol.file_id.label("caller_file_id"),
@@ -160,6 +176,7 @@ def get_repo_graph(
         if pair not in module_edges_map or certainty == "certain":
             module_edges_map[pair] = certainty
 
+    total_nodes = len(files)
     nodes = [
         {
             "id": f.id,
@@ -181,4 +198,9 @@ def get_repo_graph(
         if src in selected_file_ids and tgt in selected_file_ids
     ]
 
-    return {"nodes": nodes, "edges": graph_edges}
+    return {
+        "nodes": nodes,
+        "edges": graph_edges,
+        "total_nodes": total_nodes,
+        "truncated": total_nodes > 300,
+    }

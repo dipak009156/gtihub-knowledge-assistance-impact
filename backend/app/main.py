@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -12,6 +13,16 @@ from app.validation.router import router as validation_router
 
 app = FastAPI(title="GitHub Knowledge Assistance", version="0.1.0")
 engine = create_engine(settings.database_url, pool_pre_ping=True)
+
+
+@app.exception_handler(SQLAlchemyError)
+def sqlalchemy_exception_handler(_request: Request, _exc: SQLAlchemyError):
+    return JSONResponse(
+        status_code=503,
+        content={
+            "detail": "Database unavailable. Make sure PostgreSQL (Docker) is running on port 5433."
+        },
+    )
 
 app.include_router(ingest_router)
 app.include_router(graph_router)

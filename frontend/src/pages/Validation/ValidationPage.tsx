@@ -18,6 +18,10 @@ export const ValidationPage: React.FC = () => {
 
   const [selectedVariant, setSelectedVariant] = useState<'combined' | 'history' | 'graph'>('combined')
 
+  // Paginate commit replay list to avoid rendering hundreds of cards at once
+  const COMMITS_PER_PAGE = 20
+  const [visibleCommits, setVisibleCommits] = useState(COMMITS_PER_PAGE)
+
   const fetchValidation = async () => {
     if (!repoId) return
     try {
@@ -341,11 +345,12 @@ export const ValidationPage: React.FC = () => {
                 </span>
                 <select
                   value={selectedVariant}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     setSelectedVariant(
                       e.target.value as 'combined' | 'history' | 'graph'
                     )
-                  }
+                    setVisibleCommits(COMMITS_PER_PAGE)
+                  }}
                   style={{
                     padding: '0.3rem 0.6rem',
                     borderRadius: 'var(--radius-sm)',
@@ -369,7 +374,7 @@ export const ValidationPage: React.FC = () => {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {(validation?.commits || []).map((c) => {
+                {(validation?.commits || []).slice(0, visibleCommits).map((c) => {
                   const predictedList = c.predicted[selectedVariant] || []
                   const actualSet = new Set(c.actual)
 
@@ -490,6 +495,16 @@ export const ValidationPage: React.FC = () => {
                     </div>
                   )
                 })}
+                {/* Load more button — avoids rendering hundreds of cards at once */}
+                {visibleCommits < (validation?.commits?.length ?? 0) && (
+                  <button
+                    className="btn btn-secondary"
+                    style={{ alignSelf: 'center', marginTop: '0.5rem' }}
+                    onClick={() => setVisibleCommits((n) => n + COMMITS_PER_PAGE)}
+                  >
+                    Load more commits ({visibleCommits} / {validation?.commits?.length ?? 0})
+                  </button>
+                )}
               </div>
             )}
           </section>
