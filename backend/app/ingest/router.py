@@ -14,6 +14,7 @@ from app.ingest.url import parse_github_url
 router = APIRouter(prefix="/api/repos", tags=["repos"])
 logger = logging.getLogger(__name__)
 
+
 class RepoCreateRequest(BaseModel):
     url: str
 
@@ -170,8 +171,9 @@ def get_repo_file(repo_id: int, file_id: int, db: Annotated[Session, Depends(get
     if not content and not disk_path.exists():
         try:
             from app.ingest.cloner import clone_repo
+            
             clone_repo(repo_id, repo.url)
-        except Exception: 
+        except Exception:
             logger.exception("Failed to clone repo %s", repo_id)
     if not content and disk_path.exists():
         try:
@@ -225,8 +227,9 @@ def get_repo_file_by_path(
     if not content and not disk_path.exists():
         try:
             from app.ingest.cloner import clone_repo
+            
             clone_repo(repo_id, repo.url)
-        except Exception: 
+        except Exception:
             logger.exception("Failed to clone repo %s", repo_id)
     if not content and disk_path.exists():
         try:
