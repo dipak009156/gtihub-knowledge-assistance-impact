@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+import logging
 
 from app.db.models import Commit, Edge, File, Repo, Symbol
 from app.db.session import get_db
@@ -11,7 +12,7 @@ from app.ingest.service import run_pipeline
 from app.ingest.url import parse_github_url
 
 router = APIRouter(prefix="/api/repos", tags=["repos"])
-
+logger = logging.getLogger(__name__)
 
 class RepoCreateRequest(BaseModel):
     url: str
@@ -170,8 +171,8 @@ def get_repo_file(repo_id: int, file_id: int, db: Annotated[Session, Depends(get
         try:
             from app.ingest.cloner import clone_repo
             clone_repo(repo_id, repo.url)
-        except Exception:
-            pass
+        except Exception:  # noqa: BLE001
+            logger.exception("Failed to clone repo %s", repo_id)
     if not content and disk_path.exists():
         try:
             content = disk_path.read_text(encoding="utf-8", errors="replace")
@@ -225,8 +226,8 @@ def get_repo_file_by_path(
         try:
             from app.ingest.cloner import clone_repo
             clone_repo(repo_id, repo.url)
-        except Exception:
-            pass
+        except Exception:  # noqa: BLE001
+            logger.exception("Failed to clone repo %s", repo_id)
     if not content and disk_path.exists():
         try:
             content = disk_path.read_text(encoding="utf-8", errors="replace")
