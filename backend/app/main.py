@@ -24,6 +24,7 @@ def sqlalchemy_exception_handler(_request: Request, _exc: SQLAlchemyError):
         },
     )
 
+
 app.include_router(ingest_router)
 app.include_router(graph_router)
 app.include_router(history_router)
