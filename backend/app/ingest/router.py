@@ -1,10 +1,11 @@
+import logging
 from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-import logging
+
 
 from app.db.models import Commit, Edge, File, Repo, Symbol
 from app.db.session import get_db
@@ -171,7 +172,7 @@ def get_repo_file(repo_id: int, file_id: int, db: Annotated[Session, Depends(get
         try:
             from app.ingest.cloner import clone_repo
             clone_repo(repo_id, repo.url)
-        except Exception:  # noqa: BLE001
+        except Exception: 
             logger.exception("Failed to clone repo %s", repo_id)
     if not content and disk_path.exists():
         try:
@@ -226,7 +227,7 @@ def get_repo_file_by_path(
         try:
             from app.ingest.cloner import clone_repo
             clone_repo(repo_id, repo.url)
-        except Exception:  # noqa: BLE001
+        except Exception: 
             logger.exception("Failed to clone repo %s", repo_id)
     if not content and disk_path.exists():
         try:
