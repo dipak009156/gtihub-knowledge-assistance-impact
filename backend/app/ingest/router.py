@@ -6,7 +6,6 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, s
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-
 from app.db.models import Commit, Edge, File, Repo, Symbol
 from app.db.session import get_db
 from app.ingest.service import run_pipeline
