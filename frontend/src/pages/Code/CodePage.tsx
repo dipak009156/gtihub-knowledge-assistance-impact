@@ -1,12 +1,22 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import {
+  Folder,
+  FolderOpen,
+  FileCode2,
+  Search,
+  PhoneIncoming,
+  PhoneOutgoing,
+  ChevronRight,
+  ChevronDown,
+} from 'lucide-react'
 import { getFileContent, getFiles, getRelations, getSymbols } from '../../api/client'
 import type { FileInfo, Relations, Symbol } from '../../api/types'
 import { CertaintyBadge } from '../../components/CertaintyBadge'
-import { EmptyState } from '../../components/EmptyState'
 import { ErrorBox } from '../../components/ErrorBox'
 import { LoadingBox } from '../../components/LoadingBox'
 import { buildFileTree, type FileTreeNode } from '../../lib/fileTree'
+import { useTheme } from '../../theme/ThemeContext'
 
 // Lazy-load Monaco Editor
 const MonacoEditor = React.lazy(() =>
@@ -20,6 +30,7 @@ export const CodePage: React.FC = () => {
   const repoId = Number(id)
   const location = useLocation()
   const navigate = useNavigate()
+  const { resolvedTheme } = useTheme()
 
   // Parse URL search params (?path=...&line=...&end=...)
   const searchParams = useMemo(
@@ -53,8 +64,6 @@ export const CodePage: React.FC = () => {
   const monacoRef = useRef<any>(null)
   const decorationsRef = useRef<string[]>([])
 
-  // Keep activeSymbol in a ref so handleCursorChange (registered once in Monaco
-  // onMount) can always read the latest value without being re-registered.
   const activeSymbolRef = useRef(activeSymbol)
   useEffect(() => {
     activeSymbolRef.current = activeSymbol
@@ -68,7 +77,6 @@ export const CodePage: React.FC = () => {
     try {
       const data = await getFiles(repoId)
       setFiles(data || [])
-      // If no path in URL, default to first file
       if (!activePath && data && data.length > 0) {
         navigate(`/repos/${repoId}/code?path=${encodeURIComponent(data[0].path)}`, {
           replace: true,
@@ -100,24 +108,25 @@ export const CodePage: React.FC = () => {
     setContentError(null)
     try {
       const data = await getFileContent(repoId, path)
-      setContent(data.content || '')
+      setContent(data.content)
     } catch (err: unknown) {
       const apiErr = err as { message?: string }
-      setContentError(apiErr.message || 'Could not load file content.')
+      setContentError(apiErr.message || 'Could not load file contents.')
+      setContent('')
     } finally {
       setLoadingContent(false)
     }
   }, [repoId])
 
-  // Load callers / callees for active symbol (API 8)
+  // Load relations for a symbol (API 8)
   const loadRelations = useCallback(async (symId: number) => {
-    if (!repoId) return
+    if (!repoId || !symId) return
     setLoadingRelations(true)
     try {
       const data = await getRelations(repoId, symId)
       setRelations(data)
     } catch {
-      setRelations({ callers: [], callees: [] })
+      setRelations(null)
     } finally {
       setLoadingRelations(false)
     }
@@ -126,39 +135,40 @@ export const CodePage: React.FC = () => {
   useEffect(() => {
     loadFiles()
     loadSymbols()
-  }, [repoId])
+  }, [loadFiles, loadSymbols])
 
   useEffect(() => {
     if (activePath) {
       loadContent(activePath)
     }
-  }, [repoId, activePath])
+  }, [activePath, loadContent])
 
-  // Filter files by search term
-  const filteredPaths = useMemo(() => {
-    const list = files.map((f) => f.path)
-    if (!fileFilter) return list
-    return list.filter((p) => p.toLowerCase().includes(fileFilter.toLowerCase()))
-  }, [files, fileFilter])
+  // Find symbols that belong to this file
+  const fileSymbols = useMemo(() => {
+    return symbols.filter((s) => s.file_path === activePath)
+  }, [symbols, activePath])
 
-  const fileTree = useMemo(() => buildFileTree(filteredPaths), [filteredPaths])
-
-  // Automatically expand folders leading to active file
+  // Update active symbol when line param changes or symbols load
   useEffect(() => {
-    if (activePath) {
-      const parts = activePath.split('/')
-      const nextFolders: Record<string, boolean> = { ...openFolders }
-      let cur = ''
-      for (let i = 0; i < parts.length - 1; i++) {
-        cur = cur ? `${cur}/${parts[i]}` : parts[i]
-        nextFolders[cur] = true
+    if (lineParam && fileSymbols.length > 0) {
+      const match = fileSymbols.find(
+        (s) => lineParam >= s.start_line && lineParam <= s.end_line
+      )
+      if (match) {
+        setActiveSymbol(match)
+        loadRelations(match.id)
+        return
       }
-      setOpenFolders(nextFolders)
     }
-  }, [activePath])
+    // If no line match, clear or pick first
+    if (!lineParam && fileSymbols.length > 0) {
+      setActiveSymbol(fileSymbols[0])
+      loadRelations(fileSymbols[0].id)
+    }
+  }, [lineParam, fileSymbols, loadRelations])
 
-  // Highlight line/range in Monaco Editor
-  const applyHighlights = (start?: number, end?: number) => {
+  // Highlight lines in Monaco editor
+  const applyDecorations = useCallback((start?: number, end?: number) => {
     if (!editorRef.current || !monacoRef.current) return
     const monaco = monacoRef.current
     const editor = editorRef.current
@@ -168,64 +178,78 @@ export const CodePage: React.FC = () => {
       return
     }
 
-    const endLine = end ?? start
-    decorationsRef.current = editor.deltaDecorations(decorationsRef.current, [
+    const endLine = end || start
+    const newDecorations = [
       {
         range: new monaco.Range(start, 1, endLine, 1),
         options: {
           isWholeLine: true,
           className: 'monaco-line-highlight',
-          inlineClassName: 'monaco-inline-highlight',
+          linesDecorationsClassName: 'monaco-gutter-highlight',
         },
       },
-    ])
+    ]
 
+    decorationsRef.current = editor.deltaDecorations(decorationsRef.current, newDecorations)
     editor.revealLineInCenter(start)
-  }
+  }, [])
 
   useEffect(() => {
-    if (content && lineParam) {
-      applyHighlights(lineParam, endParam)
+    if (lineParam) {
+      applyDecorations(lineParam, endParam)
+    } else {
+      applyDecorations()
     }
-    // applyHighlights uses refs (editorRef, monacoRef, decorationsRef) so it
-    // doesn't need to be in the deps array — the ref values are always current.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [content, lineParam, endParam])
+  }, [lineParam, endParam, applyDecorations])
 
-  // Cursor change: find matching symbol and load callers/callees.
-  // Uses activeSymbolRef so we can avoid re-registering the Monaco listener
-  // on every render while still getting the latest value.
-  const symbolsRef = useRef(symbols)
-  const activePathRef = useRef(activePath)
-  useEffect(() => { symbolsRef.current = symbols }, [symbols])
-  useEffect(() => { activePathRef.current = activePath }, [activePath])
+  // Handle cursor position changes in editor to detect active symbol
+  const handleCursorChange = useCallback(
+    (e: any) => {
+      const line = e.position.lineNumber
+      if (!fileSymbols || fileSymbols.length === 0) return
 
-  const handleCursorChange = useCallback((lineNumber: number) => {
-    const matched = symbolsRef.current.find(
-      (s) =>
-        s.file_path === activePathRef.current &&
-        lineNumber >= s.start_line &&
-        lineNumber <= s.end_line
+      const found = fileSymbols.find(
+        (s) => line >= s.start_line && line <= s.end_line
+      )
+      if (found && (!activeSymbolRef.current || activeSymbolRef.current.id !== found.id)) {
+        setActiveSymbol(found)
+        loadRelations(found.id)
+      }
+    },
+    [fileSymbols, loadRelations]
+  )
+
+  const handleEditorMount = (editor: any, monaco: any) => {
+    editorRef.current = editor
+    monacoRef.current = monaco
+
+    editor.onDidChangeCursorPosition(handleCursorChange)
+
+    if (lineParam) {
+      applyDecorations(lineParam, endParam)
+    }
+  }
+
+  // Filter files by name
+  const filteredFiles = useMemo(() => {
+    if (!fileFilter) return files
+    return files.filter((f) =>
+      f.path.toLowerCase().includes(fileFilter.toLowerCase())
     )
+  }, [files, fileFilter])
 
-    // Skip if still on the same symbol — avoids cascading API calls while
-    // the user moves the cursor within a function body.
-    if (matched && matched.id === activeSymbolRef.current?.id) return
+  // Build hierarchical file tree
+  const fileTree = useMemo(() => {
+    return buildFileTree(filteredFiles.map((f) => f.path))
+  }, [filteredFiles])
 
-    if (matched) {
-      setActiveSymbol(matched)
-      loadRelations(matched.id)
-    } else if (activeSymbolRef.current) {
-      setActiveSymbol(null)
-      setRelations(null)
-    }
-  }, [loadRelations])
-
+  // Handle selecting a file from tree
   const handleSelectFile = (path: string) => {
     navigate(`/repos/${repoId}/code?path=${encodeURIComponent(path)}`)
   }
 
-  const handleSelectSymbol = (sym: Symbol, line?: number) => {
+  // Handle clicking a symbol in relations panel
+  const handleSelectSymbol = (sym: { file_path: string; start_line: number; end_line: number }, line?: number) => {
     navigate(
       `/repos/${repoId}/code?path=${encodeURIComponent(sym.file_path)}&line=${line || sym.start_line}&end=${sym.end_line}`
     )
@@ -248,13 +272,14 @@ export const CodePage: React.FC = () => {
               padding: '0.25rem 0.4rem',
               borderRadius: 'var(--radius-sm)',
               cursor: 'pointer',
-              fontSize: '0.85rem',
+              fontSize: '0.8125rem',
               fontWeight: 600,
               color: 'var(--text-muted)',
               userSelect: 'none',
             }}
           >
-            <span>{isOpen ? '📂' : '📁'}</span>
+            {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            {isOpen ? <FolderOpen size={14} style={{ color: 'var(--accent)' }} /> : <Folder size={14} style={{ color: 'var(--text-subtle)' }} />}
             <span>{node.name}</span>
           </div>
           {isOpen && node.children && (
@@ -270,20 +295,21 @@ export const CodePage: React.FC = () => {
         key={node.path}
         onClick={() => handleSelectFile(node.path)}
         style={{
-          marginLeft: '0.75rem',
+          marginLeft: '1.25rem',
           display: 'flex',
           alignItems: 'center',
-          gap: '0.4rem',
-          padding: '0.3rem 0.5rem',
+          gap: '0.45rem',
+          padding: '0.25rem 0.5rem',
           borderRadius: 'var(--radius-sm)',
           cursor: 'pointer',
-          fontSize: '0.85rem',
-          background: isActive ? 'var(--accent-light)' : 'transparent',
+          fontSize: '0.8125rem',
+          background: isActive ? 'var(--accent-subtle)' : 'transparent',
           color: isActive ? 'var(--accent)' : 'var(--text)',
           fontWeight: isActive ? 600 : 400,
+          fontFamily: 'var(--font-mono)',
         }}
       >
-        <span>📄</span>
+        <FileCode2 size={13} style={{ color: isActive ? 'var(--accent)' : 'var(--text-subtle)' }} />
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {node.name}
         </span>
@@ -295,8 +321,7 @@ export const CodePage: React.FC = () => {
     <div
       style={{
         display: 'flex',
-        height: 'calc(100vh - 4rem)',
-        margin: '-2rem -2.5rem',
+        height: 'calc(100vh - 56px)',
         overflow: 'hidden',
         background: 'var(--surface)',
       }}
@@ -313,14 +338,17 @@ export const CodePage: React.FC = () => {
         }}
       >
         <div style={{ padding: '0.75rem', borderBottom: '1px solid var(--border)' }}>
-          <input
-            type="text"
-            className="input-text"
-            placeholder="Filter files..."
-            value={fileFilter}
-            onChange={(e) => setFileFilter(e.target.value)}
-            style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
-          />
+          <div style={{ position: 'relative' }}>
+            <Search size={14} style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-subtle)' }} />
+            <input
+              type="text"
+              className="input"
+              placeholder="Filter files..."
+              value={fileFilter}
+              onChange={(e) => setFileFilter(e.target.value)}
+              style={{ paddingLeft: '2rem', fontSize: '0.8125rem' }}
+            />
+          </div>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem' }}>
@@ -329,7 +357,7 @@ export const CodePage: React.FC = () => {
           ) : filesError ? (
             <ErrorBox message={filesError} onRetry={loadFiles} />
           ) : files.length === 0 ? (
-            <div style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            <div style={{ padding: '1rem', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
               No Python files were found.
             </div>
           ) : (
@@ -338,104 +366,72 @@ export const CodePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Column 2: Monaco Editor (Middle) */}
+      {/* Column 2: Code Editor (Center) */}
       <div
         style={{
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          background: 'var(--surface-card)',
-          overflow: 'hidden',
+          minWidth: 0,
+          background: 'var(--surface)',
           borderRight: '1px solid var(--border)',
         }}
       >
-        {/* Editor Tab Header */}
+        {/* Editor Tab Bar */}
         <div
           style={{
             padding: '0.5rem 1rem',
+            background: 'var(--surface-secondary)',
             borderBottom: '1px solid var(--border)',
-            background: 'var(--surface)',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            color: 'var(--text)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '0.8125rem',
+            color: 'var(--text)',
           }}
         >
-          <span>{activePath || 'No file selected'}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FileCode2 size={15} style={{ color: 'var(--accent)' }} />
+            <span style={{ fontWeight: 600 }}>{activePath || 'No file selected'}</span>
+          </div>
           {lineParam && (
-            <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 700 }}>
-              Lines {lineParam}{endParam && endParam !== lineParam ? `–${endParam}` : ''}
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              Focused: L{lineParam}{endParam ? `-${endParam}` : ''}
             </span>
           )}
         </div>
 
-        {/* Editor Body */}
-        <div style={{ flex: 1, position: 'relative' }}>
+        <div style={{ flex: 1, position: 'relative', background: 'var(--surface)' }}>
           {loadingContent ? (
             <div style={{ padding: '2rem' }}>
-              <LoadingBox height={200} lines={6} text="Loading file content..." />
+              <LoadingBox height={200} lines={4} />
             </div>
           ) : contentError ? (
             <div style={{ padding: '2rem' }}>
-              <ErrorBox
-                message={contentError}
-                onRetry={() => loadContent(activePath)}
-              />
+              <ErrorBox message={contentError} onRetry={() => loadContent(activePath)} />
             </div>
           ) : !activePath ? (
-            <EmptyState
-              icon="💻"
-              title="Select a file"
-              description="Choose a Python file from the left sidebar to inspect code."
-            />
+            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+              Select a file from the explorer to view its contents.
+            </div>
           ) : (
-            <Suspense
-              fallback={
-                <div style={{ padding: '2rem' }}>
-                  <LoadingBox height={200} lines={4} text="Loading code editor..." />
-                </div>
-              }
-            >
+            <Suspense fallback={<LoadingBox height="100%" lines={1} />}>
               <MonacoEditor
                 height="100%"
                 language="python"
-                theme="light"
+                theme={resolvedTheme === 'dark' ? 'vs-dark' : 'light'}
                 value={content}
+                onMount={handleEditorMount}
                 options={{
                   readOnly: true,
-                  minimap: { enabled: false },
+                  minimap: { enabled: true },
                   scrollBeyondLastLine: false,
                   fontSize: 13,
                   lineNumbers: 'on',
                   renderLineHighlight: 'all',
-                  wordWrap: 'on',
-                }}
-                onMount={(editor, monaco) => {
-                  editorRef.current = editor
-                  monacoRef.current = monaco
-
-                  // Apply style rules for line highlights
-                  monaco.editor.defineTheme('warmTheme', {
-                    base: 'vs',
-                    inherit: true,
-                    rules: [],
-                    colors: {
-                      'editor.lineHighlightBackground': '#fff7ed',
-                      'editorLineNumber.foreground': '#a8a29e',
-                      'editorLineNumber.activeForeground': '#ea580c',
-                    },
-                  })
-                  monaco.editor.setTheme('warmTheme')
-
-                  if (lineParam) {
-                    applyHighlights(lineParam, endParam)
-                  }
-
-                  editor.onDidChangeCursorPosition((e) => {
-                    handleCursorChange(e.position.lineNumber)
-                  })
+                  fontFamily: 'var(--font-mono)',
+                  automaticLayout: true,
                 }}
               />
             </Suspense>
@@ -452,32 +448,31 @@ export const CodePage: React.FC = () => {
           flexDirection: 'column',
           flexShrink: 0,
           overflowY: 'auto',
-          padding: '1rem',
+          padding: '1.25rem',
         }}
       >
-        <h2 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.75rem' }}>
+        <h2 style={{ fontSize: '0.9375rem', fontWeight: 700, marginBottom: '0.875rem', color: 'var(--text)' }}>
           Call Relations
         </h2>
 
         {activeSymbol ? (
           <div>
             <div
+              className="card"
               style={{
-                background: 'var(--surface-card)',
-                padding: '0.75rem',
-                borderRadius: 'var(--radius)',
-                border: '1px solid var(--border)',
-                marginBottom: '1rem',
+                padding: '0.875rem',
+                marginBottom: '1.25rem',
+                backgroundColor: 'var(--surface-subtle)',
               }}
             >
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 Active Symbol ({activeSymbol.kind})
               </div>
-              <div style={{ fontWeight: 700, color: 'var(--accent)' }}>
+              <div style={{ fontWeight: 700, color: 'var(--accent)', fontSize: '1rem', marginTop: '0.125rem' }}>
                 {activeSymbol.name}
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                Lines {activeSymbol.start_line}–{activeSymbol.end_line}
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: '0.25rem' }}>
+                Lines {activeSymbol.start_line}-{activeSymbol.end_line}
               </div>
             </div>
 
@@ -486,20 +481,25 @@ export const CodePage: React.FC = () => {
             ) : (
               <div>
                 {/* Callers */}
-                <div style={{ marginBottom: '1.25rem' }}>
+                <div style={{ marginBottom: '1.5rem' }}>
                   <div
                     style={{
-                      fontSize: '0.8rem',
+                      fontSize: '0.75rem',
                       fontWeight: 700,
                       color: 'var(--text-muted)',
                       textTransform: 'uppercase',
+                      letterSpacing: '0.04em',
                       marginBottom: '0.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
                     }}
                   >
-                    Callers (Who calls this)
+                    <PhoneIncoming size={13} />
+                    <span>Callers (Who calls this)</span>
                   </div>
                   {!relations || relations.callers.length === 0 ? (
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                       Nothing calls this
                     </div>
                   ) : (
@@ -508,19 +508,19 @@ export const CodePage: React.FC = () => {
                         <div
                           key={i}
                           onClick={() => handleSelectSymbol(c, c.call_line)}
-                          className="card"
+                          className="card card-hover"
                           style={{
-                            padding: '0.6rem 0.75rem',
+                            padding: '0.625rem 0.75rem',
                             cursor: 'pointer',
                           }}
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                            <span style={{ fontWeight: 600, fontSize: '0.8125rem', fontFamily: 'var(--font-mono)' }}>
                               {c.name}
                             </span>
                             <CertaintyBadge certainty={c.certainty} />
                           </div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: '0.25rem' }}>
                             {c.file_path}:{c.call_line}
                           </div>
                         </div>
@@ -533,17 +533,22 @@ export const CodePage: React.FC = () => {
                 <div>
                   <div
                     style={{
-                      fontSize: '0.8rem',
+                      fontSize: '0.75rem',
                       fontWeight: 700,
                       color: 'var(--text-muted)',
                       textTransform: 'uppercase',
+                      letterSpacing: '0.04em',
                       marginBottom: '0.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
                     }}
                   >
-                    Callees (This calls)
+                    <PhoneOutgoing size={13} />
+                    <span>Callees (This calls)</span>
                   </div>
                   {!relations || relations.callees.length === 0 ? (
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                       This calls nothing we can see
                     </div>
                   ) : (
@@ -552,19 +557,19 @@ export const CodePage: React.FC = () => {
                         <div
                           key={i}
                           onClick={() => handleSelectSymbol(c, c.call_line)}
-                          className="card"
+                          className="card card-hover"
                           style={{
-                            padding: '0.6rem 0.75rem',
+                            padding: '0.625rem 0.75rem',
                             cursor: 'pointer',
                           }}
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                            <span style={{ fontWeight: 600, fontSize: '0.8125rem', fontFamily: 'var(--font-mono)' }}>
                               {c.name}
                             </span>
                             <CertaintyBadge certainty={c.certainty} />
                           </div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: '0.25rem' }}>
                             {c.file_path}:{c.call_line}
                           </div>
                         </div>
@@ -581,14 +586,14 @@ export const CodePage: React.FC = () => {
               padding: '2rem 1rem',
               textAlign: 'center',
               color: 'var(--text-muted)',
-              fontSize: '0.85rem',
+              fontSize: '0.8125rem',
             }}
           >
-            Click or position cursor inside any function in the editor to view its
-            callers and callees.
+            Click or position cursor on any function to view its callers and callees.
           </div>
         )}
       </div>
     </div>
   )
 }
+export default CodePage

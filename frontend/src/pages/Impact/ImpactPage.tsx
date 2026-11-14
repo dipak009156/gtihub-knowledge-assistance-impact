@@ -1,5 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import {
+  Zap,
+  Search,
+  FileDiff,
+  ShieldCheck,
+  ArrowRight,
+} from 'lucide-react'
 import { getImpact, getSymbols } from '../../api/client'
 import type { Impact, Symbol } from '../../api/types'
 import { CodeLink } from '../../components/CodeLink'
@@ -41,13 +48,9 @@ export const ImpactPage: React.FC = () => {
 
   const [activeFilter, setActiveFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all')
 
-  // Fetch impact analysis (API 10) — stable via useCallback so it can be safely
-  // listed in useEffect deps without causing infinite re-renders.
+  // Fetch impact analysis (API 10)
   const runImpactAnalysis = useCallback(async (symId?: number, d?: number) => {
     if (!repoId) return
-
-    // We receive symId/d explicitly so we don't close over selectedSymbol/depth
-    // (those may be stale when called from a useEffect).
     if (!symId) return
 
     const targetDepth = d ?? depthParam
@@ -71,7 +74,7 @@ export const ImpactPage: React.FC = () => {
     }
   }, [repoId, navigate, depthParam])
 
-  // Search symbols (API 7) — debounced 300 ms
+  // Search symbols (API 7)
   useEffect(() => {
     if (!repoId || !searchTerm.trim()) {
       setSearchResults([])
@@ -109,7 +112,7 @@ export const ImpactPage: React.FC = () => {
       .catch(() => {})
   }, [repoId, symbolIdParam])
 
-  // Trigger analysis when symbolIdParam changes (e.g. navigated here from Graph page)
+  // Trigger analysis when symbolIdParam changes
   useEffect(() => {
     if (symbolIdParam) {
       runImpactAnalysis(symbolIdParam, depthParam)
@@ -145,7 +148,7 @@ export const ImpactPage: React.FC = () => {
   }, [impactData])
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1080px', margin: '0 auto', padding: '2rem 2.5rem' }}>
       <div style={{ marginBottom: '2rem' }}>
         <h1
           style={{
@@ -158,9 +161,8 @@ export const ImpactPage: React.FC = () => {
         >
           Blast Radius & Impact Analysis
         </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-          Select a Python function or class to determine downstream dependencies
-          and historic co-change ripple risks.
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>
+          Select a Python function or class to determine downstream dependencies and historic co-change ripple risks.
         </p>
       </div>
 
@@ -170,8 +172,7 @@ export const ImpactPage: React.FC = () => {
         style={{
           padding: '1.5rem',
           marginBottom: '2rem',
-          background: 'var(--surface-card)',
-          border: '1px solid var(--border-strong)',
+          backgroundColor: 'var(--surface-card)',
         }}
       >
         <div
@@ -188,22 +189,26 @@ export const ImpactPage: React.FC = () => {
               style={{
                 display: 'block',
                 fontWeight: 600,
-                fontSize: '0.9rem',
+                fontSize: '0.875rem',
                 marginBottom: '0.4rem',
               }}
             >
               Function or Class to Modify
             </label>
-            <input
-              type="text"
-              className="input-text"
-              placeholder="e.g. charge_card, create_order..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onFocus={() => {
-                if (searchResults.length > 0) setShowDropdown(true)
-              }}
-            />
+            <div style={{ position: 'relative' }}>
+              <Search size={14} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-subtle)' }} />
+              <input
+                type="text"
+                className="input"
+                placeholder="e.g. charge_card, create_order..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => {
+                  if (searchResults.length > 0) setShowDropdown(true)
+                }}
+                style={{ paddingLeft: '2.25rem' }}
+              />
+            </div>
 
             {/* Dropdown results */}
             {showDropdown && searchResults.length > 0 && (
@@ -248,21 +253,15 @@ export const ImpactPage: React.FC = () => {
                         justifyContent: 'space-between',
                       }}
                     >
-                      <span style={{ fontWeight: 600, color: 'var(--accent)' }}>
+                      <span style={{ fontWeight: 600, color: 'var(--accent)', fontFamily: 'var(--font-mono)', fontSize: '0.875rem' }}>
                         {s.name}
                       </span>
-                      <span
-                        style={{
-                          fontSize: '0.75rem',
-                          color: 'var(--text-muted)',
-                          textTransform: 'uppercase',
-                        }}
-                      >
+                      <span className="badge badge-neutral" style={{ fontSize: '0.6875rem' }}>
                         {s.kind}
                       </span>
                     </div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      {s.file_path}:{s.start_line}–{s.end_line}
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: '0.2rem' }}>
+                      {s.file_path}:{s.start_line}-{s.end_line}
                     </span>
                   </div>
                 ))}
@@ -274,7 +273,7 @@ export const ImpactPage: React.FC = () => {
                   position: 'absolute',
                   right: '10px',
                   top: '36px',
-                  fontSize: '0.8rem',
+                  fontSize: '0.75rem',
                   color: 'var(--text-muted)',
                 }}
               >
@@ -293,17 +292,11 @@ export const ImpactPage: React.FC = () => {
                 marginBottom: '0.4rem',
               }}
             >
-              <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>
+              <label style={{ fontWeight: 600, fontSize: '0.875rem' }}>
                 How far to look (Depth)
               </label>
-              <span
-                style={{
-                  fontWeight: 700,
-                  color: 'var(--accent)',
-                  fontSize: '0.9rem',
-                }}
-              >
-                {depth} {depth === 1 ? 'step' : 'steps'}
+              <span className="badge badge-neutral" style={{ fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
+                {depth} {depth === 1 ? 'hop' : 'hops'}
               </span>
             </div>
             <input
@@ -311,10 +304,7 @@ export const ImpactPage: React.FC = () => {
               min={1}
               max={5}
               value={depth}
-              onChange={(e) => {
-                // Only update visual state while dragging — API call fires on release
-                setDepth(Number(e.target.value))
-              }}
+              onChange={(e) => setDepth(Number(e.target.value))}
               onMouseUp={(e) => {
                 const nextDepth = Number((e.target as HTMLInputElement).value)
                 if (selectedSymbol) runImpactAnalysis(selectedSymbol.id, nextDepth)
@@ -335,7 +325,7 @@ export const ImpactPage: React.FC = () => {
                 justifyContent: 'space-between',
                 fontSize: '0.75rem',
                 color: 'var(--text-muted)',
-                marginTop: '0.2rem',
+                marginTop: '0.25rem',
               }}
             >
               <span>1 (Direct callers)</span>
@@ -358,53 +348,46 @@ export const ImpactPage: React.FC = () => {
               gap: '0.75rem',
             }}
           >
-            <div style={{ fontSize: '0.85rem' }}>
+            <div style={{ fontSize: '0.875rem' }}>
               Selected target:{' '}
-              <strong style={{ color: 'var(--accent)' }}>
+              <strong style={{ color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>
                 {selectedSymbol.name}
               </strong>{' '}
-              in <code>{selectedSymbol.file_path}</code> (lines {selectedSymbol.start_line}–{selectedSymbol.end_line})
+              in <code>{selectedSymbol.file_path}</code> (lines {selectedSymbol.start_line}-{selectedSymbol.end_line})
             </div>
             <button
+              type="button"
               className="btn btn-primary btn-sm"
               onClick={() => runImpactAnalysis(selectedSymbol.id, depth)}
               disabled={loadingImpact}
+              style={{ gap: '0.4rem' }}
             >
-              {loadingImpact ? 'Analyzing...' : 'Re-analyze ⚡'}
+              <Zap size={13} />
+              <span>{loadingImpact ? 'Analyzing...' : 'Re-analyze'}</span>
             </button>
           </div>
         )}
       </div>
 
-      {/* Stretch FR19: Paste a diff panel (collapsed / disabled) */}
+      {/* Stretch Diff Banner */}
       <div
         className="card"
         style={{
           padding: '0.85rem 1.25rem',
           marginBottom: '2rem',
-          background: 'var(--surface)',
+          background: 'var(--surface-subtle)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          opacity: 0.75,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span>📋</span>
-          <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+          <FileDiff size={18} style={{ color: 'var(--accent)' }} />
+          <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>
             Paste a Git Diff to auto-highlight affected functions
           </span>
         </div>
-        <span
-          style={{
-            fontSize: '0.75rem',
-            background: 'var(--surface-hover)',
-            padding: '0.2rem 0.5rem',
-            borderRadius: 'var(--radius-sm)',
-            color: 'var(--text-muted)',
-            fontWeight: 600,
-          }}
-        >
+        <span className="badge badge-neutral" style={{ fontSize: '0.7rem' }}>
           Coming soon
         </span>
       </div>
@@ -416,13 +399,13 @@ export const ImpactPage: React.FC = () => {
         <ErrorBox message={impactError} onRetry={() => selectedSymbol && runImpactAnalysis(selectedSymbol.id, depth)} />
       ) : !selectedSymbol ? (
         <EmptyState
-          icon="⚡"
+          icon={Zap}
           title="Pick a function to begin"
           description="Type the name of any function or class in the search box above to calculate its impact score."
         />
       ) : !impactData || impactData.items.length === 0 ? (
         <EmptyState
-          icon="🛡️"
+          icon={ShieldCheck}
           title="Nothing else seems to depend on this"
           description="We checked graph connections and commit history. No downstream dependencies or co-change ripples were detected."
         />
@@ -439,21 +422,22 @@ export const ImpactPage: React.FC = () => {
               marginBottom: '1rem',
             }}
           >
-            <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>
-              {summary.total} {summary.total === 1 ? 'thing' : 'things'} may be affected:{' '}
+            <div style={{ fontSize: '0.9375rem', fontWeight: 600 }}>
+              {summary.total} {summary.total === 1 ? 'item' : 'items'} may be affected:{' '}
               <span style={{ color: 'var(--danger)' }}>{summary.high} high</span>,{' '}
               <span style={{ color: 'var(--warn)' }}>{summary.medium} medium</span>,{' '}
               <span style={{ color: 'var(--caution)' }}>{summary.low} low</span>.
             </div>
 
             {/* Filter buttons */}
-            <div style={{ display: 'flex', gap: '0.4rem' }}>
+            <div style={{ display: 'flex', gap: '0.35rem' }}>
               {(['all', 'high', 'medium', 'low'] as const).map((lvl) => (
                 <button
                   key={lvl}
+                  type="button"
                   onClick={() => setActiveFilter(lvl)}
                   className={`btn btn-sm ${activeFilter === lvl ? 'btn-primary' : 'btn-secondary'}`}
-                  style={{ textTransform: 'capitalize' }}
+                  style={{ textTransform: 'capitalize', fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
                 >
                   {lvl}
                 </button>
@@ -466,7 +450,7 @@ export const ImpactPage: React.FC = () => {
             {filteredItems.map((item) => (
               <div
                 key={item.symbol_id}
-                className="card"
+                className="card card-hover"
                 style={{
                   padding: '1.25rem',
                   display: 'flex',
@@ -486,7 +470,7 @@ export const ImpactPage: React.FC = () => {
                     }}
                   >
                     <LevelBadge level={item.level} />
-                    <span style={{ fontWeight: 700, fontSize: '1rem' }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.9375rem', fontFamily: 'var(--font-mono)' }}>
                       {item.name}
                     </span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
@@ -496,15 +480,16 @@ export const ImpactPage: React.FC = () => {
 
                   <div
                     style={{
-                      fontSize: '0.85rem',
+                      fontSize: '0.8125rem',
                       color: 'var(--text-muted)',
-                      marginBottom: '0.4rem',
+                      fontFamily: 'var(--font-mono)',
+                      marginBottom: '0.35rem',
                     }}
                   >
                     {item.file_path}:{item.start_line}
                   </div>
 
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.4 }}>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--text)', lineHeight: 1.45 }}>
                     {item.reason}
                   </div>
                 </div>
@@ -521,17 +506,17 @@ export const ImpactPage: React.FC = () => {
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                       Risk Score
                     </div>
-                    <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>
+                    <div style={{ fontWeight: 800, fontSize: '1.125rem', fontFamily: 'var(--font-mono)' }}>
                       {item.score.toFixed(2)}
                     </div>
                     <div
                       style={{
                         width: '80px',
                         height: '5px',
-                        background: 'var(--surface-hover)',
+                        background: 'var(--surface-subtle)',
                         borderRadius: '3px',
                         overflow: 'hidden',
-                        marginTop: '2px',
+                        marginTop: '3px',
                       }}
                     >
                       <div
@@ -554,8 +539,10 @@ export const ImpactPage: React.FC = () => {
                     line={item.start_line}
                     repoId={repoId}
                     className="btn btn-secondary btn-sm"
+                    style={{ gap: '0.35rem' }}
                   >
-                    Open in code →
+                    <span>Open in code</span>
+                    <ArrowRight size={13} />
                   </CodeLink>
                 </div>
               </div>
@@ -566,3 +553,4 @@ export const ImpactPage: React.FC = () => {
     </div>
   )
 }
+export default ImpactPage

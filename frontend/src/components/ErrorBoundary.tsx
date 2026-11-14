@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { AlertTriangle, RotateCcw } from 'lucide-react'
 
 interface Props {
   children: ReactNode
@@ -34,26 +35,42 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div
           style={{
-            padding: '3rem 2rem',
+            padding: '4rem 2rem',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             textAlign: 'center',
-            gap: '1.25rem',
-            minHeight: '250px',
+            gap: '1rem',
+            minHeight: '280px',
           }}
         >
-          <div style={{ fontSize: '3rem' }}>🧭</div>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)' }}>
+          <div
+            style={{
+              padding: '0.75rem',
+              borderRadius: 'var(--radius)',
+              background: 'var(--risk-high-bg)',
+              color: 'var(--risk-high)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              display: 'inline-flex',
+            }}
+          >
+            <AlertTriangle size={32} />
+          </div>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.01em' }}>
             Something went wrong on this screen
           </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: '400px' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', maxWidth: '440px', lineHeight: 1.5 }}>
             {this.props.fallbackMessage ||
               'An unexpected error occurred while loading this view. You can reload the page to try again.'}
           </p>
-          <button className="btn btn-primary" onClick={this.handleReload}>
-            Reload page
+          <button
+            className="btn btn-primary"
+            onClick={this.handleReload}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}
+          >
+            <RotateCcw size={15} />
+            <span>Reload page</span>
           </button>
         </div>
       )
@@ -62,4 +79,3 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children
   }
 }
-

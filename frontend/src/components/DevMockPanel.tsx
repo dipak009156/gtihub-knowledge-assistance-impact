@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Wrench, X } from 'lucide-react'
 import {
   type DevMockOptions,
   getDevMockOptions,
@@ -28,7 +29,7 @@ export const DevMockPanel: React.FC = () => {
           zIndex: 9999,
           background: 'var(--surface-card)',
           border: '1px solid var(--border-strong)',
-          borderRadius: 'var(--radius-full)',
+          borderRadius: 'var(--radius)',
           padding: '0.4rem 0.8rem',
           fontSize: '0.75rem',
           fontWeight: 600,
@@ -39,7 +40,7 @@ export const DevMockPanel: React.FC = () => {
           gap: '0.4rem',
         }}
       >
-        <span>🛠️</span>
+        <Wrench size={13} />
         <span>Mock Dev</span>
       </button>
     )
@@ -49,7 +50,8 @@ export const DevMockPanel: React.FC = () => {
     <div className="dev-mock-panel">
       <div className="dev-mock-header">
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <span>🛠️</span> Demo Controls
+          <Wrench size={13} />
+          <span>Demo Controls</span>
         </span>
         <button
           onClick={() => setCollapsed(true)}
@@ -60,10 +62,12 @@ export const DevMockPanel: React.FC = () => {
             cursor: 'pointer',
             fontSize: '0.85rem',
             padding: '0 0.2rem',
+            display: 'flex',
+            alignItems: 'center',
           }}
           title="Minimize"
         >
-          ✕
+          <X size={14} />
         </button>
       </div>
 
@@ -98,4 +102,3 @@ export const DevMockPanel: React.FC = () => {
     </div>
   )
 }
-

@@ -1,0 +1,91 @@
+import React from 'react'
+
+interface BrandIconProps extends React.SVGProps<SVGSVGElement> {
+  size?: number
+}
+
+export const BrandIcon: React.FC<BrandIconProps> = ({
+  size = 24,
+  className,
+  style,
+  ...props
+}) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0, ...style }}
+      aria-label="GitHub Knowledge Assistance Logo"
+      role="img"
+      {...props}
+    >
+      <defs>
+        {/* Crystal Ball Deep Indigo Gradient */}
+        <radialGradient id="gkaSphereGrad" cx="35%" cy="32%" r="65%">
+          <stop offset="0%" stopColor="#2e2b52" />
+          <stop offset="45%" stopColor="#1a1836" />
+          <stop offset="100%" stopColor="#0d0c1c" />
+        </radialGradient>
+
+        {/* Ambient Core Star Glow */}
+        <radialGradient id="gkaInnerGlow" cx="42%" cy="46%" r="50%">
+          <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.45" />
+          <stop offset="100%" stopColor="#fbbf24" stopOpacity="0" />
+        </radialGradient>
+
+        {/* Pedestal Stand Gradient */}
+        <linearGradient id="gkaStandGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#94a3b8" />
+          <stop offset="50%" stopColor="#64748b" />
+          <stop offset="100%" stopColor="#334155" />
+        </linearGradient>
+      </defs>
+
+      {/* Pedestal Stand Base */}
+      <path
+        d="M9 26C9 24.5 11 23.5 16 23.5C21 23.5 23 24.5 23 26L24.5 28C25 28.8 24.3 29.5 23.5 29.5H8.5C7.7 29.5 7 28.8 7.5 28L9 26Z"
+        fill="url(#gkaStandGrad)"
+      />
+      <ellipse cx="16" cy="29" rx="8" ry="1.4" fill="#475569" />
+
+      {/* Crystal Ball Glass Sphere */}
+      <circle cx="16" cy="14" r="11" fill="url(#gkaSphereGrad)" />
+
+      {/* Inner ambient star glow */}
+      <circle cx="14" cy="13.5" r="7" fill="url(#gkaInnerGlow)" />
+
+      {/* Specular Highlight / Glass Crescent Curve */}
+      <path
+        d="M9.5 8.5C11 7 13.2 6 16 6"
+        stroke="rgba(255, 255, 255, 0.75)"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <circle cx="9" cy="9" r="0.75" fill="rgba(255, 255, 255, 0.85)" />
+
+      {/* Primary Gold Star Sparkle (left center) */}
+      <path
+        d="M13.5 10.5C13.5 12 12 13 10.5 13C12 13 13.5 14 13.5 15.5C13.5 14 15 13 16.5 13C15 13 13.5 12 13.5 10.5Z"
+        fill="#f59e0b"
+      />
+      <circle cx="13.5" cy="13" r="0.75" fill="#fef08a" />
+
+      {/* Secondary Gold Star Sparkle (upper right) */}
+      <path
+        d="M19.5 14.5C19.5 15.3 18.5 16 17.5 16C18.5 16 19.5 16.7 19.5 17.5C19.5 16.7 20.5 16 21.5 16C20.5 16 19.5 15.3 19.5 14.5Z"
+        fill="#fbbf24"
+      />
+      <circle cx="19.5" cy="16" r="0.5" fill="#ffffff" />
+
+      {/* Tiny sparkles */}
+      <circle cx="17.5" cy="9.5" r="0.6" fill="#fde68a" />
+      <circle cx="12" cy="18" r="0.5" fill="#fef08a" />
+    </svg>
+  )
+}
+
+export default BrandIcon

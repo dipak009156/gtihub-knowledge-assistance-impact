@@ -1,5 +1,15 @@
 import React, { useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import {
+  MessageSquareCode,
+  Send,
+  Sparkles,
+  AlertCircle,
+  Copy,
+  Check,
+  Clock,
+} from 'lucide-react'
+import { motion } from 'framer-motion'
 import { chat } from '../../api/client'
 import type { Source } from '../../api/types'
 import { SourceChip } from '../../components/SourceChip'
@@ -29,6 +39,7 @@ export const ChatPage: React.FC = () => {
   const [input, setInput] = useState('')
   const [waiting, setWaiting] = useState(false)
   const [rateLimitWarning, setRateLimitWarning] = useState<string | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -101,51 +112,59 @@ export const ChatPage: React.FC = () => {
     }
   }
 
-  const handleRetry = (failedQuestion: string) => {
-    handleSend(failedQuestion)
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text)
+    setCopiedId(id)
+    setTimeout(() => setCopiedId(null), 2000)
   }
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
       style={{
-        maxWidth: '850px',
+        maxWidth: '960px',
         margin: '0 auto',
+        padding: '1.5rem 2rem',
         display: 'flex',
         flexDirection: 'column',
-        height: 'calc(100vh - 4.5rem)',
+        height: 'calc(100vh - 56px)',
       }}
     >
       <div style={{ marginBottom: '1rem' }}>
         <h1
           style={{
-            fontSize: '1.75rem',
+            fontSize: '1.5rem',
             fontWeight: 800,
             color: 'var(--text)',
             letterSpacing: '-0.02em',
             marginBottom: '0.25rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
           }}
         >
-          Verifiable Codebase Assistant
+          <MessageSquareCode size={20} style={{ color: 'var(--accent)' }} />
+          <span>Verifiable Codebase Assistant</span>
         </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-          Ask natural language questions about implementations. Every answer cites
-          verified file lines.
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+          Ask natural language questions about implementations. Every answer cites verified file lines.
         </p>
       </div>
 
       {rateLimitWarning && (
         <div
+          className="badge badge-warning"
           style={{
-            background: 'var(--warn-bg)',
-            color: 'var(--warn)',
-            border: '1px solid var(--warn-border)',
-            padding: '0.6rem 1rem',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: '0.85rem',
+            padding: '0.5rem 0.875rem',
             marginBottom: '0.75rem',
+            fontSize: '0.8125rem',
+            gap: '0.5rem',
           }}
         >
-          ⏳ {rateLimitWarning}
+          <Clock size={14} />
+          <span>{rateLimitWarning}</span>
         </div>
       )}
 
@@ -159,7 +178,7 @@ export const ChatPage: React.FC = () => {
           display: 'flex',
           flexDirection: 'column',
           gap: '1.25rem',
-          background: 'var(--surface-card)',
+          backgroundColor: 'var(--surface-card)',
           marginBottom: '1rem',
         }}
       >
@@ -171,13 +190,27 @@ export const ChatPage: React.FC = () => {
               padding: '2rem 1rem',
             }}
           >
-            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>💬</div>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--accent-subtle)',
+                color: 'var(--accent)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '1rem',
+              }}
+            >
+              <MessageSquareCode size={24} />
+            </div>
             <h2
               style={{
-                fontSize: '1.15rem',
+                fontSize: '1.125rem',
                 fontWeight: 700,
                 color: 'var(--text)',
-                marginBottom: '0.5rem',
+                marginBottom: '0.35rem',
               }}
             >
               Ask anything about this project
@@ -185,16 +218,17 @@ export const ChatPage: React.FC = () => {
             <p
               style={{
                 color: 'var(--text-muted)',
-                fontSize: '0.9rem',
+                fontSize: '0.875rem',
                 maxWidth: '480px',
                 margin: '0 auto 1.5rem auto',
+                lineHeight: 1.5,
               }}
             >
               Select one of the suggested inquiries below or type a custom question.
               All claims are cross-checked against exact code lines.
             </p>
 
-            {/* Suggested Question Chips */}
+            {/* Suggested Question Chips (Clean rounded corners, NO pill buttons) */}
             <div
               style={{
                 display: 'flex',
@@ -206,12 +240,13 @@ export const ChatPage: React.FC = () => {
               {DEFAULT_SUGGESTIONS.map((q) => (
                 <button
                   key={q}
+                  type="button"
                   className="btn btn-secondary btn-sm"
                   onClick={() => handleSend(q)}
                   disabled={waiting}
                   style={{
-                    borderRadius: 'var(--radius-full)',
-                    padding: '0.45rem 1rem',
+                    borderRadius: 'var(--radius)',
+                    padding: '0.45rem 0.875rem',
                   }}
                 >
                   {q}
@@ -220,7 +255,7 @@ export const ChatPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          messages.map((msg, index) => {
+          messages.map((msg) => {
             if (msg.role === 'user') {
               return (
                 <div
@@ -229,11 +264,12 @@ export const ChatPage: React.FC = () => {
                     alignSelf: 'flex-end',
                     background: 'var(--accent)',
                     color: '#ffffff',
-                    padding: '0.75rem 1.25rem',
+                    padding: '0.625rem 1rem',
                     borderRadius: 'var(--radius) var(--radius) 2px var(--radius)',
                     maxWidth: '80%',
-                    fontSize: '0.95rem',
-                    lineHeight: 1.4,
+                    fontSize: '0.875rem',
+                    lineHeight: 1.5,
+                    boxShadow: 'var(--shadow-xs)',
                   }}
                 >
                   {msg.text}
@@ -249,104 +285,80 @@ export const ChatPage: React.FC = () => {
                   alignSelf: 'flex-start',
                   background: 'var(--surface)',
                   border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius) var(--radius) var(--radius) 2px',
-                  padding: '1rem 1.25rem',
-                  maxWidth: '85%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.75rem',
+                  padding: '1.25rem',
+                  borderRadius: 'var(--radius)',
+                  maxWidth: '88%',
+                  width: '100%',
+                  fontSize: '0.875rem',
+                  lineHeight: 1.6,
+                  boxShadow: 'var(--shadow-xs)',
                 }}
               >
-                {msg.loading ? (
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ display: 'inline-block', animation: 'pulse 1.2s infinite' }}>
-                      💭 Thinking and searching repository notes...
+                {/* Header & Cached Badge */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.625rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span className="badge badge-info" style={{ gap: '0.35rem' }}>
+                      <Sparkles size={11} />
+                      <span>Assistant</span>
                     </span>
+                    {msg.cached && (
+                      <span className="badge badge-neutral" style={{ fontSize: '0.6875rem' }}>
+                        Saved answer
+                      </span>
+                    )}
+                  </div>
+                  {msg.text && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => handleCopy(msg.text, msg.id)}
+                      title="Copy answer"
+                      style={{ padding: '2px 6px' }}
+                    >
+                      {copiedId === msg.id ? <Check size={13} style={{ color: 'var(--ok)' }} /> : <Copy size={13} />}
+                    </button>
+                  )}
+                </div>
+
+                {/* Body or Loading Skeleton */}
+                {msg.loading ? (
+                  <div style={{ padding: '0.5rem 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+                      <span className="spinner" />
+                      <span>Thinking and analyzing repository AST...</span>
+                    </div>
                   </div>
                 ) : msg.error ? (
-                  <div>
-                    <div style={{ color: 'var(--danger)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-                      {msg.error}
-                    </div>
-                    {/* Retry button using preceding user message */}
-                    {index > 0 && messages[index - 1].role === 'user' && (
-                      <button
-                        className="btn btn-secondary btn-sm"
-                        onClick={() => handleRetry(messages[index - 1].text)}
-                        disabled={waiting}
-                      >
-                        Retry question
-                      </button>
-                    )}
+                  <div style={{ color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <AlertCircle size={15} />
+                    <span>{msg.error}</span>
                   </div>
                 ) : (
                   <div>
-                    {/* Plain text answer with line breaks (NEVER HTML) */}
-                    <div
-                      style={{
-                        whiteSpace: 'pre-wrap',
-                        fontSize: '0.95rem',
-                        lineHeight: 1.5,
-                        color: 'var(--text)',
-                        marginBottom: '0.75rem',
-                      }}
-                    >
+                    {/* Render answer with plain text line breaks (NEVER dangerouslySetInnerHTML) */}
+                    <div style={{ whiteSpace: 'pre-wrap', color: 'var(--text)' }}>
                       {msg.text}
                     </div>
 
-                    {/* Cached answer badge */}
-                    {msg.cached && (
-                      <div style={{ marginBottom: '0.5rem' }}>
-                        <span
-                          style={{
-                            fontSize: '0.7rem',
-                            background: 'var(--accent-light)',
-                            color: 'var(--accent)',
-                            padding: '0.2rem 0.5rem',
-                            borderRadius: 'var(--radius-sm)',
-                            fontWeight: 600,
-                          }}
-                        >
-                          ⚡ Saved answer (cache)
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Sources */}
+                    {/* Citations section */}
                     {msg.sources && msg.sources.length > 0 ? (
-                      <div>
-                        <div
-                          style={{
-                            fontSize: '0.75rem',
-                            fontWeight: 700,
-                            color: 'var(--text-muted)',
-                            textTransform: 'uppercase',
-                            marginBottom: '0.4rem',
-                          }}
-                        >
-                          Citations & Provenance:
+                      <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.5rem' }}>
+                          Sources & Citations:
                         </div>
-                        <div
-                          style={{
-                            display: 'flex',
-                            flexWrap: 'wrap',
-                            gap: '0.4rem',
-                          }}
-                        >
-                          {msg.sources.map((s, i) => (
-                            <SourceChip key={i} source={s} repoId={repoId} />
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          {msg.sources.map((s, idx) => (
+                            <SourceChip key={`${s.file}-${idx}`} source={s} repoId={repoId} />
                           ))}
                         </div>
                       </div>
                     ) : (
                       <div
-                        style={{
-                          fontSize: '0.75rem',
-                          color: 'var(--warn)',
-                          fontStyle: 'italic',
-                        }}
+                        className="badge badge-caution"
+                        style={{ marginTop: '0.75rem', display: 'inline-flex', padding: '0.35rem 0.65rem' }}
                       >
-                        No sources found, so this answer may be unreliable.
+                        <AlertCircle size={12} />
+                        <span>No sources found, so this answer may be unreliable.</span>
                       </div>
                     )}
                   </div>
@@ -358,54 +370,12 @@ export const ChatPage: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Suggested question shortcuts above input if in conversation */}
-      {messages.length > 0 && (
-        <div
-          style={{
-            display: 'flex',
-            gap: '0.4rem',
-            overflowX: 'auto',
-            paddingBottom: '0.5rem',
-            marginBottom: '0.25rem',
-          }}
-        >
-          {DEFAULT_SUGGESTIONS.map((q) => (
-            <button
-              key={q}
-              onClick={() => handleSend(q)}
-              disabled={waiting}
-              style={{
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-full)',
-                padding: '0.25rem 0.75rem',
-                fontSize: '0.75rem',
-                color: 'var(--text-muted)',
-                whiteSpace: 'nowrap',
-                cursor: 'pointer',
-              }}
-            >
-              {q}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Input Form */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          handleSend(input)
-        }}
-        style={{
-          display: 'flex',
-          gap: '0.75rem',
-        }}
-      >
+      {/* Input Form Bar */}
+      <form onSubmit={(e) => { e.preventDefault(); handleSend(input); }} style={{ display: 'flex', gap: '0.5rem' }}>
         <input
           type="text"
-          className="input-text"
-          placeholder="Ask a question about this code (e.g. Where is payment handled?)..."
+          className="input"
+          placeholder="Ask a question about this repository..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={waiting}
@@ -414,13 +384,14 @@ export const ChatPage: React.FC = () => {
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={waiting || !input.trim()}
-          style={{ minWidth: '90px' }}
+          disabled={!input.trim() || waiting}
+          style={{ gap: '0.35rem', padding: '0 1.25rem' }}
         >
-          {waiting ? '...' : 'Send →'}
+          <Send size={15} />
+          <span>Send</span>
         </button>
       </form>
-    </div>
+    </motion.div>
   )
 }
-
+export default ChatPage

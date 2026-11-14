@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { Flame, ArrowUpDown } from 'lucide-react'
 import { getHotspots } from '../../api/client'
 import type { Hotspot } from '../../api/types'
 import { EmptyState } from '../../components/EmptyState'
 import { ErrorBox } from '../../components/ErrorBox'
 import { LoadingBox } from '../../components/LoadingBox'
+import { CodeLink } from '../../components/CodeLink'
 
 type SortColumn = 'rank' | 'path' | 'changes' | 'connections' | 'score'
 type SortDir = 'asc' | 'desc'
@@ -12,7 +14,6 @@ type SortDir = 'asc' | 'desc'
 export const HotspotsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const repoId = Number(id)
-  const navigate = useNavigate()
 
   const [hotspots, setHotspots] = useState<Hotspot[]>([])
   const [loading, setLoading] = useState(true)
@@ -70,12 +71,12 @@ export const HotspotsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.25rem' }}>
+      <div style={{ padding: '2rem 2.5rem', maxWidth: '1080px', margin: '0 auto' }}>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.25rem', letterSpacing: '-0.02em' }}>
           Hotspot Files
         </h1>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
-          Files that change a lot and touch many others are risky to edit.
+        <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9375rem' }}>
+          Files with frequent git churn and extensive dependency coupling.
         </p>
         <LoadingBox height={250} lines={5} />
       </div>
@@ -83,24 +84,30 @@ export const HotspotsPage: React.FC = () => {
   }
 
   if (error) {
-    return <ErrorBox message={error} onRetry={loadData} />
+    return (
+      <div style={{ padding: '2rem 2.5rem', maxWidth: '1080px', margin: '0 auto' }}>
+        <ErrorBox message={error} onRetry={loadData} />
+      </div>
+    )
   }
 
   if (hotspots.length === 0) {
     return (
-      <EmptyState
-        icon="🔥"
-        title="No git history was found for this project"
-        description="We could not find commit logs to calculate file churn or hotspots."
-        actionLabel="Retry"
-        onAction={loadData}
-      />
+      <div style={{ padding: '2rem 2.5rem', maxWidth: '1080px', margin: '0 auto' }}>
+        <EmptyState
+          icon={Flame}
+          title="No git history was found for this project"
+          description="We could not find commit logs to calculate file churn or hotspots."
+          actionLabel="Retry"
+          onAction={loadData}
+        />
+      </div>
     )
   }
 
   return (
-    <div>
-      <div style={{ marginBottom: '1.5rem' }}>
+    <div style={{ padding: '2rem 2.5rem', maxWidth: '1080px', margin: '0 auto' }}>
+      <div style={{ marginBottom: '2rem' }}>
         <h1
           style={{
             fontSize: '1.75rem',
@@ -108,123 +115,113 @@ export const HotspotsPage: React.FC = () => {
             color: 'var(--text)',
             letterSpacing: '-0.02em',
             marginBottom: '0.25rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.625rem',
           }}
         >
-          Hotspot Files
+          <Flame size={22} style={{ color: 'var(--warn)' }} />
+          <span>Hotspot Files</span>
         </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-          Files that change a lot and touch many others are risky to edit.
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>
+          Files that change frequently and connect with multiple modules present higher regression risk.
         </p>
       </div>
 
-      <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+      <div className="table-container">
+        <table className="table">
           <thead>
-            <tr
-              style={{
-                background: 'var(--surface)',
-                borderBottom: '1px solid var(--border)',
-                textAlign: 'left',
-                color: 'var(--text-muted)',
-                fontSize: '0.8rem',
-                userSelect: 'none',
-              }}
-            >
-              <th
-                onClick={() => handleSort('rank')}
-                style={{ padding: '0.75rem 1rem', cursor: 'pointer' }}
-              >
-                Rank {sortCol === 'rank' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+            <tr>
+              <th onClick={() => handleSort('rank')} style={{ cursor: 'pointer', width: '80px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span>Rank</span>
+                  <ArrowUpDown size={12} />
+                </div>
               </th>
-              <th
-                onClick={() => handleSort('path')}
-                style={{ padding: '0.75rem 1rem', cursor: 'pointer' }}
-              >
-                File Path {sortCol === 'path' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+              <th onClick={() => handleSort('path')} style={{ cursor: 'pointer' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span>File Path</span>
+                  <ArrowUpDown size={12} />
+                </div>
               </th>
-              <th
-                onClick={() => handleSort('changes')}
-                style={{ padding: '0.75rem 1rem', cursor: 'pointer' }}
-              >
-                Number of Changes {sortCol === 'changes' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+              <th onClick={() => handleSort('changes')} style={{ cursor: 'pointer', width: '130px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span>Commit Churn</span>
+                  <ArrowUpDown size={12} />
+                </div>
               </th>
-              <th
-                onClick={() => handleSort('connections')}
-                style={{ padding: '0.75rem 1rem', cursor: 'pointer' }}
-              >
-                Call Connections {sortCol === 'connections' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+              <th onClick={() => handleSort('connections')} style={{ cursor: 'pointer', width: '130px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span>Connections</span>
+                  <ArrowUpDown size={12} />
+                </div>
               </th>
-              <th
-                onClick={() => handleSort('score')}
-                style={{ padding: '0.75rem 1rem', cursor: 'pointer' }}
-              >
-                Risk Score {sortCol === 'score' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+              <th onClick={() => handleSort('score')} style={{ cursor: 'pointer', width: '180px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span>Risk Score</span>
+                  <ArrowUpDown size={12} />
+                </div>
               </th>
             </tr>
           </thead>
           <tbody>
-            {sortedList.map((h, idx) => (
-              <tr
-                key={h.path}
-                onClick={() =>
-                  navigate(`/repos/${repoId}/code?path=${encodeURIComponent(h.path)}`)
-                }
-                style={{
-                  borderBottom:
-                    idx === sortedList.length - 1 ? 'none' : '1px solid var(--border)',
-                  cursor: 'pointer',
-                  transition: 'background 0.15s ease',
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = 'var(--surface-hover)')
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = 'transparent')
-                }
-              >
-                <td style={{ padding: '0.85rem 1rem', fontWeight: 700 }}>
-                  #{idx + 1}
-                </td>
-                <td style={{ padding: '0.85rem 1rem', fontWeight: 600, color: 'var(--accent)' }}>
-                  {h.path}
-                </td>
-                <td style={{ padding: '0.85rem 1rem' }}>{h.changes} commits</td>
-                <td style={{ padding: '0.85rem 1rem' }}>{h.connections} calls</td>
-                <td style={{ padding: '0.85rem 1rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <div
-                      style={{
-                        flex: 1,
-                        maxWidth: '90px',
-                        height: '6px',
-                        background: 'var(--surface-hover)',
-                        borderRadius: '3px',
-                        overflow: 'hidden',
-                      }}
-                    >
+            {sortedList.map((h, index) => {
+              const isHigh = h.score > 0.7
+              return (
+                <tr key={h.path}>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+                    #{index + 1}
+                  </td>
+                  <td>
+                    <CodeLink file={h.path} repoId={repoId}>
+                      {h.path}
+                    </CodeLink>
+                  </td>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}>
+                    {h.changes} commits
+                  </td>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}>
+                    {h.connections} symbols
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                       <div
                         style={{
-                          width: `${Math.round(h.score * 100)}%`,
-                          height: '100%',
-                          background:
-                            h.score >= 0.7
-                              ? 'var(--danger)'
-                              : h.score >= 0.4
-                                ? 'var(--warn)'
-                                : 'var(--caution)',
+                          flex: 1,
+                          height: '6px',
+                          background: 'var(--surface-subtle)',
+                          borderRadius: '3px',
+                          overflow: 'hidden',
                         }}
-                      />
+                      >
+                        <div
+                          style={{
+                            width: `${Math.round(h.score * 100)}%`,
+                            height: '100%',
+                            background: isHigh ? 'var(--danger)' : 'var(--warn)',
+                            borderRadius: '3px',
+                          }}
+                        />
+                      </div>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: '0.8125rem',
+                          fontWeight: 700,
+                          color: isHigh ? 'var(--danger)' : 'var(--text)',
+                        }}
+                      >
+                        {h.score.toFixed(2)}
+                      </span>
                     </div>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>
-                      {h.score.toFixed(2)}
-                    </span>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
     </div>
   )
 }
+export default HotspotsPage

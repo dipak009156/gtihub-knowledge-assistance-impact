@@ -1,4 +1,5 @@
 import React from 'react'
+import { CheckCircle2, AlertCircle } from 'lucide-react'
 import type { Source } from '../api/types'
 import { CodeLink } from './CodeLink'
 
@@ -22,8 +23,13 @@ export const SourceChip: React.FC<SourceChipProps> = ({ source, repoId }) => {
             ? 'Verified source location'
             : 'We could not confirm this location.'
         }
+        style={{ display: 'inline-flex', alignItems: 'center' }}
       >
-        {source.verified ? '✓' : '⚠️'}
+        {source.verified ? (
+          <CheckCircle2 size={13} style={{ color: 'var(--ok)' }} />
+        ) : (
+          <AlertCircle size={13} style={{ color: 'var(--caution)' }} />
+        )}
       </span>
       <span>
         {source.file}:{source.start_line}-{source.end_line}
@@ -31,4 +37,3 @@ export const SourceChip: React.FC<SourceChipProps> = ({ source, repoId }) => {
     </CodeLink>
   )
 }
-
