@@ -76,7 +76,7 @@ export function usePolling(
       isMounted = false
       if (timerId) clearTimeout(timerId)
     }
-    // onTimeout intentionally omitted — it's captured via savedOnTimeout ref
+    // onTimeout intentionally omitted: captured via savedOnTimeout ref
     // to prevent restarting the polling loop when the caller passes an inline fn.
   }, [enabled, interval, maxDuration])
 

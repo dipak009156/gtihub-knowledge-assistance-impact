@@ -1,21 +1,30 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getFiles, getGraph, getSymbols } from '../../api/client'
-import type { FileInfo, Graph, GraphNode, Symbol } from '../../api/types'
-import { CodeLink } from '../../components/CodeLink'
+import {
+  Maximize2,
+  ZoomIn,
+  ZoomOut,
+  Info,
+  Network,
+  Code2,
+  X,
+} from 'lucide-react'
+import { getFiles, getGraph } from '../../api/client'
+import type { FileInfo, Graph, GraphNode } from '../../api/types'
 import { EmptyState } from '../../components/EmptyState'
 import { ErrorBox } from '../../components/ErrorBox'
 import { LoadingBox } from '../../components/LoadingBox'
+import { useTheme } from '../../theme/ThemeContext'
 
 export const GraphPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const repoId = Number(id)
   const navigate = useNavigate()
+  const { resolvedTheme } = useTheme()
 
   const [viewLevel, setViewLevel] = useState<'module' | 'call'>('call')
   const [selectedFolder, setSelectedFolder] = useState<string>('')
   const [files, setFiles] = useState<FileInfo[]>([])
-  const [symbols, setSymbols] = useState<Symbol[]>([])
 
   const [graphData, setGraphData] = useState<Graph | null>(null)
   const [loading, setLoading] = useState(true)
@@ -38,14 +47,13 @@ export const GraphPage: React.FC = () => {
     return Array.from(set).sort()
   }, [files])
 
-  // Load files and symbols
+  // Load files
   useEffect(() => {
     if (!repoId) return
     getFiles(repoId).then(setFiles).catch(() => {})
-    getSymbols(repoId).then(setSymbols).catch(() => {})
   }, [repoId])
 
-  // Fetch graph data — stable reference so it can safely be in useEffect deps
+  // Fetch graph data
   const loadGraph = useCallback(async () => {
     if (!repoId) return
     setLoading(true)
@@ -71,19 +79,17 @@ export const GraphPage: React.FC = () => {
     if (!graphData || !cyContainerRef.current) return
 
     let isMounted = true
-    let cy: any = null
 
     // Lazy load cytoscape
     import('cytoscape').then(({ default: cytoscape }) => {
       if (!isMounted || !cyContainerRef.current) return
 
-      // Clean up previous instance
       if (cyInstanceRef.current) {
         cyInstanceRef.current.destroy()
         cyInstanceRef.current = null
       }
 
-      // Cap at 300 nodes for safety
+      // Cap at 300 nodes for rendering performance
       const cappedNodes = graphData.nodes.slice(0, 300)
       const validNodeIds = new Set(cappedNodes.map((n) => n.id))
       const cappedEdges = graphData.edges.filter(
@@ -101,7 +107,7 @@ export const GraphPage: React.FC = () => {
         })),
         ...cappedEdges.map((e, idx) => ({
           data: {
-            id: `e_${idx}`,
+            id: `e-${idx}`,
             source: e.source,
             target: e.target,
             certainty: e.certainty,
@@ -109,19 +115,22 @@ export const GraphPage: React.FC = () => {
         })),
       ]
 
-      cy = cytoscape({
+      const isDark = resolvedTheme === 'dark'
+
+      const cy = cytoscape({
         container: cyContainerRef.current,
         elements,
         style: [
           {
             selector: 'node',
             style: {
-              'background-color': '#fff7ed',
-              'border-color': '#ea580c',
-              'border-width': 2,
               label: 'data(label)',
-              color: '#292524',
+              'background-color': isDark ? '#282A2D' : '#FFFFFF',
+              'border-width': 2,
+              'border-color': '#DF3333',
+              color: isDark ? '#F5F5F2' : '#202124',
               'font-size': '11px',
+              'font-family': "'JetBrains Mono', ui-monospace, monospace",
               'text-valign': 'center',
               'text-halign': 'center',
               width: 'label',
@@ -133,16 +142,17 @@ export const GraphPage: React.FC = () => {
           {
             selector: 'node[kind = "module"]',
             style: {
-              'background-color': '#f0f9ff',
-              'border-color': '#0284c7',
+              'background-color': isDark ? '#303338' : '#EBECE8',
+              'border-color': isDark ? '#54575E' : '#C4C6BE',
+              color: isDark ? '#B2B4B7' : '#777B80',
+              shape: 'round-rectangle',
             },
           },
           {
             selector: 'node:selected',
             style: {
-              'background-color': '#ea580c',
-              color: '#ffffff',
-              'border-color': '#c2410c',
+              'background-color': isDark ? '#432725' : '#FCE9E9',
+              'border-color': isDark ? '#F05A50' : '#C62929',
               'border-width': 3,
             },
           },
@@ -150,8 +160,8 @@ export const GraphPage: React.FC = () => {
             selector: 'edge',
             style: {
               width: 1.5,
-              'line-color': '#d6cbbe',
-              'target-arrow-color': '#ea580c',
+              'line-color': isDark ? '#414449' : '#DEDFDA',
+              'target-arrow-color': isDark ? '#414449' : '#DEDFDA',
               'target-arrow-shape': 'triangle',
               'curve-style': 'bezier',
               'arrow-scale': 0.8,
@@ -162,30 +172,39 @@ export const GraphPage: React.FC = () => {
             style: {
               'line-style': 'dashed',
               'line-dash-pattern': [4, 4],
-              'line-color': '#ea580c',
-              opacity: 0.7,
+              'line-color': isDark ? '#D6A653' : '#A66B17',
+              'target-arrow-color': isDark ? '#D6A653' : '#A66B17',
+            },
+          },
+          {
+            selector: 'edge[certainty = "certain"]',
+            style: {
+              'line-style': 'solid',
+              'line-color': '#DF3333',
+              'target-arrow-color': '#DF3333',
             },
           },
         ],
         layout: {
           name: 'cose',
           animate: false,
-          padding: 30,
-          nodeRepulsion: () => 4500,
-          idealEdgeLength: () => 60,
+          padding: 40,
+          nodeRepulsion: () => 6000,
+          idealEdgeLength: () => 80,
         },
       })
 
+      // Click node
       cy.on('tap', 'node', (evt: any) => {
-        const nodeData = evt.target.data()
-        setSelectedNode({
-          id: nodeData.id,
-          label: nodeData.label,
-          kind: nodeData.kind,
-          file_path: nodeData.file_path,
-        })
+        const node = evt.target
+        const nodeId = node.data('id')
+        const rawNode = graphData.nodes.find((n) => n.id === nodeId)
+        if (rawNode) {
+          setSelectedNode(rawNode)
+        }
       })
 
+      // Click canvas background to deselect
       cy.on('tap', (evt: any) => {
         if (evt.target === cy) {
           setSelectedNode(null)
@@ -202,23 +221,22 @@ export const GraphPage: React.FC = () => {
         cyInstanceRef.current = null
       }
     }
-  }, [graphData])
+  }, [graphData, resolvedTheme])
 
-  // Find symbol id corresponding to node label and file_path
-  const matchingSymbol = useMemo(() => {
-    if (!selectedNode || selectedNode.kind === 'module') return null
-    return symbols.find(
-      (s) =>
-        s.name === selectedNode.label && s.file_path === selectedNode.file_path
-    )
-  }, [selectedNode, symbols])
-
-  const totalNodes = graphData?.total_nodes ?? graphData?.nodes.length ?? 0
-  const isTruncated = graphData?.truncated || totalNodes > 300
+  const totalNodes = graphData?.nodes.length || 0
+  const isTruncated = totalNodes > 300
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 4rem)' }}>
-      {/* Controls header */}
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: 'calc(100vh - 56px)',
+        padding: '1.5rem 2rem',
+        background: 'var(--bg)',
+      }}
+    >
+      {/* Header & Controls Bar */}
       <div
         style={{
           display: 'flex',
@@ -230,36 +248,38 @@ export const GraphPage: React.FC = () => {
         }}
       >
         <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text)' }}>
-            Dependency & Call Graph
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>
+            Dependency and Call Graph
           </h1>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
             Explore inter-module and function call architecture with certainty indicators.
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-          {/* Module / Call toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexWrap: 'wrap' }}>
+          {/* Mode Switcher */}
           <div
             style={{
               display: 'inline-flex',
               background: 'var(--surface)',
               border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-sm)',
+              borderRadius: 'var(--radius)',
               padding: '2px',
             }}
           >
             <button
+              type="button"
               onClick={() => setViewLevel('call')}
-              className={`btn btn-sm ${viewLevel === 'call' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ borderRadius: 'var(--radius-sm)', border: 'none' }}
+              className={`btn btn-sm ${viewLevel === 'call' ? 'btn-primary' : 'btn-ghost'}`}
+              style={{ borderRadius: 'var(--radius-sm)' }}
             >
               Call View
             </button>
             <button
+              type="button"
               onClick={() => setViewLevel('module')}
-              className={`btn btn-sm ${viewLevel === 'module' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ borderRadius: 'var(--radius-sm)', border: 'none' }}
+              className={`btn btn-sm ${viewLevel === 'module' ? 'btn-primary' : 'btn-ghost'}`}
+              style={{ borderRadius: 'var(--radius-sm)' }}
             >
               Module View
             </button>
@@ -270,15 +290,8 @@ export const GraphPage: React.FC = () => {
             <select
               value={selectedFolder}
               onChange={(e) => setSelectedFolder(e.target.value)}
-              style={{
-                padding: '0.4rem 0.75rem',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--border)',
-                background: 'var(--surface-card)',
-                color: 'var(--text)',
-                fontSize: '0.85rem',
-                outline: 'none',
-              }}
+              className="input"
+              style={{ width: 'auto', padding: '0.35rem 0.75rem', fontSize: '0.8125rem' }}
             >
               <option value="">All folders</option>
               {folders.map((f) => (
@@ -289,43 +302,57 @@ export const GraphPage: React.FC = () => {
             </select>
           )}
 
-          {/* Graph Controls */}
-          <button
-            className="btn btn-secondary btn-sm"
-            onClick={() => cyInstanceRef.current?.fit()}
-            title="Reset Zoom & Pan"
-          >
-            Fit View
-          </button>
+          {/* Zoom and Fit Controls */}
+          <div style={{ display: 'flex', gap: '0.25rem' }}>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => cyInstanceRef.current?.zoom(cyInstanceRef.current.zoom() * 1.2)}
+              title="Zoom In"
+            >
+              <ZoomIn size={14} />
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => cyInstanceRef.current?.zoom(cyInstanceRef.current.zoom() * 0.8)}
+              title="Zoom Out"
+            >
+              <ZoomOut size={14} />
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => cyInstanceRef.current?.fit()}
+              title="Reset Zoom and Pan"
+            >
+              <Maximize2 size={14} />
+              <span>Fit View</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Truncation warning banner */}
+      {/* Truncation warning */}
       {isTruncated && (
         <div
-          style={{
-            background: 'var(--warn-bg)',
-            border: '1px solid var(--warn-border)',
-            color: 'var(--warn)',
-            padding: '0.5rem 1rem',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: '0.85rem',
-            marginBottom: '0.75rem',
-          }}
+          className="badge badge-warning"
+          style={{ padding: '0.5rem 0.875rem', marginBottom: '0.75rem', fontSize: '0.8125rem' }}
         >
-          Showing 300 of {totalNodes} nodes. Use the folder filter above to zoom into specific packages.
+          <Info size={14} />
+          <span>Showing 300 of {totalNodes} nodes. Filter by folder to inspect specific packages.</span>
         </div>
       )}
 
       {/* Main Graph Area */}
       <div
+        className="card"
         style={{
           flex: 1,
           position: 'relative',
-          background: 'var(--surface-card)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius)',
+          padding: 0,
           overflow: 'hidden',
+          backgroundColor: 'var(--surface-card)',
         }}
       >
         {loading ? (
@@ -338,7 +365,7 @@ export const GraphPage: React.FC = () => {
           </div>
         ) : !graphData || graphData.nodes.length === 0 ? (
           <EmptyState
-            icon="🕸️"
+            icon={Network}
             title="No calls were found"
             description="We could not detect call relationships or module dependencies for this filter."
             actionLabel="Reset filters"
@@ -360,11 +387,10 @@ export const GraphPage: React.FC = () => {
             position: 'absolute',
             bottom: '1rem',
             left: '1rem',
-            background: 'rgba(255, 255, 255, 0.92)',
-            backdropFilter: 'blur(4px)',
+            background: 'var(--surface)',
             border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)',
-            padding: '0.5rem 0.75rem',
+            borderRadius: 'var(--radius)',
+            padding: '0.45rem 0.75rem',
             fontSize: '0.75rem',
             display: 'flex',
             alignItems: 'center',
@@ -377,27 +403,28 @@ export const GraphPage: React.FC = () => {
             <span
               style={{
                 display: 'inline-block',
-                width: '18px',
+                width: '16px',
                 height: '2px',
-                background: '#d6cbbe',
+                background: 'var(--accent)',
               }}
             />
-            <span>Certain</span>
+            <span style={{ fontWeight: 600 }}>Certain</span>
           </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <span
               style={{
                 display: 'inline-block',
-                width: '18px',
-                height: '0px',
-                borderTop: '2px dashed #ea580c',
+                width: '16px',
+                height: '2px',
+                borderTop: '2px dashed var(--caution)',
               }}
             />
-            <span>Uncertain</span>
+            <span style={{ fontWeight: 600, color: 'var(--caution)' }}>Uncertain</span>
           </div>
         </div>
 
-        {/* Selected Node Details Card */}
+        {/* Selected Node Details Panel */}
         {selectedNode && (
           <div
             className="card"
@@ -405,79 +432,59 @@ export const GraphPage: React.FC = () => {
               position: 'absolute',
               top: '1rem',
               right: '1rem',
-              width: '280px',
-              padding: '1rem',
+              width: '320px',
+              padding: '1.25rem',
               boxShadow: 'var(--shadow-lg)',
-              zIndex: 10,
-              background: 'var(--surface-card)',
+              zIndex: 20,
+              backgroundColor: 'var(--surface)',
             }}
           >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                marginBottom: '0.5rem',
-              }}
-            >
-              <span
-                style={{
-                  fontSize: '0.7rem',
-                  textTransform: 'uppercase',
-                  fontWeight: 700,
-                  color: 'var(--accent)',
-                }}
-              >
-                {selectedNode.kind}
-              </span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+              <div>
+                <span className="badge badge-info" style={{ textTransform: 'uppercase', fontSize: '0.6875rem' }}>
+                  {selectedNode.kind}
+                </span>
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, marginTop: '0.35rem', fontFamily: 'var(--font-mono)' }}>
+                  {selectedNode.label}
+                </h3>
+              </div>
               <button
+                type="button"
+                className="btn btn-ghost btn-sm"
                 onClick={() => setSelectedNode(null)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-muted)',
-                  cursor: 'pointer',
-                  fontSize: '0.9rem',
-                }}
+                style={{ padding: '4px', display: 'flex', alignItems: 'center' }}
+                title="Close"
               >
-                ✕
+                <X size={14} />
               </button>
             </div>
 
-            <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.25rem' }}>
-              {selectedNode.label}
-            </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-              {selectedNode.file_path}
-            </div>
+            {selectedNode.file_path && (
+              <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-subtle)' }}>Defined in:</div>
+                <div style={{ fontFamily: 'var(--font-mono)', color: 'var(--text)', wordBreak: 'break-all', marginTop: '0.2rem' }}>
+                  {selectedNode.file_path}
+                </div>
+              </div>
+            )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <CodeLink
-                file={selectedNode.file_path}
-                repoId={repoId}
-                line={matchingSymbol?.start_line}
-                end={matchingSymbol?.end_line}
-                className="btn btn-secondary btn-sm"
+            {selectedNode.file_path && (
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                style={{ width: '100%', justifyContent: 'center', gap: '0.4rem' }}
+                onClick={() =>
+                  navigate(`/repos/${repoId}/code?path=${encodeURIComponent(selectedNode.file_path!)}`)
+                }
               >
-                Open in code →
-              </CodeLink>
-
-              {matchingSymbol && (
-                <button
-                  className="btn btn-primary btn-sm"
-                  onClick={() =>
-                    navigate(
-                      `/repos/${repoId}/impact?symbol_id=${matchingSymbol.id}&depth=2`
-                    )
-                  }
-                >
-                  Check impact ⚡
-                </button>
-              )}
-            </div>
+                <Code2 size={13} />
+                <span>Open in Code Explorer</span>
+              </button>
+            )}
           </div>
         )}
       </div>
     </div>
   )
 }
+export default GraphPage

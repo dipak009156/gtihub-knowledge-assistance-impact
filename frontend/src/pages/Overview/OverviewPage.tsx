@@ -1,5 +1,18 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import {
+  FileCode2,
+  Code2,
+  Boxes,
+  PhoneCall,
+  GitCommit,
+  Info,
+  GitFork,
+  Zap,
+  MessageSquareCode,
+  ArrowRight,
+} from 'lucide-react'
+import { motion } from 'framer-motion'
 import { getHotspots, getOverview } from '../../api/client'
 import type { Hotspot, Overview } from '../../api/types'
 import { CodeLink } from '../../components/CodeLink'
@@ -43,39 +56,67 @@ export const OverviewPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '1.5rem' }}>
+      <div style={{ padding: '2rem 2.5rem' }}>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '1.5rem', letterSpacing: '-0.02em' }}>
           Overview
         </h1>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-          <LoadingBox height={90} lines={1} />
-          <LoadingBox height={90} lines={1} />
-          <LoadingBox height={90} lines={1} />
-          <LoadingBox height={90} lines={1} />
-          <LoadingBox height={90} lines={1} />
+          <LoadingBox height={95} lines={1} />
+          <LoadingBox height={95} lines={1} />
+          <LoadingBox height={95} lines={1} />
+          <LoadingBox height={95} lines={1} />
+          <LoadingBox height={95} lines={1} />
         </div>
-        <LoadingBox height={200} lines={3} />
+        <LoadingBox height={220} lines={3} />
       </div>
     )
   }
 
   if (error) {
-    return <ErrorBox message={error} onRetry={loadData} />
+    return (
+      <div style={{ padding: '2rem 2.5rem' }}>
+        <ErrorBox message={error} onRetry={loadData} />
+      </div>
+    )
   }
 
   if (!overview) {
     return (
-      <EmptyState
-        title="No overview data"
-        description="We could not find statistics for this repository."
-        actionLabel="Retry"
-        onAction={loadData}
-      />
+      <div style={{ padding: '2rem 2.5rem' }}>
+        <EmptyState
+          title="No overview data"
+          description="We could not find statistics for this repository."
+          actionLabel="Retry"
+          onAction={loadData}
+        />
+      </div>
     )
   }
 
+  const statCards = [
+    { label: 'Python Files', value: overview.files ?? 0, icon: FileCode2, highlight: false },
+    { label: 'Functions', value: overview.functions ?? 0, icon: Code2, highlight: true },
+    { label: 'Classes', value: overview.classes ?? 0, icon: Boxes, highlight: false },
+    { label: 'Call References', value: overview.calls ?? 0, icon: PhoneCall, highlight: false },
+    {
+      label: 'Commits Analyzed',
+      value: overview.commits > 0 ? overview.commits : '0',
+      icon: GitCommit,
+      highlight: false,
+      emptyLabel: overview.commits === 0 ? 'No history found' : undefined,
+    },
+  ]
+
+  const quickActions = [
+    { title: 'Explore Code', desc: 'Browse file tree & syntax in Monaco editor', path: `/repos/${repoId}/code`, icon: FileCode2 },
+    { title: 'Dependency Graph', desc: 'Interactive module & call relationship visualization', path: `/repos/${repoId}/graph`, icon: GitFork },
+    { title: 'Impact Explorer', desc: 'Simulate changes and assess blast radius risk', path: `/repos/${repoId}/impact`, icon: Zap },
+    { title: 'AI Code Chat', desc: 'Query repository with grounded AST citations', path: `/repos/${repoId}/chat`, icon: MessageSquareCode },
+  ]
+
   return (
-    <div>
+    <div style={{ padding: '2rem 2.5rem', maxWidth: '1200px' }}>
+      {/* Header */}
       <div style={{ marginBottom: '2rem' }}>
         <h1
           style={{
@@ -88,255 +129,194 @@ export const OverviewPage: React.FC = () => {
         >
           {overview.repo.owner}/{overview.repo.name}
         </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>
           Repository structure, symbol index, and impact metrics.
         </p>
       </div>
 
-      {/* Metric Stat Cards */}
+      {/* Metric Stat Cards with Staggered Animation */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
           gap: '1rem',
           marginBottom: '1rem',
         }}
       >
-        <div className="card" style={{ padding: '1.25rem' }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-            Python Files
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text)' }}>
-            {overview.files ?? 0}
-          </div>
-        </div>
-
-        <div className="card" style={{ padding: '1.25rem' }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-            Functions
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--accent)' }}>
-            {overview.functions ?? 0}
-          </div>
-        </div>
-
-        <div className="card" style={{ padding: '1.25rem' }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-            Classes
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text)' }}>
-            {overview.classes ?? 0}
-          </div>
-        </div>
-
-        <div className="card" style={{ padding: '1.25rem' }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-            Call References
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text)' }}>
-            {overview.calls ?? 0}
-          </div>
-        </div>
-
-        <div className="card" style={{ padding: '1.25rem' }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-            Commits Analyzed
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text)' }}>
-            {overview.commits > 0 ? overview.commits : '0'}
-          </div>
-          {overview.commits === 0 && (
-            <span style={{ fontSize: '0.75rem', color: 'var(--warn)' }}>
-              No history found
-            </span>
-          )}
-        </div>
+        {statCards.map((stat, idx) => {
+          const Icon = stat.icon
+          return (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, delay: idx * 0.04 }}
+              className="card card-hover"
+              style={{ padding: '1.25rem', position: 'relative' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  {stat.label}
+                </span>
+                <span style={{ color: stat.highlight ? 'var(--accent)' : 'var(--text-subtle)' }}>
+                  <Icon size={16} />
+                </span>
+              </div>
+              <div
+                style={{
+                  fontSize: '1.875rem',
+                  fontWeight: 800,
+                  color: stat.highlight ? 'var(--accent)' : 'var(--text)',
+                  lineHeight: 1.1,
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                {stat.value}
+              </div>
+              {stat.emptyLabel && (
+                <div style={{ fontSize: '0.75rem', color: 'var(--warn)', marginTop: '0.35rem', fontWeight: 600 }}>
+                  {stat.emptyLabel}
+                </div>
+              )}
+            </motion.div>
+          )
+        })}
       </div>
 
-      {/* Note about uncertain calls */}
+      {/* Uncertain Calls Notice */}
       {overview.uncertain_calls > 0 && (
         <div
           style={{
-            fontSize: '0.85rem',
+            fontSize: '0.8125rem',
             color: 'var(--text-muted)',
             marginBottom: '2rem',
-            display: 'flex',
+            display: 'inline-flex',
             alignItems: 'center',
-            gap: '0.4rem',
+            gap: '0.5rem',
+            padding: '0.4rem 0.75rem',
+            borderRadius: 'var(--radius)',
+            backgroundColor: 'var(--surface-subtle)',
+            border: '1px solid var(--border)',
           }}
         >
-          <span>ℹ️</span>
+          <Info size={14} style={{ color: 'var(--accent)' }} />
           <span>
-            <strong>{overview.uncertain_calls}</strong> calls are marked uncertain
-            (same-named functions in different files).
+            <strong>{overview.uncertain_calls}</strong> calls are marked uncertain (multiple functions share identical identifier names).
           </span>
         </div>
       )}
 
-      {/* Quick Action Navigation Buttons */}
+      {/* Quick Action Navigation Grid */}
       <div style={{ marginBottom: '2.5rem' }}>
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.75rem' }}>
+        <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.875rem' }}>
           Quick Actions
         </h2>
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
             gap: '1rem',
           }}
         >
-          <Link
-            to={`/repos/${repoId}/code`}
-            className="card"
-            style={{
-              padding: '1.25rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-            }}
-          >
-            <span style={{ fontSize: '1.5rem' }}>💻</span>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>Explore code</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                Browse files and call callers/callees
-              </div>
-            </div>
-          </Link>
-
-          <Link
-            to={`/repos/${repoId}/graph`}
-            className="card"
-            style={{
-              padding: '1.25rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-            }}
-          >
-            <span style={{ fontSize: '1.5rem' }}>🕸️</span>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>See the graph</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                Visual map of who calls whom
-              </div>
-            </div>
-          </Link>
-
-          <Link
-            to={`/repos/${repoId}/impact`}
-            className="card"
-            style={{
-              padding: '1.25rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-            }}
-          >
-            <span style={{ fontSize: '1.5rem' }}>⚡</span>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>Check an impact</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                Calculate blast radius of changes
-              </div>
-            </div>
-          </Link>
-
-          <Link
-            to={`/repos/${repoId}/chat`}
-            className="card"
-            style={{
-              padding: '1.25rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-            }}
-          >
-            <span style={{ fontSize: '1.5rem' }}>💬</span>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>Ask a question</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                Chat with code and citations
-              </div>
-            </div>
-          </Link>
+          {quickActions.map((action) => {
+            const ActionIcon = action.icon
+            return (
+              <Link
+                key={action.title}
+                to={action.path}
+                className="card card-hover"
+                style={{
+                  padding: '1.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  textDecoration: 'none',
+                }}
+              >
+                <div
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: 'var(--radius)',
+                    backgroundColor: 'var(--accent-subtle)',
+                    color: 'var(--accent)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <ActionIcon size={20} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: '0.9375rem', color: 'var(--text)' }}>
+                    {action.title}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.125rem' }}>
+                    {action.desc}
+                  </div>
+                </div>
+                <ArrowRight size={14} style={{ color: 'var(--text-subtle)' }} />
+              </Link>
+            )
+          })}
         </div>
       </div>
 
-      {/* Top 5 Hotspots */}
-      <section>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '0.75rem',
-          }}
-        >
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
-            Top 5 Hotspot Files
-          </h2>
-          <Link
-            to={`/repos/${repoId}/hotspots`}
-            style={{ fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 600 }}
-          >
-            View all hotspots →
+      {/* Top 5 Hotspot Files Preview */}
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem' }}>
+          <div>
+            <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)' }}>
+              Top 5 Hotspot Files
+            </h2>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+              Files with the highest co-change churn and dependency coupling.
+            </p>
+          </div>
+          <Link to={`/repos/${repoId}/hotspots`} className="btn btn-ghost btn-sm" style={{ gap: '0.35rem' }}>
+            <span>View All</span>
+            <ArrowRight size={14} />
           </Link>
         </div>
 
         {hotspots.length === 0 ? (
-          <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              No git history or hotspot files found for this repository.
-            </p>
+          <div className="card" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+            No hotspot files detected for this repository.
           </div>
         ) : (
-          <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+          <div className="table-container">
+            <table className="table">
               <thead>
-                <tr
-                  style={{
-                    background: 'var(--surface)',
-                    borderBottom: '1px solid var(--border)',
-                    textAlign: 'left',
-                    color: 'var(--text-muted)',
-                    fontSize: '0.8rem',
-                  }}
-                >
-                  <th style={{ padding: '0.75rem 1rem' }}>Rank</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>File Path</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Changes</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Connections</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Risk Score</th>
+                <tr>
+                  <th>File Path</th>
+                  <th>Changes</th>
+                  <th>Connections</th>
+                  <th>Impact Score</th>
                 </tr>
               </thead>
               <tbody>
-                {hotspots.map((h, i) => (
-                  <tr
-                    key={h.path}
-                    style={{
-                      borderBottom:
-                        i === hotspots.length - 1 ? 'none' : '1px solid var(--border)',
-                    }}
-                  >
-                    <td style={{ padding: '0.75rem 1rem', fontWeight: 700 }}>
-                      #{i + 1}
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <CodeLink file={h.path} repoId={repoId} style={{ color: 'var(--accent)', fontWeight: 600 }}>
+                {hotspots.map((h) => (
+                  <tr key={h.path}>
+                    <td>
+                      <CodeLink file={h.path} repoId={repoId}>
                         {h.path}
                       </CodeLink>
                     </td>
-                    <td style={{ padding: '0.75rem 1rem' }}>{h.changes}</td>
-                    <td style={{ padding: '0.75rem 1rem' }}>{h.connections}</td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}>
+                      {h.changes}
+                    </td>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}>
+                      {h.connections}
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <div
                           style={{
                             flex: 1,
-                            maxWidth: '80px',
+                            maxWidth: '120px',
                             height: '6px',
-                            background: 'var(--surface-hover)',
+                            backgroundColor: 'var(--surface-subtle)',
                             borderRadius: '3px',
                             overflow: 'hidden',
                           }}
@@ -345,16 +325,12 @@ export const OverviewPage: React.FC = () => {
                             style={{
                               width: `${Math.round(h.score * 100)}%`,
                               height: '100%',
-                              background:
-                                h.score >= 0.7
-                                  ? 'var(--danger)'
-                                  : h.score >= 0.4
-                                    ? 'var(--warn)'
-                                    : 'var(--caution)',
+                              backgroundColor: h.score > 0.7 ? 'var(--danger)' : 'var(--warn)',
+                              borderRadius: '3px',
                             }}
                           />
                         </div>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', fontWeight: 600 }}>
                           {h.score.toFixed(2)}
                         </span>
                       </div>
@@ -365,8 +341,8 @@ export const OverviewPage: React.FC = () => {
             </table>
           </div>
         )}
-      </section>
+      </div>
     </div>
   )
 }
-
+export default OverviewPage
