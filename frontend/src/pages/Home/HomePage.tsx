@@ -144,8 +144,11 @@ export const HomePage: React.FC = () => {
       {/* ── Global Header Bar ── */}
       <header
         style={{
-          borderBottom: '1px solid var(--border)',
-          background: 'var(--surface)',
+          borderBottom: '1px solid var(--glass-border)',
+          background: 'var(--glass-bg)',
+          backdropFilter: 'var(--glass-blur)',
+          WebkitBackdropFilter: 'var(--glass-blur)',
+          boxShadow: 'var(--glass-shadow)',
           padding: '0 2rem',
           height: '64px',
           display: 'flex',
@@ -565,7 +568,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* ── Section 1: How It Works ── */}
-      <section id="how-it-works" style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', padding: '4.5rem 1.5rem' }}>
+      <section id="how-it-works" style={{ background: 'var(--glass-surface-subtle)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid var(--glass-border)', borderBottom: '1px solid var(--glass-border)', padding: '4.5rem 1.5rem' }}>
         <div style={{ maxWidth: '1080px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <h2 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>
@@ -695,7 +698,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* ── Section 3: System Workflow ── */}
-      <section id="workflow" style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', padding: '4.5rem 1.5rem' }}>
+      <section id="workflow" style={{ background: 'var(--glass-surface-subtle)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid var(--glass-border)', borderBottom: '1px solid var(--glass-border)', padding: '4.5rem 1.5rem' }}>
         <div style={{ maxWidth: '960px', margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>
             System Workflow
@@ -803,7 +806,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* ── Section 5: FAQ Section ── */}
-      <section id="faq" style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)', padding: '4.5rem 1.5rem' }}>
+      <section id="faq" style={{ background: 'var(--glass-surface-subtle)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid var(--glass-border)', padding: '4.5rem 1.5rem' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <h2 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>
@@ -881,7 +884,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ borderTop: '1px solid var(--border)', background: 'var(--bg)', padding: '3rem 2rem', marginTop: 'auto' }}>
+      <footer style={{ borderTop: '1px solid var(--glass-border)', background: 'var(--glass-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', padding: '3rem 2rem', marginTop: 'auto' }}>
         <div style={{ maxWidth: '1080px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
             <BrandIcon size={24} />

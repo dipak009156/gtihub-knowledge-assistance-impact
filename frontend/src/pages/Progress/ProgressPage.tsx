@@ -115,9 +115,15 @@ export const ProgressPage: React.FC = () => {
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
       <header
         style={{
-          borderBottom: '1px solid var(--border)',
-          background: 'var(--surface)',
+          borderBottom: '1px solid var(--glass-border)',
+          background: 'var(--glass-bg)',
+          backdropFilter: 'var(--glass-blur)',
+          WebkitBackdropFilter: 'var(--glass-blur)',
+          boxShadow: 'var(--glass-shadow)',
           padding: '0.875rem 2rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
         }}
       >
         <Link
@@ -150,7 +156,7 @@ export const ProgressPage: React.FC = () => {
           width: '100%',
         }}
       >
-        <div className="card" style={{ padding: '2.5rem', textAlign: 'center', boxShadow: 'var(--shadow)' }}>
+        <div className="card" style={{ padding: '2.5rem', textAlign: 'center', boxShadow: 'var(--glass-shadow-lg)', borderRadius: '24px' }}>
           <h1
             style={{
               fontSize: '1.625rem',

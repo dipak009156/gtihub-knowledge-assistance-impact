@@ -57,9 +57,23 @@ export const RegisterPage: React.FC = () => {
 
       <div style={{ width: '100%', maxWidth: '420px' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.625rem', marginBottom: '1rem', textDecoration: 'none' }}>
-            <BrandIcon size={30} />
-            <span style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--accent)', letterSpacing: '-0.02em' }}>
+          <Link
+            to="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.625rem',
+              marginBottom: '1rem',
+              textDecoration: 'none',
+              padding: '0.5rem 1rem',
+              background: 'var(--glass-surface-subtle)',
+              border: '1px solid var(--glass-border-subtle)',
+              borderRadius: 'var(--radius-bubble)',
+              boxShadow: 'var(--glass-specular)',
+            }}
+          >
+            <BrandIcon size={26} />
+            <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--accent)', letterSpacing: '-0.02em' }}>
               GitHub Knowledge Assistance
             </span>
           </Link>
@@ -71,7 +85,7 @@ export const RegisterPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="card" style={{ padding: '1.75rem' }}>
+        <div className="card" style={{ padding: '2rem', borderRadius: '24px', boxShadow: 'var(--glass-shadow-lg)' }}>
           {error && (
             <div
               style={{

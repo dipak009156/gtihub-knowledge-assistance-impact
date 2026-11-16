@@ -9,8 +9,11 @@ export const TermsPage: React.FC = () => {
     <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)' }}>
       <header
         style={{
-          borderBottom: '1px solid var(--border)',
-          background: 'var(--surface)',
+          borderBottom: '1px solid var(--glass-border)',
+          background: 'var(--glass-bg)',
+          backdropFilter: 'var(--glass-blur)',
+          WebkitBackdropFilter: 'var(--glass-blur)',
+          boxShadow: 'var(--glass-shadow)',
           padding: '1rem 2rem',
           display: 'flex',
           alignItems: 'center',

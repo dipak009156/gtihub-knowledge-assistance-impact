@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link, NavLink, useParams } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -13,7 +13,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { Repo } from '../api/types'
 import { BrandIcon } from './BrandIcon'
 import { StatusBadge } from './StatusBadge'
@@ -30,6 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggleCollapse,
 }) => {
   const { id } = useParams<{ id: string }>()
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   const navItems = [
     { label: 'Overview', path: `/repos/${id}`, icon: LayoutDashboard, end: true },
@@ -43,92 +44,179 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ]
 
   return (
-    <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}>
+    <motion.aside
+      className={`sidebar bubble-sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}
+      animate={{ width: collapsed ? 80 : 270 }}
+      transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+      aria-label="Sidebar navigation"
+    >
+      {/* ── Brand Header Bubble ── */}
       <div className="sidebar-header">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-          <Link to="/" className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', textDecoration: 'none', marginBottom: 0 }}>
-            <BrandIcon size={24} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+          <Link
+            to="/"
+            className="sidebar-brand sidebar-brand-bubble"
+            title="GitHub Knowledge Assistance"
+          >
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: -4,
+                  borderRadius: '50%',
+                  background: 'radial-gradient(circle, rgba(223, 51, 51, 0.35) 0%, transparent 70%)',
+                  filter: 'blur(4px)',
+                  pointerEvents: 'none',
+                }}
+              />
+              <BrandIcon size={24} style={{ position: 'relative', zIndex: 1 }} />
+            </div>
             {!collapsed && (
-              <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--accent)', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
+              <span
+                style={{
+                  fontWeight: 700,
+                  fontSize: '0.875rem',
+                  color: 'var(--accent)',
+                  letterSpacing: '-0.02em',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
                 GitHub Knowledge Assistance
               </span>
             )}
           </Link>
+
           {onToggleCollapse && (
-            <button
+            <motion.button
               type="button"
               onClick={onToggleCollapse}
               aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              className="btn btn-ghost btn-sm"
-              style={{ padding: '4px' }}
+              className="bubble-toggle-btn"
+              whileHover={{ scale: 1.1, rotate: collapsed ? -5 : 5 }}
+              whileTap={{ scale: 0.92 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
             >
               {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
-            </button>
+            </motion.button>
           )}
         </div>
 
         {repo && !collapsed && (
-          <div className="sidebar-repo-card">
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="sidebar-repo-card sidebar-repo-bubble"
+          >
             <div className="sidebar-repo-name" title={`${repo.owner}/${repo.name}`}>
               {repo.owner}/{repo.name}
             </div>
             <StatusBadge status={repo.status} />
-          </div>
+          </motion.div>
         )}
       </div>
 
+      {/* ── Floating Bubble Navigation List ── */}
       <nav className="sidebar-nav" aria-label="Repository navigation">
-        {navItems.map((item) => {
+        {navItems.map((item, index) => {
           const Icon = item.icon
+          const isHovered = hoveredIndex === index
+
           return (
-            <NavLink
+            <div
               key={item.label}
-              to={item.path}
-              end={item.end}
-              title={collapsed ? item.label : undefined}
-              className={({ isActive }) =>
-                `nav-item ${isActive ? 'active' : ''}`
-              }
+              style={{ position: 'relative' }}
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
             >
-              {({ isActive }) => (
-                <>
-                  <span className="nav-item-icon">
-                    <Icon size={18} />
-                  </span>
-                  {!collapsed && <span>{item.label}</span>}
-                  {isActive && (
-                    <motion.div
-                      layoutId="sidebar-active-pill"
-                      style={{
-                        position: 'absolute',
-                        left: 0,
-                        top: '15%',
-                        bottom: '15%',
-                        width: '3px',
-                        backgroundColor: 'var(--accent)',
-                        borderRadius: '0 2px 2px 0',
-                      }}
-                      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                    />
-                  )}
-                </>
-              )}
-            </NavLink>
+              <NavLink
+                to={item.path}
+                end={item.end}
+                className={({ isActive }) =>
+                  `nav-item bubble-nav-item ${isActive ? 'active' : ''}`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    {/* Liquid Sliding Active Glass Bubble Pill */}
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeBubblePill"
+                        className="bubble-active-glow"
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      />
+                    )}
+
+                    {/* Icon Bubble Sphere */}
+                    <span className="bubble-icon-sphere">
+                      <Icon size={17} />
+                    </span>
+
+                    {/* Navigation Label */}
+                    {!collapsed && (
+                      <span className="bubble-nav-label">
+                        {item.label}
+                      </span>
+                    )}
+
+                    {/* Glowing Active Dot */}
+                    {isActive && !collapsed && (
+                      <motion.span
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="bubble-active-dot"
+                      />
+                    )}
+                  </>
+                )}
+              </NavLink>
+
+              {/* Floating Tooltip for Collapsed Bubble Mode */}
+              <AnimatePresence>
+                {collapsed && isHovered && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -8, scale: 0.92 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: -6, scale: 0.95 }}
+                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                    className="bubble-tooltip"
+                  >
+                    {item.label}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           )
         })}
       </nav>
 
+      {/* ── Footer Bubble ── */}
       <div className="sidebar-footer">
-        <Link
-          to="/"
-          title="Switch repository"
-          className="btn btn-ghost btn-sm"
-          style={{ justifyContent: collapsed ? 'center' : 'flex-start', width: '100%', gap: '0.5rem' }}
-        >
-          <ArrowLeft size={15} />
-          {!collapsed && <span>Switch project</span>}
-        </Link>
+        <div style={{ position: 'relative' }}>
+          <Link
+            to="/"
+            title={collapsed ? 'Switch repository' : undefined}
+            className="bubble-nav-item bubble-footer-btn"
+            style={{
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              width: '100%',
+              padding: collapsed ? '0.5rem 0' : '0.55rem 0.85rem',
+            }}
+          >
+            <span className="bubble-icon-sphere">
+              <ArrowLeft size={15} />
+            </span>
+            {!collapsed && (
+              <span className="bubble-nav-label">
+                Switch project
+              </span>
+            )}
+          </Link>
+        </div>
       </div>
-    </aside>
+    </motion.aside>
   )
 }
+
+export default Sidebar
