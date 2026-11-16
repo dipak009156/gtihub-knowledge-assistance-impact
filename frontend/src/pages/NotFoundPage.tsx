@@ -6,6 +6,7 @@ import { EmptyState } from '../components/EmptyState'
 export const NotFoundPage: React.FC = () => {
   return (
     <div
+      className="blueprint-section"
       style={{
         minHeight: '100vh',
         display: 'flex',
@@ -13,9 +14,16 @@ export const NotFoundPage: React.FC = () => {
         justifyContent: 'center',
         background: 'var(--bg)',
         padding: '2rem',
+        position: 'relative',
       }}
     >
-      <div style={{ maxWidth: '480px', width: '100%', textAlign: 'center' }}>
+      {/* Subtle Blueprint Dot Grid */}
+      <div className="blueprint-dot-grid" />
+
+      {/* Central Radiant Warm Accent Glow */}
+      <div className="blueprint-radiant-glow" style={{ top: '25%', opacity: 0.65 }} />
+
+      <div style={{ maxWidth: '480px', width: '100%', textAlign: 'center', position: 'relative', zIndex: 3 }}>
         <EmptyState
           icon={Compass}
           title="Page Not Found"

@@ -4,6 +4,7 @@ import { Clock, Loader2, CheckCircle2, AlertCircle, RotateCcw, Search, ExternalL
 import { motion } from 'framer-motion'
 import { addRepo, getRepo } from '../../api/client'
 import type { Repo } from '../../api/types'
+import { GithubIcon } from '../../components/GithubIcon'
 import { BrandIcon } from '../../components/BrandIcon'
 import { DevMockPanel } from '../../components/DevMockPanel'
 import { EmptyState } from '../../components/EmptyState'
@@ -112,7 +113,68 @@ export const ProgressPage: React.FC = () => {
   const stepIndex = status === 'ready' ? 3 : status === 'cloning' ? 2 : 1
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+    <div className="blueprint-section" style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      {/* Subtle Blueprint Dot Grid */}
+      <div className="blueprint-dot-grid" />
+
+      {/* Central Radiant Warm Accent Glow */}
+      <div className="blueprint-radiant-glow" style={{ top: '20%', opacity: 0.65 }} />
+
+      {/* Flowing Wave Contours SVG */}
+      <svg className="blueprint-waves-svg" viewBox="0 0 1440 600" fill="none" preserveAspectRatio="none">
+        <path
+          d="M-50 220 C 250 100, 520 340, 800 180 C 1080 20, 1300 260, 1520 160"
+          stroke="var(--accent)"
+          strokeWidth="1.2"
+          strokeOpacity="0.12"
+          fill="none"
+        />
+        <path
+          d="M-80 320 C 220 180, 480 400, 780 260 C 1080 120, 1280 340, 1560 220"
+          stroke="var(--border-strong)"
+          strokeWidth="1"
+          strokeOpacity="0.18"
+          fill="none"
+        />
+      </svg>
+
+      {/* Left 3D Floating Flank Graphic */}
+      <motion.div
+        className="blueprint-flank-container blueprint-flank-left"
+        animate={{ y: [0, -10, 0] }}
+        transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut' }}
+      >
+        <div className="blueprint-3d-editor">
+          <div style={{ display: 'flex', gap: '5px', marginBottom: '0.625rem' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)' }} />
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--warn)' }} />
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--ok)' }} />
+          </div>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6875rem', lineHeight: 1.6, color: '#94a3b8' }}>
+            <div><span style={{ color: '#f43f5e' }}>git</span> <span style={{ color: '#60a5fa' }}>clone</span> repo...</div>
+            <div style={{ paddingLeft: '0.75rem' }}><span style={{ color: '#10b981' }}>✓ AST parsed</span></div>
+            <div><span style={{ color: '#f59e0b' }}>building</span> callgraph...</div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Right 3D Floating Flank Graphic */}
+      <motion.div
+        className="blueprint-flank-container blueprint-flank-right"
+        animate={{ y: [0, 8, 0] }}
+        transition={{ repeat: Infinity, duration: 7, ease: 'easeInOut' }}
+      >
+        <div style={{ position: 'relative' }}>
+          <div className="blueprint-3d-code-badge">
+            {'</>'}
+          </div>
+          <div className="blueprint-octocat-token" style={{ position: 'absolute', bottom: '-20px', left: '-30px' }}>
+            <GithubIcon size={34} />
+          </div>
+          <div className="blueprint-3d-cube" style={{ top: '80px', right: '-15px' }} />
+        </div>
+      </motion.div>
+
       <header
         style={{
           borderBottom: '1px solid var(--glass-border)',
@@ -124,6 +186,8 @@ export const ProgressPage: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          position: 'relative',
+          zIndex: 10,
         }}
       >
         <Link
@@ -154,6 +218,8 @@ export const ProgressPage: React.FC = () => {
           margin: '0 auto',
           padding: '4rem 1.5rem',
           width: '100%',
+          position: 'relative',
+          zIndex: 3,
         }}
       >
         <div className="card" style={{ padding: '2.5rem', textAlign: 'center', boxShadow: 'var(--glass-shadow-lg)', borderRadius: '24px' }}>
