@@ -120,9 +120,34 @@ export const Layout: React.FC = () => {
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
 
-      <div className="main-content">
+      <div className="main-content" style={{ position: 'relative', overflowX: 'hidden' }}>
+        {/* Subtle Blueprint Dot Grid */}
+        <div className="blueprint-dot-grid-full" />
+
+        {/* Ambient Radiant Red & Soft Slate Glow Orbs */}
+        <div className="blueprint-radiant-glow" style={{ top: '-8%', left: '45%', opacity: 0.55 }} />
+        <div className="blueprint-radiant-glow-secondary" style={{ opacity: 0.35 }} />
+
+        {/* Flowing Topographic Contour Wave Lines SVG */}
+        <svg className="blueprint-waves-svg" viewBox="0 0 1440 600" fill="none" preserveAspectRatio="none" style={{ opacity: 0.45 }}>
+          <path
+            d="M-50 180 C 250 80, 520 280, 800 140 C 1080 0, 1300 200, 1520 120"
+            stroke="var(--accent)"
+            strokeWidth="1.2"
+            strokeOpacity="0.1"
+            fill="none"
+          />
+          <path
+            d="M-80 300 C 220 180, 480 380, 780 240 C 1080 100, 1280 280, 1560 200"
+            stroke="var(--border-strong)"
+            strokeWidth="1"
+            strokeOpacity="0.16"
+            fill="none"
+          />
+        </svg>
+
         {/* Top Header Bar */}
-        <header className="topbar">
+        <header className="topbar" style={{ position: 'relative', zIndex: 10 }}>
           <div className="topbar-left">
             <nav className="breadcrumb" aria-label="Breadcrumb">
               <Link to="/">Projects</Link>

@@ -6,15 +6,44 @@ import { ThemeToggle } from '../../components/ThemeToggle'
 
 export const PrivacyPage: React.FC = () => {
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)' }}>
+    <div className="blueprint-section" style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', position: 'relative' }}>
+      {/* Subtle Blueprint Dot Grid */}
+      <div className="blueprint-dot-grid" />
+
+      {/* Central Radiant Warm Accent Glow */}
+      <div className="blueprint-radiant-glow" style={{ top: '15%', opacity: 0.55 }} />
+
+      {/* Flowing Wave Contours SVG */}
+      <svg className="blueprint-waves-svg" viewBox="0 0 1440 600" fill="none" preserveAspectRatio="none">
+        <path
+          d="M-50 200 C 250 80, 520 320, 800 160 C 1080 0, 1300 240, 1520 140"
+          stroke="var(--accent)"
+          strokeWidth="1.2"
+          strokeOpacity="0.1"
+          fill="none"
+        />
+        <path
+          d="M-80 300 C 220 160, 480 380, 780 240 C 1080 100, 1280 320, 1560 200"
+          stroke="var(--border-strong)"
+          strokeWidth="1"
+          strokeOpacity="0.16"
+          fill="none"
+        />
+      </svg>
+
       <header
         style={{
-          borderBottom: '1px solid var(--border)',
-          background: 'var(--surface)',
+          borderBottom: '1px solid var(--glass-border)',
+          background: 'var(--glass-bg)',
+          backdropFilter: 'var(--glass-blur)',
+          WebkitBackdropFilter: 'var(--glass-blur)',
+          boxShadow: 'var(--glass-shadow)',
           padding: '1rem 2rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          position: 'relative',
+          zIndex: 10,
         }}
       >
         <Link to="/" className="btn btn-ghost btn-sm" style={{ gap: '0.4rem' }}>
@@ -30,7 +59,7 @@ export const PrivacyPage: React.FC = () => {
         </div>
       </header>
 
-      <main style={{ maxWidth: '800px', margin: '0 auto', padding: '3rem 1.5rem' }}>
+      <main style={{ maxWidth: '800px', margin: '0 auto', padding: '3.5rem 1.5rem', position: 'relative', zIndex: 3 }}>
         <div style={{ marginBottom: '2.5rem' }}>
           <div className="badge badge-neutral" style={{ marginBottom: '0.75rem' }}>
             Legal Documentation
@@ -43,7 +72,7 @@ export const PrivacyPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '2rem', lineHeight: 1.65 }}>
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '2rem', lineHeight: 1.65, borderRadius: '24px', boxShadow: 'var(--glass-shadow-lg)', padding: '2.5rem' }}>
           <section>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <Lock size={18} style={{ color: 'var(--accent)' }} />

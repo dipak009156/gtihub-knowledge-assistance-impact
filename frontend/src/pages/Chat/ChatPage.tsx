@@ -264,12 +264,12 @@ export const ChatPage: React.FC = () => {
                     alignSelf: 'flex-end',
                     background: 'var(--accent)',
                     color: '#ffffff',
-                    padding: '0.625rem 1rem',
-                    borderRadius: 'var(--radius) var(--radius) 2px var(--radius)',
+                    padding: '0.75rem 1.15rem',
+                    borderRadius: '20px 20px 4px 20px',
                     maxWidth: '80%',
                     fontSize: '0.875rem',
                     lineHeight: 1.5,
-                    boxShadow: 'var(--shadow-xs)',
+                    boxShadow: '0 4px 16px -2px rgba(223, 51, 51, 0.4), var(--glass-specular)',
                   }}
                 >
                   {msg.text}
@@ -283,15 +283,17 @@ export const ChatPage: React.FC = () => {
                 key={msg.id}
                 style={{
                   alignSelf: 'flex-start',
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border)',
+                  background: 'var(--glass-surface-subtle)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  border: '1px solid var(--glass-border)',
                   padding: '1.25rem',
-                  borderRadius: 'var(--radius)',
+                  borderRadius: '20px 20px 20px 4px',
                   maxWidth: '88%',
                   width: '100%',
                   fontSize: '0.875rem',
                   lineHeight: 1.6,
-                  boxShadow: 'var(--shadow-xs)',
+                  boxShadow: 'var(--glass-shadow-sm), var(--glass-specular)',
                 }}
               >
                 {/* Header & Cached Badge */}
@@ -371,7 +373,7 @@ export const ChatPage: React.FC = () => {
       </div>
 
       {/* Input Form Bar */}
-      <form onSubmit={(e) => { e.preventDefault(); handleSend(input); }} style={{ display: 'flex', gap: '0.5rem' }}>
+      <form onSubmit={(e) => { e.preventDefault(); handleSend(input); }} style={{ display: 'flex', gap: '0.625rem', marginTop: '1rem' }}>
         <input
           type="text"
           className="input"
@@ -379,13 +381,13 @@ export const ChatPage: React.FC = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={waiting}
-          style={{ flex: 1 }}
+          style={{ flex: 1, borderRadius: 'var(--radius-bubble)', padding: '0.75rem 1.25rem' }}
         />
         <button
           type="submit"
           className="btn btn-primary"
           disabled={!input.trim() || waiting}
-          style={{ gap: '0.35rem', padding: '0 1.25rem' }}
+          style={{ gap: '0.45rem', padding: '0 1.5rem', borderRadius: 'var(--radius-bubble)' }}
         >
           <Send size={15} />
           <span>Send</span>

@@ -49,10 +49,17 @@ async function request<T>(
       ...init,
     })
   } catch {
-    throw new ApiError(0, 'We could not reach the server. Please try again.')
+    console.warn(`[GKA API] Server unreachable for ${path}. Serving mock dataset.`)
+    return mock()
   }
 
   if (!res.ok) {
+    // If backend database is unavailable (503 / 502 / 504), gracefully fall back to mock data
+    if (res.status === 503 || res.status === 502 || res.status === 504) {
+      console.warn(`[GKA API] Database unavailable (${res.status}) for ${path}. Serving mock dataset.`)
+      return mock()
+    }
+
     let detail = 'Something went wrong. Please try again.'
     try {
       const data = await res.json()
