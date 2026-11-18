@@ -4,39 +4,42 @@ import { ArrowRight, AlertCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { BrandIcon } from '../../components/BrandIcon'
 import { GithubIcon } from '../../components/GithubIcon'
+import { GitHubLoginModal } from '../../components/GitHubLoginModal'
 import { ThemeToggle } from '../../components/ThemeToggle'
+import { useAuth } from '../../context/AuthContext'
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate()
+  const { registerWithCredentials } = useAuth()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [oauthLoading, setOauthLoading] = useState(false)
+  const [showGithubModal, setShowGithubModal] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name || !email || !password) {
+    if (!name || !email) {
       setError('Please fill in all registration fields.')
       return
     }
 
     setLoading(true)
     setError(null)
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      await registerWithCredentials(name, email, password)
       navigate('/')
-    }, 600)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Could not create account.'
+      setError(msg)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleGitHubOAuth = () => {
-    setOauthLoading(true)
-    setError(null)
-    setTimeout(() => {
-      setOauthLoading(false)
-      navigate('/')
-    }, 700)
+    setShowGithubModal(true)
   }
 
   return (
@@ -177,11 +180,11 @@ export const RegisterPage: React.FC = () => {
             type="button"
             className="btn btn-secondary"
             onClick={handleGitHubOAuth}
-            disabled={oauthLoading || loading}
+            disabled={loading}
             style={{ width: '100%', marginBottom: '1.25rem', justifyContent: 'center' }}
           >
             <GithubIcon size={16} />
-            <span>{oauthLoading ? 'Connecting to GitHub...' : 'Sign up with GitHub'}</span>
+            <span>Sign up with GitHub</span>
           </button>
 
           <div
@@ -274,6 +277,13 @@ export const RegisterPage: React.FC = () => {
           </Link>
         </div>
       </div>
+
+      <GitHubLoginModal
+        isOpen={showGithubModal}
+        onClose={() => setShowGithubModal(false)}
+        onSuccess={() => navigate('/')}
+        mode="signup"
+      />
     </div>
   )
 }

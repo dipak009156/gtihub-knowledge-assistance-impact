@@ -4,39 +4,41 @@ import { ArrowRight, AlertCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { BrandIcon } from '../../components/BrandIcon'
 import { GithubIcon } from '../../components/GithubIcon'
+import { GitHubLoginModal } from '../../components/GitHubLoginModal'
 import { ThemeToggle } from '../../components/ThemeToggle'
+import { useAuth } from '../../context/AuthContext'
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate()
+  const { loginWithCredentials } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [oauthLoading, setOauthLoading] = useState(false)
+  const [showGithubModal, setShowGithubModal] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email || !password) {
-      setError('Please provide both your email address and password.')
+    if (!email) {
+      setError('Please provide your email address.')
       return
     }
 
     setLoading(true)
     setError(null)
-    // Simulate secure developer session
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      await loginWithCredentials(email, password)
       navigate('/')
-    }, 600)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Login failed.'
+      setError(msg)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleGitHubOAuth = () => {
-    setOauthLoading(true)
-    setError(null)
-    setTimeout(() => {
-      setOauthLoading(false)
-      navigate('/')
-    }, 700)
+    setShowGithubModal(true)
   }
 
   return (
@@ -177,11 +179,11 @@ export const LoginPage: React.FC = () => {
             type="button"
             className="btn btn-secondary"
             onClick={handleGitHubOAuth}
-            disabled={oauthLoading || loading}
+            disabled={loading}
             style={{ width: '100%', marginBottom: '1.25rem', justifyContent: 'center' }}
           >
             <GithubIcon size={16} />
-            <span>{oauthLoading ? 'Connecting to GitHub...' : 'Continue with GitHub'}</span>
+            <span>Continue with GitHub</span>
           </button>
 
           <div
@@ -270,6 +272,13 @@ export const LoginPage: React.FC = () => {
           </Link>
         </div>
       </div>
+
+      <GitHubLoginModal
+        isOpen={showGithubModal}
+        onClose={() => setShowGithubModal(false)}
+        onSuccess={() => navigate('/')}
+        mode="login"
+      />
     </div>
   )
 }
