@@ -159,3 +159,89 @@ def test_graph_uncertain_edge(db_session, tmp_path):
     edges = db_session.query(Edge).filter(Edge.repo_id == repo.id).all()
     assert len(edges) == 1
     assert edges[0].certainty == "uncertain"
+
+
+def test_graph_class_inheritance(db_session, tmp_path):
+    repo = Repo(
+        url="https://github.com/example/inheritance-test",
+        owner="example",
+        name="inheritance-test",
+        status="ready",
+    )
+    db_session.add(repo)
+    db_session.commit()
+    db_session.refresh(repo)
+
+    file_code = (
+        "class BaseHandler:\n"
+        "    def process(self):\n"
+        "        pass\n\n"
+        "class CustomHandler(BaseHandler):\n"
+        "    def handle(self):\n"
+        "        self.process()\n"
+    )
+    (tmp_path / "handler.py").write_text(file_code)
+
+    parse_repo(repo.id, tmp_path, session=db_session)
+    build_graph(repo.id, session=db_session, repo_path=tmp_path)
+
+    symbols = {
+        s.qualified_name: s
+        for s in db_session.query(Symbol).filter(Symbol.repo_id == repo.id).all()
+    }
+    handle_sym = symbols["CustomHandler.handle"]
+    process_sym = symbols["BaseHandler.process"]
+
+    edges = db_session.query(Edge).filter(Edge.repo_id == repo.id).all()
+    edge = next(
+        (
+            e
+            for e in edges
+            if e.caller_id == handle_sym.id and e.callee_id == process_sym.id
+        ),
+        None,
+    )
+    assert edge is not None
+    assert edge.certainty == "certain"
+
+
+def test_graph_relative_import(db_session, tmp_path):
+    repo = Repo(
+        url="https://github.com/example/relimport-test",
+        owner="example",
+        name="relimport-test",
+        status="ready",
+    )
+    db_session.add(repo)
+    db_session.commit()
+    db_session.refresh(repo)
+
+    pkg_dir = tmp_path / "pkg"
+    pkg_dir.mkdir()
+    (pkg_dir / "__init__.py").write_text("")
+    (pkg_dir / "utils.py").write_text("def helper():\n    return 42\n")
+    (pkg_dir / "service.py").write_text(
+        "from .utils import helper\n\ndef run():\n    return helper()\n"
+    )
+
+    parse_repo(repo.id, tmp_path, session=db_session)
+    build_graph(repo.id, session=db_session, repo_path=tmp_path)
+
+    symbols = {
+        s.qualified_name: s
+        for s in db_session.query(Symbol).filter(Symbol.repo_id == repo.id).all()
+    }
+    run_sym = symbols["run"]
+    helper_sym = symbols["helper"]
+
+    edges = db_session.query(Edge).filter(Edge.repo_id == repo.id).all()
+    edge = next(
+        (
+            e
+            for e in edges
+            if e.caller_id == run_sym.id and e.callee_id == helper_sym.id
+        ),
+        None,
+    )
+    assert edge is not None
+    assert edge.certainty == "certain"

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.db.models import Edge, File, Symbol
 from app.db.session import SessionLocal
 from app.graph.calls import find_calls
+from app.ingest.cloner import get_repo_dir
 
 
 def _find_matching_file(module_name: str, file_by_path: dict[str, File]) -> File | None:
@@ -15,14 +16,16 @@ def _find_matching_file(module_name: str, file_by_path: dict[str, File]) -> File
     target_init = "/".join(parts) + "/__init__.py"
 
     for path, f in file_by_path.items():
-        if path in (target_py, target_init) or path.endswith(
+        norm_p = path.replace("\\", "/")
+        if norm_p in (target_py, target_init) or norm_p.endswith(
             ("/" + target_py, "/" + target_init)
         ):
             return f
     # Fallback: if module is just 'utils', match 'utils.py' filename
     last_name = parts[-1] + ".py"
     for path, f in file_by_path.items():
-        if path == last_name or path.endswith("/" + last_name):
+        norm_p = path.replace("\\", "/")
+        if norm_p == last_name or norm_p.endswith("/" + last_name):
             return f
     return None
 
@@ -64,7 +67,7 @@ def build_graph(
         imports_per_file: dict[int, dict[str, int]] = {}
 
         if repo_path is None:
-            base_path = Path("/tmp/gka") / str(repo_id)
+            base_path = get_repo_dir(repo_id)
         else:
             base_path = Path(repo_path)
 
@@ -96,8 +99,24 @@ def build_graph(
                 continue
 
             for node in ast.walk(tree):
-                if isinstance(node, ast.ImportFrom) and node.module:
-                    target_file = _find_matching_file(node.module, file_by_path)
+                if isinstance(node, ast.ImportFrom):
+                    target_file = None
+                    if node.level and node.level > 0:
+                        norm_path = f.path.replace("\\", "/")
+                        parts = norm_path.split("/")[:-1]
+                        slice_len = len(parts) - (node.level - 1)
+                        if slice_len >= 0:
+                            dir_parts = parts[:slice_len]
+                            mod_parts = node.module.split(".") if node.module else []
+                            rel_parts = dir_parts + mod_parts
+                            if rel_parts:
+                                rel_module = ".".join(rel_parts)
+                                target_file = _find_matching_file(
+                                    rel_module, file_by_path
+                                )
+                    elif node.module:
+                        target_file = _find_matching_file(node.module, file_by_path)
+
                     if target_file and target_file.id in by_file_and_name:
                         for alias in node.names:
                             bound_name = alias.asname or alias.name
@@ -123,6 +142,35 @@ def build_graph(
         symbols_by_file_and_line: dict[tuple[int, int, str], Symbol] = {}
         for sym in all_symbols:
             symbols_by_file_and_line[(sym.file_id, sym.start_line, sym.name)] = sym
+
+        class_bases: dict[int, list[str]] = {}
+        for f in all_files:
+            tree = file_trees.get(f.id)
+            if not tree:
+                continue
+            for node in ast.walk(tree):
+                if isinstance(node, ast.ClassDef):
+                    class_sym = symbols_by_file_and_line.get(
+                        (f.id, node.lineno, node.name)
+                    )
+                    if not class_sym:
+                        matches = [
+                            s
+                            for s in all_symbols
+                            if s.file_id == f.id
+                            and s.name == node.name
+                            and s.kind == "class"
+                        ]
+                        if matches:
+                            class_sym = matches[0]
+                    if class_sym:
+                        base_ids = []
+                        for b in node.bases:
+                            if isinstance(b, ast.Name):
+                                base_ids.append(b.id)
+                            elif isinstance(b, ast.Attribute):
+                                base_ids.append(b.attr)
+                        class_bases[class_sym.id] = base_ids
 
         edges_to_insert: list[dict] = []
         seen_edges: set[tuple[int, int, int]] = set()
@@ -194,11 +242,27 @@ def build_graph(
                             )
                         continue
 
-                    # 3. self call, method exists in the same class -> certain
+                    # 3. self call, method exists in the same class or inherited from base class -> certain
                     if call_type == "self" and caller_sym.parent_id:
                         method_key = (caller_sym.parent_id, target_name)
-                        if method_key in by_class_method:
-                            callee_id = by_class_method[method_key]
+                        callee_id = by_class_method.get(method_key)
+                        if not callee_id and caller_sym.parent_id in class_bases:
+                            for base_name in class_bases[caller_sym.parent_id]:
+                                base_class_id = (
+                                    by_file_and_name.get(f.id, {}).get(base_name)
+                                    or imports_per_file.get(f.id, {}).get(base_name)
+                                    or (by_name.get(base_name, [None])[0])
+                                )
+                                if (
+                                    base_class_id
+                                    and (base_class_id, target_name) in by_class_method
+                                ):
+                                    callee_id = by_class_method[
+                                        (base_class_id, target_name)
+                                    ]
+                                    break
+
+                        if callee_id:
                             key = (caller_sym.id, callee_id, line_no)
                             if key not in seen_edges:
                                 seen_edges.add(key)

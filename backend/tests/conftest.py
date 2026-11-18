@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import create_engine
-from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
@@ -58,6 +58,11 @@ def compile_tsvector_sqlite(type_, compiler, **kw):
 
 @compiles(Vector, "sqlite")
 def compile_vector_sqlite(type_, compiler, **kw):
+    return "JSON"
+
+
+@compiles(JSONB, "sqlite")
+def compile_jsonb_sqlite(type_, compiler, **kw):
     return "JSON"
 
 
