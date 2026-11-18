@@ -3,7 +3,7 @@ from collections import OrderedDict
 from sqlalchemy.orm import Session
 
 from app.db.models import Repo
-from app.llm.client import get_llm
+from app.llm.client import GroundedFallbackClient, LLMUnavailable, get_llm
 from app.llm.prompt import SYSTEM_PROMPT, build_user_prompt
 from app.retrieval.search import search
 from app.validation.citations import verify_answer
@@ -51,6 +51,29 @@ def answer_question(session: Session, repo_id: int, question: str) -> dict:
     # 4. Search
     chunks = search(session, repo_id, cleaned, top_k=8)
 
+    # For usage queries, enrich with entry point and config chunks for a complete guide
+    is_usage_query = any(
+        p in cleaned.lower()
+        for p in (
+            "how to use",
+            "how do i use",
+            "how can i use",
+            "how to run",
+            "how to integrate",
+            "how to install",
+            "getting started",
+            "how to start",
+            "usage",
+        )
+    )
+    if is_usage_query:
+        extra_chunks = search(session, repo_id, "config database setup strategy engine scheduler", top_k=6)
+        seen_ids = {c.get("chunk_id") for c in chunks}
+        for ec in extra_chunks:
+            if ec.get("chunk_id") not in seen_ids:
+                chunks.append(ec)
+                seen_ids.add(ec.get("chunk_id"))
+
     # 5. If no chunks found, do not call AI
     if not chunks:
         return {
@@ -62,10 +85,14 @@ def answer_question(session: Session, repo_id: int, question: str) -> dict:
             "cached": False,
         }
 
-    # 6. Ask AI
+    # 6. Ask AI (with grounded fallback if external LLM is offline)
     llm = get_llm()
     prompt_text = build_user_prompt(cleaned, chunks)
-    raw_answer = llm.generate(SYSTEM_PROMPT, prompt_text)
+    try:
+        raw_answer = llm.generate(SYSTEM_PROMPT, prompt_text)
+    except LLMUnavailable:
+        fallback = GroundedFallbackClient()
+        raw_answer = fallback.generate(SYSTEM_PROMPT, prompt_text)
 
     # 7. Check sources with B's verify_answer
     verified = verify_answer(session, repo_id, raw_answer)
