@@ -55,8 +55,10 @@ export const HotspotsPage: React.FC = () => {
   const sortedList = useMemo(() => {
     const list = [...hotspots]
     list.sort((a, b) => {
-      const valA: any = a[sortCol === 'rank' ? 'score' : sortCol]
-      const valB: any = b[sortCol === 'rank' ? 'score' : sortCol]
+      const rawValA = a[sortCol === 'rank' ? 'score' : sortCol]
+      const rawValB = b[sortCol === 'rank' ? 'score' : sortCol]
+      const valA = typeof rawValA === 'number' && !isNaN(rawValA) ? rawValA : 0
+      const valB = typeof rawValB === 'number' && !isNaN(rawValB) ? rawValB : 0
 
       if (sortCol === 'path') {
         return sortDir === 'asc'
@@ -166,7 +168,8 @@ export const HotspotsPage: React.FC = () => {
           </thead>
           <tbody>
             {sortedList.map((h, index) => {
-              const isHigh = h.score > 0.7
+              const score = typeof h.score === 'number' && !isNaN(h.score) ? h.score : 0
+              const isHigh = score > 0.7
               return (
                 <tr key={h.path}>
                   <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
@@ -196,7 +199,7 @@ export const HotspotsPage: React.FC = () => {
                       >
                         <div
                           style={{
-                            width: `${Math.round(h.score * 100)}%`,
+                            width: `${Math.round(score * 100)}%`,
                             height: '100%',
                             background: isHigh ? 'var(--danger)' : 'var(--warn)',
                             borderRadius: '3px',
@@ -211,7 +214,7 @@ export const HotspotsPage: React.FC = () => {
                           color: isHigh ? 'var(--danger)' : 'var(--text)',
                         }}
                       >
-                        {h.score.toFixed(2)}
+                        {score.toFixed(2)}
                       </span>
                     </div>
                   </td>

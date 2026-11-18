@@ -15,7 +15,7 @@ def get_repo_hotspots(
     repo_id: int,
     db: Annotated[Session, Depends(get_db)],
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
-    sort: Annotated[str, Query(pattern="^(changes|connections)$")] = "changes",
+    sort: Annotated[str, Query(pattern="^(changes|connections|score)$")] = "changes",
 ):
     repo = db.query(Repo).filter(Repo.id == repo_id).first()
     if not repo:

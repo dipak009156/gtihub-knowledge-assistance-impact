@@ -37,7 +37,7 @@ def cochange_details_for_file(
     total_commits = len(ids)
     rows = session.execute(
         select(CommitFile.path, func.count())
-        .where(CommitFile.commit_id.in_(ids), CommitFile.path != path)
+        .where(CommitFile.commit_id.in_(q), CommitFile.path != path)
         .group_by(CommitFile.path)
     ).all()
 
@@ -104,25 +104,37 @@ def top_files(
         if callee_fid and callee_fid in file_id_to_path:
             connections_map[file_id_to_path[callee_fid]].add(idx)
 
+    max_changes = max((changes_map.get(p, 0) for p in file_paths), default=0) or 1
+    max_connections = (
+        max((len(connections_map.get(p, set())) for p in file_paths), default=0) or 1
+    )
+
     hotspots: list[dict] = []
     for path in file_paths:
         changes = changes_map.get(path, 0)
         connections = len(connections_map.get(path, set()))
+        norm_c = changes / max_changes if max_changes > 0 else 0.0
+        norm_conn = connections / max_connections if max_connections > 0 else 0.0
+        score = round(min(1.0, max(0.0, 0.6 * norm_c + 0.4 * norm_conn)), 2)
         hotspots.append(
             {
                 "path": path,
                 "changes": changes,
                 "connections": connections,
+                "score": score,
             }
         )
 
-    sort_key = "connections" if sort == "connections" else "changes"
+    if sort == "connections":
+        sort_key = "connections"
+    elif sort == "score":
+        sort_key = "score"
+    else:
+        sort_key = "changes"
+
     hotspots.sort(
-        key=lambda item: (item[sort_key], item["path"]),
+        key=lambda item: (item[sort_key], item["changes"], item["connections"]),
         reverse=True,
     )
-
-    # Secondary tie breaker: alphabetical path ascending if same count
-    hotspots.sort(key=lambda item: item[sort_key], reverse=True)
 
     return hotspots[:limit]
