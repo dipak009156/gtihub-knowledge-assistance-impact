@@ -1,5 +1,5 @@
 from app.db.models import Edge, File, Repo, Symbol
-from app.impact.engine import calculate_impact, rank_files
+from app.impact.engine import calculate_diff_impact, calculate_impact, rank_files
 
 
 def test_impact_pay_graph(fake_project, db_session):
@@ -183,3 +183,60 @@ def test_impact_endpoint(client, fake_project):
     unknown_sym = client.get(f"/api/repos/{repo_id}/impact?symbol_id=999999")
     assert unknown_sym.status_code == 404
     assert "Function not found" in unknown_sym.json()["detail"]
+
+
+def test_impact_with_custom_weights(fake_project, db_session, client):
+    repo_id = fake_project["repo"].id
+    pay_id = fake_project["symbols"]["pay"].id
+
+    impact = calculate_impact(
+        db_session,
+        repo_id,
+        symbol_id=pay_id,
+        depth=3,
+        variant="combined",
+        weight_graph=0.9,
+        weight_history=0.1,
+    )
+    assert impact is not None
+    checkout_res = next(r for r in impact["results"] if r["name"] == "checkout")
+    assert checkout_res["score"] >= 0.8
+
+    resp = client.get(
+        f"/api/repos/{repo_id}/impact?symbol_id={pay_id}&weight_graph=0.8&weight_history=0.2"
+    )
+    assert resp.status_code == 200
+    assert "results" in resp.json()
+
+
+def test_diff_impact_analysis(fake_project, db_session, client):
+    repo_id = fake_project["repo"].id
+
+    diff_res = calculate_diff_impact(
+        session=db_session,
+        repo_id=repo_id,
+        changed_files=[{"path": "pay.py", "lines": [1, 2, 3]}],
+        depth=3,
+        variant="combined",
+    )
+    assert diff_res["depth"] == 3
+    assert "pay.py" in diff_res["target_files"]
+    assert len(diff_res["target_symbols"]) >= 1
+    assert "summary" in diff_res
+    assert diff_res["summary"]["total_impacted_symbols"] >= 1
+
+    resp = client.post(
+        f"/api/repos/{repo_id}/impact/diff",
+        json={
+            "changed_files": [{"path": "pay.py", "lines": [1, 2]}],
+            "depth": 2,
+            "variant": "combined",
+            "weight_graph": 0.7,
+            "weight_history": 0.3,
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["depth"] == 2
+    assert "summary" in data
+    assert "results" in data

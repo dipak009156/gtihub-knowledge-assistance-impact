@@ -53,6 +53,12 @@ def calculate_impact(
     depth: int = 3,
     variant: str = "combined",
     before: datetime | None = None,
+    weight_graph: float = WEIGHT_GRAPH,
+    weight_history: float = WEIGHT_HISTORY,
+    cached_symbols: list[dict] | None = None,
+    cached_edges: list[dict] | None = None,
+    cached_callers_map: dict[int, list[tuple[int, str]]] | None = None,
+    cached_cochange: dict[str, dict] | None = None,
 ) -> dict | None:
     """Calculate impact analysis for a chosen function symbol."""
     target_sym = (
@@ -67,16 +73,27 @@ def calculate_impact(
     target_file_path = target_file.path if target_file else ""
     target_file_name = Path(target_file_path).name if target_file_path else "file"
 
-    all_symbols_list = load_symbols(session, repo_id)
+    if cached_symbols is not None:
+        all_symbols_list = cached_symbols
+    else:
+        all_symbols_list = load_symbols(session, repo_id)
     sym_dict = {s["id"]: s for s in all_symbols_list}
 
-    edges_list = load_edges(session, repo_id)
-    c_map = callers_map(edges_list)
+    if cached_callers_map is not None:
+        c_map = cached_callers_map
+    else:
+        edges_list = (
+            cached_edges if cached_edges is not None else load_edges(session, repo_id)
+        )
+        c_map = callers_map(edges_list)
 
     found_callers = walk_callers(c_map, symbol_id, depth)
-    cochange_info = cochange_details_for_file(
-        session, repo_id, target_file_path, before=before
-    )
+    if cached_cochange is not None:
+        cochange_info = cached_cochange
+    else:
+        cochange_info = cochange_details_for_file(
+            session, repo_id, target_file_path, before=before
+        )
 
     results: list[dict] = []
     represented_files: set[str] = set()
@@ -107,7 +124,7 @@ def calculate_impact(
         elif variant == "history":
             raw_score = hist_score
         else:  # combined
-            raw_score = WEIGHT_GRAPH * graph_score + WEIGHT_HISTORY * hist_score
+            raw_score = weight_graph * graph_score + weight_history * hist_score
 
         score = round(raw_score, 2)
         level = "high" if score >= HIGH else ("medium" if score >= MEDIUM else "low")
@@ -157,7 +174,7 @@ def calculate_impact(
             elif variant == "history":
                 raw_score = hist_score
             else:
-                raw_score = WEIGHT_HISTORY * hist_score
+                raw_score = weight_history * hist_score
 
             score = round(raw_score, 2)
             level = (
@@ -210,6 +227,11 @@ def rank_files(
     depth: int = 3,
     variant: str = "combined",
     before: datetime | None = None,
+    weight_graph: float = WEIGHT_GRAPH,
+    weight_history: float = WEIGHT_HISTORY,
+    cached_symbols: list[dict] | None = None,
+    cached_edges: list[dict] | None = None,
+    cached_callers_map: dict[int, list[tuple[int, str]]] | None = None,
 ) -> list[str]:
     """Rank all other affected files for a given changed file."""
     # Symbols in this file
@@ -227,6 +249,20 @@ def rank_files(
         .all()
     )
 
+    if cached_symbols is None:
+        cached_symbols = load_symbols(session, repo_id)
+    if cached_callers_map is None:
+        edges = (
+            cached_edges if cached_edges is not None else load_edges(session, repo_id)
+        )
+        cached_callers_map = callers_map(edges)
+
+    cochange_info = (
+        cochange_details_for_file(session, repo_id, file_path, before=before)
+        if variant in ("history", "combined")
+        else {}
+    )
+
     best_score_per_file: dict[str, float] = {}
 
     for sym in symbols:
@@ -237,6 +273,11 @@ def rank_files(
             depth=depth,
             variant=variant,
             before=before,
+            weight_graph=weight_graph,
+            weight_history=weight_history,
+            cached_symbols=cached_symbols,
+            cached_callers_map=cached_callers_map,
+            cached_cochange=cochange_info,
         )
         if not impact:
             continue
@@ -249,15 +290,12 @@ def rank_files(
 
     # Also include cochange files directly if variant uses history
     if variant in ("history", "combined"):
-        cochange_info = cochange_details_for_file(
-            session, repo_id, file_path, before=before
-        )
         for other_path, info in cochange_info.items():
             if other_path != file_path and info["strength"] >= HISTORY_ONLY_MIN:
                 h_score = (
                     info["strength"]
                     if variant == "history"
-                    else (WEIGHT_HISTORY * info["strength"])
+                    else (weight_history * info["strength"])
                 )
                 best_score_per_file[other_path] = max(
                     best_score_per_file.get(other_path, 0.0), round(h_score, 2)
@@ -269,3 +307,108 @@ def rank_files(
         key=lambda fp: (-best_score_per_file[fp], fp),
     )
     return sorted_files
+
+
+def calculate_diff_impact(
+    session: Session,
+    repo_id: int,
+    changed_files: list[dict],
+    depth: int = 3,
+    variant: str = "combined",
+    weight_graph: float = WEIGHT_GRAPH,
+    weight_history: float = WEIGHT_HISTORY,
+) -> dict:
+    """Calculate aggregate blast radius across multiple files and modified lines (e.g. from a PR or git diff)."""
+    cached_symbols = load_symbols(session, repo_id)
+    edges = load_edges(session, repo_id)
+    cached_callers_map = callers_map(edges)
+
+    symbols_by_file_path: dict[str, list[dict]] = defaultdict(list)
+    for s in cached_symbols:
+        symbols_by_file_path[s["file_path"]].append(s)
+
+    target_symbols: list[dict] = []
+    target_files_set: set[str] = set()
+
+    for item in changed_files:
+        f_path = item.get("path", "").lstrip("/")
+        lines = item.get("lines", [])
+        target_files_set.add(f_path)
+        file_syms = symbols_by_file_path.get(f_path, [])
+
+        if lines:
+            for s in file_syms:
+                if any(s["start_line"] <= ln <= s["end_line"] for ln in lines):
+                    target_symbols.append(s)
+        else:
+            target_symbols.extend(file_syms)
+
+    best_impact_by_key: dict[tuple[str, str], dict] = {}
+
+    for sym in target_symbols:
+        cochange_info = (
+            cochange_details_for_file(session, repo_id, sym["file_path"])
+            if variant in ("history", "combined")
+            else {}
+        )
+
+        res = calculate_impact(
+            session=session,
+            repo_id=repo_id,
+            symbol_id=sym["id"],
+            depth=depth,
+            variant=variant,
+            weight_graph=weight_graph,
+            weight_history=weight_history,
+            cached_symbols=cached_symbols,
+            cached_callers_map=cached_callers_map,
+            cached_cochange=cochange_info,
+        )
+        if not res:
+            continue
+
+        for it in res["results"]:
+            key = (it["kind"], it["qualified_name"])
+            if key not in best_impact_by_key:
+                best_impact_by_key[key] = dict(it)
+            else:
+                existing = best_impact_by_key[key]
+                if it["score"] > existing["score"]:
+                    existing["score"] = it["score"]
+                    existing["level"] = it["level"]
+                for r in it["reasons"]:
+                    if r not in existing["reasons"]:
+                        existing["reasons"].append(r)
+
+    all_results = sorted(
+        best_impact_by_key.values(), key=lambda x: (-x["score"], x["name"])
+    )
+    high_risk_count = sum(1 for r in all_results if r["level"] == "high")
+    medium_risk_count = sum(1 for r in all_results if r["level"] == "medium")
+    impacted_files = sorted(
+        {r["file_path"] for r in all_results if r["file_path"] not in target_files_set}
+    )
+
+    return {
+        "depth": depth,
+        "variant": variant,
+        "target_files": sorted(target_files_set),
+        "target_symbols": [
+            {
+                "id": s["id"],
+                "name": s["name"],
+                "qualified_name": s["qualified_name"],
+                "file_path": s["file_path"],
+                "start_line": s["start_line"],
+            }
+            for s in target_symbols
+        ],
+        "summary": {
+            "total_impacted_symbols": len(all_results),
+            "total_impacted_files": len(impacted_files),
+            "high_risk_count": high_risk_count,
+            "medium_risk_count": medium_risk_count,
+        },
+        "impacted_files": impacted_files,
+        "results": all_results[:MAX_RESULTS],
+    }
