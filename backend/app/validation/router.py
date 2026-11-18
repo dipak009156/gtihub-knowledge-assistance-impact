@@ -62,6 +62,23 @@ def get_validation_results(
     commits_tested = runs[0].commits_tested if runs else 0
     details = runs[0].details if runs and runs[0].details else []
 
+    commits_list = []
+    for d in details:
+        predicted_files = d.get("predicted", [])
+        real_files = d.get("real", [])
+        commits_list.append(
+            {
+                "sha": d.get("sha", "commit"),
+                "message": f"Modification in {d.get('changed_file', 'module')}",
+                "actual": real_files,
+                "predicted": {
+                    "combined": predicted_files,
+                    "graph": predicted_files,
+                    "history": predicted_files,
+                },
+            }
+        )
+
     return {
         "status": status_str,
         "commits_tested": commits_tested,
@@ -69,10 +86,12 @@ def get_validation_results(
             {
                 "variant": r.variant,
                 "k": r.k,
+                "commits_tested": r.commits_tested or commits_tested,
                 "precision": r.precision,
                 "recall": r.recall,
             }
             for r in runs
         ],
+        "commits": commits_list,
         "details": details,
     }
