@@ -110,7 +110,12 @@ export const ProgressPage: React.FC = () => {
   }
 
   const status = repo?.status || 'queued'
-  const stepIndex = status === 'ready' ? 3 : status === 'cloning' ? 2 : 1
+  const stepIndex =
+    status === 'ready'
+      ? 3
+      : status === 'cloning' || status === 'parsing' || status === 'analyzing'
+      ? 2
+      : 1
 
   return (
     <div className="blueprint-section" style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
@@ -368,7 +373,25 @@ export const ProgressPage: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
                 <span className="spinner" />
                 <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text)', fontWeight: 500 }}>
-                  Cloning repository, parsing AST definitions, and constructing call graphs...
+                  Cloning repository, fetching commits and files...
+                </p>
+              </div>
+            )}
+
+            {status === 'parsing' && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
+                <span className="spinner" />
+                <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text)', fontWeight: 500 }}>
+                  Parsing AST definitions, extracting symbols, and constructing call graphs...
+                </p>
+              </div>
+            )}
+
+            {status === 'analyzing' && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
+                <span className="spinner" />
+                <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text)', fontWeight: 500 }}>
+                  Analyzing commit history, co-change hotspots, and indexing knowledge...
                 </p>
               </div>
             )}
@@ -389,7 +412,8 @@ export const ProgressPage: React.FC = () => {
                   <span style={{ fontWeight: 600 }}>Analysis failed to complete</span>
                 </div>
                 <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                  We could not parse this repository. Please confirm the project is public and contains valid Python files.
+                  {repo?.error_message ||
+                    'We could not parse this repository. Please confirm the project is public and contains valid Python files.'}
                 </p>
               </div>
             )}

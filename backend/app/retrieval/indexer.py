@@ -1,9 +1,8 @@
-from pathlib import Path
-
 from sqlalchemy.orm import Session
 
 from app.db.models import Chunk, File, Symbol
 from app.db.session import SessionLocal
+from app.ingest.cloner import get_repo_dir
 from app.retrieval.chunker import chunk_file
 from app.retrieval.embedder import embed
 
@@ -46,7 +45,7 @@ def index(repo_id: int, session: Session | None = None) -> None:
                 }
             )
 
-        disk_base = Path("/tmp/gka") / str(repo_id)
+        disk_base = get_repo_dir(repo_id)
 
         for f in files:
             content: str | None = None

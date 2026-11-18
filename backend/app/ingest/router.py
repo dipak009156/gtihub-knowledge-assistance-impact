@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
@@ -8,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.db.models import Commit, Edge, File, Repo, Symbol
 from app.db.session import get_db
+from app.ingest.cloner import get_repo_dir
 from app.ingest.service import run_pipeline
 from app.ingest.url import parse_github_url
 
@@ -167,7 +167,7 @@ def get_repo_file(repo_id: int, file_id: int, db: Annotated[Session, Depends(get
         .all()
     )
     content = getattr(f, "content", "") or ""
-    disk_path = Path("/tmp/gka") / str(repo_id) / f.path
+    disk_path = get_repo_dir(repo_id) / f.path
     if not content and not disk_path.exists():
         try:
             from app.ingest.cloner import clone_repo
@@ -223,7 +223,7 @@ def get_repo_file_by_path(
         )
 
     content = getattr(f, "content", "") or ""
-    disk_path = Path("/tmp/gka") / str(repo_id) / f.path
+    disk_path = get_repo_dir(repo_id) / f.path
     if not content and not disk_path.exists():
         try:
             from app.ingest.cloner import clone_repo

@@ -1,3 +1,4 @@
+import logging
 import subprocess
 
 from app.db.models import Repo
@@ -5,6 +6,8 @@ from app.db.session import SessionLocal
 from app.graph.service import build_graph
 from app.ingest.cloner import clone_repo, delete_clone
 from app.parser.service import parse_repo
+
+logger = logging.getLogger(__name__)
 
 
 def set_status(repo_id: int, status: str, error_message: str | None = None) -> None:
@@ -41,7 +44,10 @@ def run_pipeline(repo_id: int) -> None:
         except (ImportError, AttributeError):
             pass
 
-        # Task D handoff
+        # Ready immediately for browsing, overview, graph, hotspots, and impact
+        set_status(repo_id, "ready")
+
+        # Task D handoff (knowledge chunking & embedding)
         try:
             from app.retrieval import index as retrieval_index
 
@@ -49,18 +55,17 @@ def run_pipeline(repo_id: int) -> None:
         except (ImportError, AttributeError):
             pass
 
-        set_status(repo_id, "ready")
-
     except subprocess.TimeoutExpired:
         set_status(repo_id, "error", "The download took too long.")
     except subprocess.CalledProcessError:
         set_status(
             repo_id, "error", "We could not download this project. Is it public?"
         )
-    except Exception:  # noqa: BLE001
+    except Exception as exc:
+        logger.exception("Error during pipeline execution for repo %s", repo_id)
         set_status(
             repo_id,
             "error",
-            "Something went wrong while analysing this project.",
+            f"Something went wrong while analysing this project: {exc}",
         )
         delete_clone(repo_id)

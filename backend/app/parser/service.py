@@ -65,9 +65,9 @@ def parse_repo(
 
                 line_count = len(text.splitlines())
                 try:
-                    rel_path = str(file_path.relative_to(root_path))
+                    rel_path = file_path.relative_to(root_path).as_posix()
                 except ValueError:
-                    rel_path = fname
+                    rel_path = Path(fname).as_posix()
 
                 file_record = (
                     session.query(File)
