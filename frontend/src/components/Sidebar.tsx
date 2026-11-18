@@ -12,11 +12,13 @@ import {
   ArrowLeft,
   PanelLeftClose,
   PanelLeftOpen,
+  LogOut,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Repo } from '../api/types'
 import { BrandIcon } from './BrandIcon'
 import { StatusBadge } from './StatusBadge'
+import { useAuth } from '../context/AuthContext'
 
 interface SidebarProps {
   repo?: Repo | null
@@ -30,6 +32,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggleCollapse,
 }) => {
   const { id } = useParams<{ id: string }>()
+  const { user, logout } = useAuth()
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   const navItems = [
@@ -193,6 +196,61 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* ── Footer Bubble ── */}
       <div className="sidebar-footer">
+        {user && (
+          <div
+            style={{
+              padding: collapsed ? '0.4rem 0' : '0.45rem 0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: collapsed ? 'center' : 'space-between',
+              gap: '0.5rem',
+              marginBottom: '0.4rem',
+              borderBottom: '1px solid var(--border)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
+              {user.avatar_url && (
+                <img
+                  src={user.avatar_url}
+                  alt={user.username}
+                  style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }}
+                />
+              )}
+              {!collapsed && (
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    color: 'var(--text)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  @{user.username}
+                </span>
+              )}
+            </div>
+            {!collapsed && (
+              <button
+                type="button"
+                onClick={logout}
+                title="Sign out"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-subtle)',
+                  cursor: 'pointer',
+                  padding: '2px',
+                  display: 'flex',
+                }}
+              >
+                <LogOut size={13} />
+              </button>
+            )}
+          </div>
+        )}
+
         <div style={{ position: 'relative' }}>
           <Link
             to="/"

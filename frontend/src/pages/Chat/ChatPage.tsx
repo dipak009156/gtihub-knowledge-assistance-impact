@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   MessageSquareCode,
@@ -10,7 +10,7 @@ import {
   Clock,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { chat } from '../../api/client'
+import { chat, getChatSuggestions } from '../../api/client'
 import type { Source } from '../../api/types'
 import { SourceChip } from '../../components/SourceChip'
 
@@ -26,9 +26,9 @@ interface ChatMessage {
 
 const DEFAULT_SUGGESTIONS = [
   'Where is payment handled?',
-  'What does checkout do?',
-  'Where does the main workflow start?',
-  'What classes manage shopping carts?',
+  'How to use this in my project',
+  'What does this project do?',
+  'What are the API endpoints?',
 ]
 
 export const ChatPage: React.FC = () => {
@@ -40,8 +40,24 @@ export const ChatPage: React.FC = () => {
   const [waiting, setWaiting] = useState(false)
   const [rateLimitWarning, setRateLimitWarning] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_SUGGESTIONS)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Fetch dynamic suggestions tailored to the repo
+  useEffect(() => {
+    if (!repoId) return
+    getChatSuggestions(repoId)
+      .then((res) => {
+        if (res?.questions && res.questions.length > 0) {
+          const combined = Array.from(
+            new Set(['How to use this in my project', ...res.questions, 'What are the API endpoints?'])
+          )
+          setSuggestions(combined)
+        }
+      })
+      .catch(() => {})
+  }, [repoId])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -228,7 +244,7 @@ export const ChatPage: React.FC = () => {
               All claims are cross-checked against exact code lines.
             </p>
 
-            {/* Suggested Question Chips (Clean rounded corners, NO pill buttons) */}
+            {/* Suggested Question Chips */}
             <div
               style={{
                 display: 'flex',
@@ -237,7 +253,7 @@ export const ChatPage: React.FC = () => {
                 justifyContent: 'center',
               }}
             >
-              {DEFAULT_SUGGESTIONS.map((q) => (
+              {suggestions.map((q) => (
                 <button
                   key={q}
                   type="button"
@@ -350,7 +366,7 @@ export const ChatPage: React.FC = () => {
                         </div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                           {msg.sources.map((s, idx) => (
-                            <SourceChip key={`${s.file}-${idx}`} source={s} repoId={repoId} />
+                            <SourceChip key={`${s.file || s.file_path || 'src'}-${idx}`} source={s} repoId={repoId} />
                           ))}
                         </div>
                       </div>
@@ -369,6 +385,34 @@ export const ChatPage: React.FC = () => {
             )
           })
         )}
+
+        {/* Dynamic Follow-Up Suggestions */}
+        {!waiting && messages.length > 0 && messages[messages.length - 1].role === 'assistant' && (
+          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.5rem', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <Sparkles size={12} style={{ color: 'var(--accent)' }} />
+              <span>Suggested follow-up:</span>
+            </span>
+            {suggestions.slice(0, 4).map((q) => (
+              <button
+                key={q}
+                type="button"
+                className="badge badge-neutral"
+                style={{
+                  cursor: 'pointer',
+                  fontSize: '0.75rem',
+                  padding: '0.3rem 0.65rem',
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface-secondary)',
+                }}
+                onClick={() => handleSend(q)}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 

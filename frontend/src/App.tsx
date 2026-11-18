@@ -3,6 +3,8 @@ import React from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { Layout } from './components/Layout'
+import { AuthProvider } from './context/AuthContext'
+import { AuthCallbackPage } from './pages/Auth/AuthCallbackPage'
 import { LoginPage } from './pages/Auth/LoginPage'
 import { RegisterPage } from './pages/Auth/RegisterPage'
 import { ChatPage } from './pages/Chat/ChatPage'
@@ -34,15 +36,17 @@ export const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
-            <Routes>
-              {/* Landing & Public Marketing */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/privacy" element={<PrivacyPage />} />
-              <Route path="/terms" element={<TermsPage />} />
+        <AuthProvider>
+          <QueryClientProvider client={queryClient}>
+            <BrowserRouter>
+              <Routes>
+                {/* Landing & Public Marketing */}
+                <Route path="/" element={<HomePage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
 
               {/* Standalone settings fallback */}
               <Route path="/settings" element={<SettingsPage />} />
@@ -67,8 +71,9 @@ export const App: React.FC = () => {
             </Routes>
           </BrowserRouter>
         </QueryClientProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
+      </AuthProvider>
+    </ThemeProvider>
+  </ErrorBoundary>
   )
 }
 

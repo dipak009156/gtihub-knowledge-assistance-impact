@@ -11,14 +11,18 @@ import {
   Zap,
   MessageSquareCode,
   ArrowRight,
+  Send,
+  Sparkles,
+  Loader2,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { getHotspots, getOverview } from '../../api/client'
-import type { Hotspot, Overview } from '../../api/types'
+import { chat, getHotspots, getOverview } from '../../api/client'
+import type { Hotspot, Overview, Source } from '../../api/types'
 import { CodeLink } from '../../components/CodeLink'
 import { EmptyState } from '../../components/EmptyState'
 import { ErrorBox } from '../../components/ErrorBox'
 import { LoadingBox } from '../../components/LoadingBox'
+import { SourceChip } from '../../components/SourceChip'
 
 export const OverviewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -28,6 +32,37 @@ export const OverviewPage: React.FC = () => {
   const [hotspots, setHotspots] = useState<Hotspot[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Quick AI Assistant state for single-page repository exploration
+  const [chatQuestion, setChatQuestion] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
+  const [chatAnswer, setChatAnswer] = useState<{
+    answer: string
+    sources: Source[]
+    grounded: boolean
+  } | null>(null)
+  const [chatError, setChatError] = useState<string | null>(null)
+
+  const handleAskQuestion = async (qText?: string) => {
+    const q = (qText || chatQuestion).trim()
+    if (!q || !repoId || chatLoading) return
+    setChatLoading(true)
+    setChatError(null)
+    setChatQuestion(q)
+    try {
+      const res = await chat(repoId, q)
+      setChatAnswer({
+        answer: res.answer,
+        sources: res.sources || [],
+        grounded: res.grounded ?? true,
+      })
+    } catch (err: unknown) {
+      const apiErr = err as { message?: string }
+      setChatError(apiErr.message || 'Could not reach AI assistant.')
+    } finally {
+      setChatLoading(false)
+    }
+  }
 
   const loadData = async () => {
     if (!repoId) return
@@ -263,6 +298,131 @@ export const OverviewPage: React.FC = () => {
         </div>
       </div>
 
+      {/* ── Interactive Codebase AI Assistant (Integrated Single-Page Chat) ── */}
+      <div className="card" style={{ padding: '1.5rem', marginBottom: '2.5rem', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: 'var(--accent-subtle)',
+                color: 'var(--accent)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Sparkles size={16} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: 'var(--text)' }}>
+                Ask AI Codebase Assistant
+              </h2>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: 0 }}>
+                Instant answers with AST symbol citations and verified source lines.
+              </p>
+            </div>
+          </div>
+          <Link
+            to={`/repos/${repoId}/chat`}
+            className="btn btn-ghost btn-sm"
+            style={{ gap: '0.35rem', color: 'var(--accent)', fontSize: '0.8125rem' }}
+          >
+            <MessageSquareCode size={14} />
+            <span>Open Dedicated Chat</span>
+            <ArrowRight size={13} />
+          </Link>
+        </div>
+
+        {/* Quick Suggestion Pills */}
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+          {[
+            'What does this project do?',
+            'Where does the main work start?',
+            'What is the most important class?',
+          ].map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              className="badge badge-neutral"
+              style={{ cursor: 'pointer', padding: '0.35rem 0.65rem', border: '1px solid var(--border)' }}
+              onClick={() => handleAskQuestion(suggestion)}
+              disabled={chatLoading}
+            >
+              <span>{suggestion}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Question Input Form */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleAskQuestion()
+          }}
+          style={{ display: 'flex', gap: '0.5rem', marginBottom: chatAnswer || chatError || chatLoading ? '1.25rem' : 0 }}
+        >
+          <input
+            type="text"
+            className="input"
+            placeholder="Ask anything about this repo (e.g. Where is strategy evaluated?)..."
+            value={chatQuestion}
+            onChange={(e) => setChatQuestion(e.target.value)}
+            disabled={chatLoading}
+            style={{ flex: 1 }}
+          />
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={chatLoading || !chatQuestion.trim()}
+            style={{ minWidth: '95px', justifyContent: 'center', gap: '0.4rem' }}
+          >
+            {chatLoading ? <Loader2 size={15} className="spinner" /> : <Send size={15} />}
+            <span>{chatLoading ? 'Thinking' : 'Ask'}</span>
+          </button>
+        </form>
+
+        {/* Chat Answer Box */}
+        {chatError && (
+          <div style={{ padding: '0.75rem', borderRadius: 'var(--radius)', background: 'var(--danger-bg)', color: 'var(--danger)', fontSize: '0.8125rem', marginTop: '1rem' }}>
+            {chatError}
+          </div>
+        )}
+
+        {chatAnswer && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{
+              padding: '1.25rem',
+              borderRadius: 'var(--radius)',
+              background: 'var(--surface-subtle)',
+              border: '1px solid var(--border)',
+              marginTop: '1rem',
+            }}
+          >
+            <div style={{ fontSize: '0.875rem', lineHeight: 1.6, color: 'var(--text)', whiteSpace: 'pre-line', marginBottom: '0.75rem' }}>
+              {chatAnswer.answer}
+            </div>
+
+            {chatAnswer.sources && chatAnswer.sources.length > 0 && (
+              <div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
+                  Verified AST Citations:
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                  {chatAnswer.sources.map((s, idx) => (
+                    <SourceChip key={idx} source={s} repoId={repoId} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </div>
+
       {/* Top 5 Hotspot Files Preview */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem' }}>
@@ -296,47 +456,51 @@ export const OverviewPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {hotspots.map((h) => (
-                  <tr key={h.path}>
-                    <td>
-                      <CodeLink file={h.path} repoId={repoId}>
-                        {h.path}
-                      </CodeLink>
-                    </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}>
-                      {h.changes}
-                    </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}>
-                      {h.connections}
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div
-                          style={{
-                            flex: 1,
-                            maxWidth: '120px',
-                            height: '6px',
-                            backgroundColor: 'var(--surface-subtle)',
-                            borderRadius: '3px',
-                            overflow: 'hidden',
-                          }}
-                        >
+                {hotspots.map((h) => {
+                  const score = typeof h.score === 'number' && !isNaN(h.score) ? h.score : 0
+                  const isHigh = score > 0.7
+                  return (
+                    <tr key={h.path}>
+                      <td>
+                        <CodeLink file={h.path} repoId={repoId}>
+                          {h.path}
+                        </CodeLink>
+                      </td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}>
+                        {h.changes}
+                      </td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}>
+                        {h.connections}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <div
                             style={{
-                              width: `${Math.round(h.score * 100)}%`,
-                              height: '100%',
-                              backgroundColor: h.score > 0.7 ? 'var(--danger)' : 'var(--warn)',
+                              flex: 1,
+                              maxWidth: '120px',
+                              height: '6px',
+                              backgroundColor: 'var(--surface-subtle)',
                               borderRadius: '3px',
+                              overflow: 'hidden',
                             }}
-                          />
+                          >
+                            <div
+                              style={{
+                                width: `${Math.round(score * 100)}%`,
+                                height: '100%',
+                                backgroundColor: isHigh ? 'var(--danger)' : 'var(--warn)',
+                                borderRadius: '3px',
+                              }}
+                            />
+                          </div>
+                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', fontWeight: 600 }}>
+                            {score.toFixed(2)}
+                          </span>
                         </div>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', fontWeight: 600 }}>
-                          {h.score.toFixed(2)}
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

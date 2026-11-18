@@ -18,22 +18,25 @@ import {
   Lightbulb,
   Sparkles,
   Link2,
+  LogOut,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { addRepo, getDemoRepos, getRepo } from '../../api/client'
-import type { DemoRepo, Repo } from '../../api/types'
+import { addRepo, getDemoRepos, getRepo, getUserGithubRepos } from '../../api/client'
+import type { DemoRepo, GitHubRepoItem, Repo } from '../../api/types'
 import { BrandIcon } from '../../components/BrandIcon'
 import { DevMockPanel } from '../../components/DevMockPanel'
 import { ErrorBox } from '../../components/ErrorBox'
 import { GithubIcon } from '../../components/GithubIcon'
 import { StatusBadge } from '../../components/StatusBadge'
 import { ThemeToggle } from '../../components/ThemeToggle'
+import { useAuth } from '../../context/AuthContext'
 import { validateGitHubUrl } from '../../lib/github'
 
 const RECENT_REPOS_KEY = 'gka_recent_repo_ids'
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate()
+  const { user, isAuthenticated, logout } = useAuth()
 
   const [url, setUrl] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -42,6 +45,17 @@ export const HomePage: React.FC = () => {
 
   const [demos, setDemos] = useState<DemoRepo[]>([])
   const [recentRepos, setRecentRepos] = useState<Repo[]>([])
+  const [userRepos, setUserRepos] = useState<GitHubRepoItem[]>([])
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      getUserGithubRepos()
+        .then((repos) => setUserRepos(repos || []))
+        .catch(() => {})
+    } else {
+      setUserRepos([])
+    }
+  }, [isAuthenticated])
 
   // Interactive Product Preview Active Tab
   const [previewTab, setPreviewTab] = useState<'graph' | 'impact' | 'chat' | 'code'>('graph')
@@ -181,9 +195,51 @@ export const HomePage: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <Link to="/login" className="btn btn-ghost btn-sm">
-            Sign In
-          </Link>
+          {isAuthenticated && user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  background: 'var(--surface-subtle)',
+                  padding: '0.2rem 0.65rem 0.2rem 0.35rem',
+                  borderRadius: 'var(--radius-bubble)',
+                  border: '1px solid var(--border)',
+                }}
+              >
+                {user.avatar_url && (
+                  <img
+                    src={user.avatar_url}
+                    alt={user.username}
+                    style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }}
+                  />
+                )}
+                <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text)' }}>
+                  @{user.username}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={logout}
+                className="btn btn-ghost btn-sm"
+                title="Sign out"
+                style={{ padding: '0.35rem 0.6rem', gap: '0.35rem' }}
+              >
+                <LogOut size={13} />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          ) : (
+            <>
+              <Link to="/login" className="btn btn-ghost btn-sm">
+                Sign In
+              </Link>
+              <Link to="/register" className="btn btn-primary btn-sm">
+                Sign Up
+              </Link>
+            </>
+          )}
           <a
             href="https://github.com/dipak009156/gtihub-knowledge-assistance-impact"
             target="_blank"
@@ -409,15 +465,6 @@ export const HomePage: React.FC = () => {
                 Ready-made Examples:
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => handleOpenDemo('https://github.com/demo/shop-app')}
-                  disabled={submitting}
-                  style={{ borderRadius: 'var(--radius-bubble)' }}
-                >
-                  shop-app
-                </button>
                 {demos.map((d) => (
                   <button
                     key={d.name}
@@ -448,6 +495,30 @@ export const HomePage: React.FC = () => {
                       >
                         <span>{r.name}</span>
                         <StatusBadge status={r.status} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {userRepos.length > 0 && (
+                <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid var(--glass-border-subtle)' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <GithubIcon size={13} />
+                    <span>Your GitHub Repositories:</span>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    {userRepos.slice(0, 8).map((r) => (
+                      <button
+                        key={r.full_name}
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => handleOpenDemo(r.url)}
+                        disabled={submitting}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', borderRadius: 'var(--radius-bubble)' }}
+                      >
+                        <span>{r.name}</span>
+                        {r.is_private && <span style={{ fontSize: '0.65rem', opacity: 0.6 }}>(private)</span>}
                       </button>
                     ))}
                   </div>

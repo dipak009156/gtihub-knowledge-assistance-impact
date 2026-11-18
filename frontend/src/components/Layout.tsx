@@ -1,10 +1,21 @@
 import React, { useEffect, useState } from 'react'
-import { Navigate, Outlet, useParams, useLocation, Link } from 'react-router-dom'
-import { Search, ChevronRight, GitBranch } from 'lucide-react'
+import { Navigate, Outlet, useParams, useLocation, Link, NavLink } from 'react-router-dom'
+import {
+  Search,
+  ChevronRight,
+  GitBranch,
+  LayoutDashboard,
+  FileCode2,
+  GitFork,
+  Zap,
+  Flame,
+  MessageSquareCode,
+  ShieldCheck,
+  Settings,
+} from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getRepo } from '../api/client'
 import type { Repo } from '../api/types'
-import { DevMockPanel } from './DevMockPanel'
 import { EmptyState } from './EmptyState'
 import { ErrorBoundary } from './ErrorBoundary'
 import { ErrorBox } from './ErrorBox'
@@ -93,7 +104,6 @@ export const Layout: React.FC = () => {
           actionLabel="Return Home"
           onAction={() => (window.location.href = '/')}
         />
-        <DevMockPanel />
       </div>
     )
   }
@@ -102,7 +112,6 @@ export const Layout: React.FC = () => {
     return (
       <div className="app-container" style={{ padding: '4rem 2rem' }}>
         <ErrorBox message={error} onRetry={loadRepo} />
-        <DevMockPanel />
       </div>
     )
   }
@@ -181,6 +190,67 @@ export const Layout: React.FC = () => {
           </div>
         </header>
 
+        {/* Horizontal Navigation Tab Bar for 1-Click Access across all pages */}
+        {repo && (
+          <nav
+            aria-label="Repository sections"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              padding: '0 1.25rem',
+              margin: '0.5rem 1rem 0 0.75rem',
+              borderBottom: '1px solid var(--border)',
+              overflowX: 'auto',
+              scrollbarWidth: 'none',
+              position: 'relative',
+              zIndex: 10,
+            }}
+          >
+            {[
+              { label: 'Overview', path: `/repos/${repoId}`, icon: LayoutDashboard, end: true },
+              { label: 'Code Explorer', path: `/repos/${repoId}/code`, icon: FileCode2 },
+              { label: 'Dependency Graph', path: `/repos/${repoId}/graph`, icon: GitFork },
+              { label: 'Impact Explorer', path: `/repos/${repoId}/impact`, icon: Zap },
+              { label: 'Hotspots', path: `/repos/${repoId}/hotspots`, icon: Flame },
+              { label: 'AI Code Chat', path: `/repos/${repoId}/chat`, icon: MessageSquareCode },
+              { label: 'Validation', path: `/repos/${repoId}/validation`, icon: ShieldCheck },
+              { label: 'Settings', path: `/repos/${repoId}/settings`, icon: Settings },
+            ].map((tab) => {
+              const isActive = tab.end
+                ? location.pathname === tab.path
+                : location.pathname.startsWith(tab.path)
+              const TabIcon = tab.icon
+              return (
+                <NavLink
+                  key={tab.path}
+                  to={tab.path}
+                  end={tab.end}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    padding: '0.55rem 0.85rem',
+                    fontSize: '0.8125rem',
+                    fontWeight: isActive ? 600 : 500,
+                    color: isActive ? 'var(--accent)' : 'var(--text-muted)',
+                    borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
+                    textDecoration: 'none',
+                    whiteSpace: 'nowrap',
+                    borderRadius: 'var(--radius) var(--radius) 0 0',
+                    backgroundColor: isActive ? 'var(--accent-subtle)' : 'transparent',
+                    transition: 'all 0.15s ease',
+                    marginBottom: '-1px',
+                  }}
+                >
+                  <TabIcon size={14} style={{ color: isActive ? 'var(--accent)' : 'var(--text-subtle)' }} />
+                  <span>{tab.label}</span>
+                </NavLink>
+              )
+            })}
+          </nav>
+        )}
+
         {/* Dynamic Route Content with Smooth Motion Transition */}
         <main className="content-area" style={{ flex: 1, minWidth: 0 }}>
           <ErrorBoundary>
@@ -199,8 +269,6 @@ export const Layout: React.FC = () => {
           </ErrorBoundary>
         </main>
       </div>
-
-      <DevMockPanel />
     </div>
   )
 }
