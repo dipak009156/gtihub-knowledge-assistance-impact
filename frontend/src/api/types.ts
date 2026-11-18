@@ -1,4 +1,35 @@
-export type RepoStatus = 'queued' | 'cloning' | 'ready' | 'error'
+export type User = {
+  id: number
+  github_id?: string | null
+  username: string
+  name?: string | null
+  email?: string | null
+  avatar_url?: string | null
+  has_token?: boolean
+}
+
+export type AuthResponse = {
+  user: User
+  token: string
+}
+
+export type GitHubRepoItem = {
+  name: string
+  full_name: string
+  url: string
+  description?: string | null
+  is_private: boolean
+  stars: number
+  language?: string | null
+}
+
+export type RepoStatus =
+  | 'queued'
+  | 'cloning'
+  | 'parsing'
+  | 'analyzing'
+  | 'ready'
+  | 'error'
 
 export type Repo = {
   id: number
@@ -81,19 +112,28 @@ export type Graph = {
 
 export type ImpactItem = {
   symbol_id: number
+  id?: number
   name: string
+  qualified_name?: string
+  kind?: string
   file_path: string
   start_line: number
   depth: number
+  distance?: number
   score: number
   level: 'high' | 'medium' | 'low'
   reason: string
+  reasons?: string[]
+  uncertain?: boolean
 }
 
 export type Impact = {
-  target: Symbol
+  target: Symbol | { id: number; name: string; qualified_name?: string; file_path: string; start_line: number; end_line?: number }
   depth: number
+  variant?: string
+  truncated?: boolean
   items: ImpactItem[]
+  results?: ImpactItem[]
 }
 
 export type Hotspot = {
@@ -104,16 +144,18 @@ export type Hotspot = {
 }
 
 export type Source = {
-  file: string
+  file?: string
+  file_path?: string
   start_line: number
   end_line: number
-  verified: boolean
+  verified?: boolean
 }
 
 export type ChatAnswer = {
   answer: string
   sources: Source[]
   cached: boolean
+  grounded?: boolean
 }
 
 export type ValidationRun = {

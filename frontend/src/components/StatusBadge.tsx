@@ -10,7 +10,9 @@ interface StatusBadgeProps {
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className = '' }) => {
   const configMap: Record<RepoStatus, { label: string; badgeClass: string; icon: React.FC<{ size: number }> }> = {
     queued: { label: 'Queued', badgeClass: 'badge-neutral', icon: Clock },
-    cloning: { label: 'Analyzing', badgeClass: 'badge-info', icon: Loader2 },
+    cloning: { label: 'Cloning', badgeClass: 'badge-info', icon: Loader2 },
+    parsing: { label: 'Parsing AST', badgeClass: 'badge-info', icon: Loader2 },
+    analyzing: { label: 'Analyzing', badgeClass: 'badge-info', icon: Loader2 },
     ready: { label: 'Ready', badgeClass: 'badge-success', icon: CheckCircle2 },
     error: { label: 'Failed', badgeClass: 'badge-danger', icon: AlertCircle },
   }
@@ -21,9 +23,11 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className = ''
     icon: Clock,
   }
 
+  const isSpinning = status === 'cloning' || status === 'parsing' || status === 'analyzing'
+
   return (
     <span className={`badge ${badgeClass} ${className}`} aria-label={`Repository status: ${label}`}>
-      <span className={status === 'cloning' ? 'animate-spin' : ''} style={{ display: 'inline-flex', alignItems: 'center' }}>
+      <span className={isSpinning ? 'animate-spin' : ''} style={{ display: 'inline-flex', alignItems: 'center' }}>
         <Icon size={12} />
       </span>
       <span>{label}</span>

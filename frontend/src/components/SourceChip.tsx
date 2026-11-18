@@ -9,30 +9,33 @@ interface SourceChipProps {
 }
 
 export const SourceChip: React.FC<SourceChipProps> = ({ source, repoId }) => {
+  const filePath = source.file || source.file_path || ''
+  const isVerified = source.verified !== false
+
   return (
     <CodeLink
-      file={source.file}
+      file={filePath}
       line={source.start_line}
       end={source.end_line}
       repoId={repoId}
-      className={`source-chip ${source.verified ? 'verified' : 'unverified'}`}
+      className={`source-chip ${isVerified ? 'verified' : 'unverified'}`}
     >
       <span
         title={
-          source.verified
+          isVerified
             ? 'Verified source location'
             : 'We could not confirm this location.'
         }
         style={{ display: 'inline-flex', alignItems: 'center' }}
       >
-        {source.verified ? (
+        {isVerified ? (
           <CheckCircle2 size={13} style={{ color: 'var(--ok)' }} />
         ) : (
           <AlertCircle size={13} style={{ color: 'var(--caution)' }} />
         )}
       </span>
       <span>
-        {source.file}:{source.start_line}-{source.end_line}
+        {filePath ? `${filePath}:${source.start_line}-${source.end_line}` : `${source.start_line}-${source.end_line}`}
       </span>
     </CodeLink>
   )
