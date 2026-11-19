@@ -177,13 +177,13 @@ export const ValidationPage: React.FC = () => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
             <span style={{ padding: '0.35rem', borderRadius: 'var(--radius)', background: 'var(--accent-soft)', color: 'var(--accent)', display: 'inline-flex' }}>
-              <ShieldCheck size={18} />
+              <ShieldCheck size={20} />
             </span>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>
+            <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 800, color: 'var(--text)', letterSpacing: 'var(--letter-spacing-tight)' }}>
               Validation & Empirical Proof
             </h1>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', maxWidth: '640px', lineHeight: 1.5 }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-base)', maxWidth: '640px', lineHeight: 'var(--line-height-normal)' }}>
             We pretend to go back in time. For each old change we guess which
             other files changed too, using only older information, then we check
             our guess.
