@@ -116,6 +116,14 @@ def top_files(
             }
         )
 
+    max_changes = max((h["changes"] for h in hotspots), default=0)
+    max_connections = max((h["connections"] for h in hotspots), default=0)
+
+    for h in hotspots:
+        norm_ch = (h["changes"] / max_changes) if max_changes > 0 else 0.0
+        norm_co = (h["connections"] / max_connections) if max_connections > 0 else 0.0
+        h["score"] = round(0.5 * norm_ch + 0.5 * norm_co, 2)
+
     sort_key = "connections" if sort == "connections" else "changes"
     hotspots.sort(
         key=lambda item: (-item[sort_key], item["path"]),
