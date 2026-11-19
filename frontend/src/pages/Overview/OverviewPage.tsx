@@ -244,7 +244,7 @@ export const OverviewPage: React.FC = () => {
 
       {/* Quick Action Navigation Grid */}
       <div style={{ marginBottom: '2.5rem' }}>
-        <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.875rem' }}>
+        <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: 700, color: 'var(--text)', letterSpacing: 'var(--letter-spacing-tight)', marginBottom: '0.875rem' }}>
           Quick Actions
         </h2>
         <div
@@ -318,7 +318,7 @@ export const OverviewPage: React.FC = () => {
               <Sparkles size={16} />
             </div>
             <div>
-              <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: 'var(--text)' }}>
+              <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: 700, margin: 0, color: 'var(--text)', letterSpacing: 'var(--letter-spacing-tight)' }}>
                 Ask AI Codebase Assistant
               </h2>
               <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: 0 }}>
@@ -428,7 +428,7 @@ export const OverviewPage: React.FC = () => {
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem' }}>
           <div>
-            <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)' }}>
+            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: 700, color: 'var(--text)', letterSpacing: 'var(--letter-spacing-tight)' }}>
               Top 5 Hotspot Files
             </h2>
             <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>

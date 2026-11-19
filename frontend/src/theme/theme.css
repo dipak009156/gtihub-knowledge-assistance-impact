@@ -1030,10 +1030,10 @@ p:last-child {
 }
 
 .card-title {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   color: var(--text);
-  letter-spacing: -0.01em;
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 .card-subtitle {
