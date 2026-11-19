@@ -13,6 +13,7 @@ import { GraphPage } from './pages/Graph/GraphPage'
 import { HomePage } from './pages/Home/HomePage'
 import { HotspotsPage } from './pages/Hotspots/HotspotsPage'
 import { ImpactPage } from './pages/Impact/ImpactPage'
+import { IntelligencePage } from './pages/Intelligence/IntelligencePage'
 import { PrivacyPage } from './pages/Legal/PrivacyPage'
 import { TermsPage } from './pages/Legal/TermsPage'
 import { NotFoundPage } from './pages/NotFoundPage'
@@ -60,6 +61,7 @@ export const App: React.FC = () => {
                 <Route path="code" element={<CodePage />} />
                 <Route path="graph" element={<GraphPage />} />
                 <Route path="impact" element={<ImpactPage />} />
+                <Route path="intelligence" element={<IntelligencePage />} />
                 <Route path="hotspots" element={<HotspotsPage />} />
                 <Route path="chat" element={<ChatPage />} />
                 <Route path="validation" element={<ValidationPage />} />

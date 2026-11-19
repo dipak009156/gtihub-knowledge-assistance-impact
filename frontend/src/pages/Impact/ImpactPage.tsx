@@ -581,6 +581,21 @@ export const ImpactPage: React.FC = () => {
             <FileDiff size={14} />
             <span>PR / Git Diff Blast</span>
           </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-secondary"
+            onClick={() =>
+              navigate(
+                `/repos/${repoId}/intelligence?tab=pr${
+                  selectedSymbol ? `&symbol_id=${selectedSymbol.id}` : ''
+                }`
+              )
+            }
+            style={{ gap: '0.35rem', fontSize: '0.8125rem', color: 'var(--accent)' }}
+          >
+            <Sparkles size={14} />
+            <span>AI Agent Suite</span>
+          </button>
         </div>
 
         {viewMode !== 'diff' && selectedSymbol && summary.total > 0 && (

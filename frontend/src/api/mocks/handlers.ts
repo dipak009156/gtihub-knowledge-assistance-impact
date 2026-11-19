@@ -2,31 +2,41 @@ import { ApiError } from '../client'
 import { getDevMockOptions } from '../config'
 import type {
   ChatAnswer,
+  DefectsResponse,
   DemoRepo,
   FileContent,
   FileInfo,
   Graph,
+  GraphIntelligenceResponse,
   Hotspot,
   Impact,
   Overview,
+  PRReviewResponse,
   Relations,
   Repo,
+  SequenceFlowResponse,
   Symbol,
+  TestGenResponse,
   Validation,
 } from '../types'
 import {
   mockChatAnswer,
+  mockDefectsResponse,
   mockDemoRepos,
   mockFileContents,
   mockFiles,
   mockGraphCallView,
+  mockGraphIntelligenceResponse,
   mockGraphModuleView,
   mockHotspots,
   mockImpactChargeCard,
   mockOverview,
+  mockPRReviewResponse,
   mockRelations,
   mockRepos,
+  mockSequenceFlowResponse,
   mockSymbols,
+  mockTestGenResponse,
   mockValidation,
 } from './data'
 
@@ -267,6 +277,58 @@ export const handlers = {
       ...mockValidation,
       status: validationStatus,
     }
+  },
+
+  getDefectPredictions: (_id: number): DefectsResponse => {
+    const opts = getDevMockOptions()
+    if (opts.returnEmptyData) {
+      return {
+        summary: {
+          total_files: 0,
+          total_commits: 0,
+          high_risk_files: 0,
+          average_risk_score: 0,
+          model: 'Ensemble Metric-Calibrated Defect Propensity v1.4',
+        },
+        predictions: [],
+      }
+    }
+    return { ...mockDefectsResponse }
+  },
+
+  getGraphIntelligence: (_id: number): GraphIntelligenceResponse => {
+    const opts = getDevMockOptions()
+    if (opts.returnEmptyData) {
+      return {
+        summary: {
+          total_direct_edges: 0,
+          predicted_latent_links: 0,
+          algorithm: 'Hybrid Topological Jaccard + Cochange Entropy',
+        },
+        links: [],
+      }
+    }
+    return { ...mockGraphIntelligenceResponse }
+  },
+
+  runPRReview: (
+    _id: number,
+    _diffText = '',
+    _symbolId?: number
+  ): PRReviewResponse => {
+    return { ...mockPRReviewResponse }
+  },
+
+  generateTests: (_id: number, _symbolId: number): TestGenResponse => {
+    return { ...mockTestGenResponse }
+  },
+
+  generateSequenceFlow: (
+    _id: number,
+    _symbolId: number,
+    _depth = 4
+  ): SequenceFlowResponse => {
+    return { ...mockSequenceFlowResponse }
   },
 }
 

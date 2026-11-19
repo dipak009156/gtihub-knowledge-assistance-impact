@@ -146,7 +146,7 @@ export const OverviewPage: React.FC = () => {
     { title: 'Explore Code', desc: 'Browse file tree & syntax in Monaco editor', path: `/repos/${repoId}/code`, icon: FileCode2 },
     { title: 'Dependency Graph', desc: 'Interactive module & call relationship visualization', path: `/repos/${repoId}/graph`, icon: GitFork },
     { title: 'Impact Explorer', desc: 'Simulate changes and assess blast radius risk', path: `/repos/${repoId}/impact`, icon: Zap },
-    { title: 'AI Code Chat', desc: 'Query repository with grounded AST citations', path: `/repos/${repoId}/chat`, icon: MessageSquareCode },
+    { title: 'AI & ML Intelligence', desc: 'Predictive bug propensity, PR agent review, & test synthesis', path: `/repos/${repoId}/intelligence`, icon: Sparkles },
   ]
 
   return (

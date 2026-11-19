@@ -3,18 +3,23 @@ import { handlers } from './mocks/handlers'
 import type {
   AuthResponse,
   ChatAnswer,
+  DefectsResponse,
   DemoRepo,
   FileContent,
   FileInfo,
   GitHubRepoItem,
   Graph,
+  GraphIntelligenceResponse,
   Hotspot,
   Impact,
   ImpactItem,
   Overview,
+  PRReviewResponse,
   Relations,
   Repo,
+  SequenceFlowResponse,
   Symbol,
+  TestGenResponse,
   User,
   Validation,
 } from './types'
@@ -411,4 +416,54 @@ export const getCurrentUser = () =>
 
 export const getUserGithubRepos = () =>
   request<GitHubRepoItem[]>('/api/auth/github/repos', () => [])
+
+// 15. ML Defect Predictions
+export const getDefectPredictions = (id: number) =>
+  request<DefectsResponse>(`/api/repos/${id}/ml/defects`, () =>
+    handlers.getDefectPredictions(id)
+  )
+
+// 16. Predictive Graph Intelligence
+export const getGraphIntelligence = (id: number) =>
+  request<GraphIntelligenceResponse>(
+    `/api/repos/${id}/ml/graph-intelligence`,
+    () => handlers.getGraphIntelligence(id)
+  )
+
+// 17. Autonomous PR Review Agent
+export const runPRReview = (id: number, diffText = '', symbolId?: number) =>
+  request<PRReviewResponse>(
+    `/api/repos/${id}/agent/pr-review`,
+    () => handlers.runPRReview(id, diffText, symbolId),
+    {
+      method: 'POST',
+      body: JSON.stringify({ diff_text: diffText, symbol_id: symbolId }),
+    }
+  )
+
+// 18. Autonomous Test Generator
+export const generateTests = (id: number, symbolId: number) =>
+  request<TestGenResponse>(
+    `/api/repos/${id}/agent/generate-tests`,
+    () => handlers.generateTests(id, symbolId),
+    {
+      method: 'POST',
+      body: JSON.stringify({ symbol_id: symbolId }),
+    }
+  )
+
+// 19. Sequence Flow Generator
+export const generateSequenceFlow = (
+  id: number,
+  symbolId: number,
+  depth = 4
+) =>
+  request<SequenceFlowResponse>(
+    `/api/repos/${id}/agent/sequence-flow`,
+    () => handlers.generateSequenceFlow(id, symbolId, depth),
+    {
+      method: 'POST',
+      body: JSON.stringify({ symbol_id: symbolId, depth }),
+    }
+  )
 

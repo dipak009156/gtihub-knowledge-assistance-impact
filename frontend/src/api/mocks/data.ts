@@ -1,15 +1,20 @@
 import type {
   ChatAnswer,
+  DefectsResponse,
   DemoRepo,
   FileContent,
   FileInfo,
   Graph,
+  GraphIntelligenceResponse,
   Hotspot,
   Impact,
   Overview,
+  PRReviewResponse,
   Relations,
   Repo,
+  SequenceFlowResponse,
   Symbol,
+  TestGenResponse,
   Validation,
 } from '../types'
 
@@ -474,4 +479,223 @@ export const mockValidation: Validation = {
     },
   ],
 }
+
+// ── ML & Agentic Mock Data ──
+
+export const mockDefectsResponse: DefectsResponse = {
+  summary: {
+    total_files: 5,
+    total_commits: 120,
+    high_risk_files: 2,
+    average_risk_score: 54.2,
+    model: 'Ensemble Metric-Calibrated Defect Propensity v1.4',
+  },
+  predictions: [
+    {
+      file_id: 1,
+      path: 'shop/orders.py',
+      line_count: 240,
+      symbol_count: 8,
+      churn_count: 42,
+      author_count: 6,
+      inbound_callers: 14,
+      outbound_callees: 9,
+      defect_probability: 0.885,
+      risk_score: 88.5,
+      risk_level: 'CRITICAL',
+      primary_drivers: [
+        'Frequent historical churn (42 commits)',
+        'High contributor fragmentation (6 authors)',
+        'Critical upstream dependency (14 incoming callers)',
+      ],
+      mitigations: [
+        'Add regression integration tests for downstream callers',
+        'Enforce code-owner review gate on PR modifications',
+      ],
+    },
+    {
+      file_id: 2,
+      path: 'shop/payment.py',
+      line_count: 180,
+      symbol_count: 5,
+      churn_count: 31,
+      author_count: 4,
+      inbound_callers: 9,
+      outbound_callees: 4,
+      defect_probability: 0.724,
+      risk_score: 72.4,
+      risk_level: 'HIGH',
+      primary_drivers: [
+        'Frequent historical churn (31 commits)',
+        'Upstream financial transaction gateway coupling',
+      ],
+      mitigations: [
+        'Add regression integration tests for downstream callers',
+      ],
+    },
+    {
+      file_id: 3,
+      path: 'shop/cart.py',
+      line_count: 120,
+      symbol_count: 4,
+      churn_count: 27,
+      author_count: 3,
+      inbound_callers: 5,
+      outbound_callees: 3,
+      defect_probability: 0.46,
+      risk_score: 46.0,
+      risk_level: 'MODERATE',
+      primary_drivers: ['Moderate commit churn (27 commits)'],
+      mitigations: ['Maintain existing unit test coverage'],
+    },
+    {
+      file_id: 4,
+      path: 'api/routes.py',
+      line_count: 90,
+      symbol_count: 3,
+      churn_count: 18,
+      author_count: 2,
+      inbound_callers: 2,
+      outbound_callees: 6,
+      defect_probability: 0.28,
+      risk_score: 28.0,
+      risk_level: 'LOW',
+      primary_drivers: ['Low historical churn and decoupled architecture'],
+      mitigations: ['Maintain existing unit test coverage'],
+    },
+  ],
+}
+
+export const mockGraphIntelligenceResponse: GraphIntelligenceResponse = {
+  summary: {
+    total_direct_edges: 18,
+    predicted_latent_links: 2,
+    algorithm: 'Hybrid Topological Jaccard + Cochange Entropy',
+  },
+  links: [
+    {
+      source_path: 'shop/orders.py',
+      target_path: 'shop/payment.py',
+      link_probability: 0.88,
+      shared_neighbor_count: 4,
+      cochange_count: 19,
+      inference_type: 'Latent Semantic Coupling',
+      reason: 'Frequent commit co-change (19 commits) & Shared architectural bridge through cart.py',
+    },
+    {
+      source_path: 'shop/cart.py',
+      target_path: 'api/routes.py',
+      link_probability: 0.65,
+      shared_neighbor_count: 2,
+      cochange_count: 8,
+      inference_type: '2-Hop Structural Bridge',
+      reason: 'Shared architectural bridge through orders.py',
+    },
+  ],
+}
+
+export const mockPRReviewResponse: PRReviewResponse = {
+  verdict: 'REVIEW_REQUIRED',
+  risk_score: 58.5,
+  summary: 'Moderate architectural impact. Changing `charge_card` affects 3 downstream callers. Verify integration compatibility.',
+  target_symbol: {
+    id: 3,
+    name: 'charge_card',
+    file_path: 'shop/payment.py',
+    kind: 'function',
+  },
+  caller_count: 3,
+  breaking_risks: [
+    'Modifying `charge_card` ripples into 3 downstream callers across payment processing.',
+    'Downstream callers expect strict transaction response schemas.',
+  ],
+  affected_callers: [
+    { name: 'create_order', file_path: 'shop/orders.py', level: 'high', score: 0.94, depth: 1 },
+    { name: 'checkout', file_path: 'api/routes.py', level: 'medium', score: 0.58, depth: 2 },
+  ],
+  security_checklist: [
+    'No sensitive credentials or API keys exposed',
+    'Payment gateway input validation intact',
+    'Proper error handling for declined card transactions',
+  ],
+  suggested_tests: [
+    'Run unit tests for charge_card with valid payment tokens',
+    'Run caller regression test for create_order in shop/orders.py',
+    'Simulate timeout and network drop scenarios',
+  ],
+}
+
+export const mockTestGenResponse: TestGenResponse = {
+  symbol: {
+    id: 3,
+    name: 'charge_card',
+    file_path: 'shop/payment.py',
+    kind: 'function',
+    start_line: 1,
+    end_line: 12,
+  },
+  framework: 'pytest',
+  language: 'python',
+  caller_count: 2,
+  callers: [
+    { name: 'create_order', file: 'shop/orders.py', line: 9 },
+    { name: 'checkout', file: 'api/routes.py', line: 7 },
+  ],
+  test_code: `import pytest
+from unittest.mock import MagicMock, patch
+
+# Unit & Regression Suite for charge_card in shop/payment.py
+
+def test_charge_card_nominal():
+    """Verify nominal payment processing returns success token."""
+    # Arrange & Act
+    # result = charge_card(amount=50.00, token="tok_visa")
+    # Assert
+    assert True
+
+def test_charge_card_invalid_amount():
+    """Verify negative or zero values raise ValueError."""
+    with pytest.raises(Exception):
+        # charge_card(amount=-10.0, token="tok_test")
+        pass
+
+def test_caller_regression_create_order():
+    """Verify downstream caller create_order handles successful charge."""
+    with patch("shop.payment.charge_card") as mock_charge:
+        mock_charge.return_value = {"status": "paid", "id": "tx_123"}
+        assert mock_charge is not None
+`,
+}
+
+export const mockSequenceFlowResponse: SequenceFlowResponse = {
+  symbol: {
+    id: 4,
+    name: 'create_order',
+    file_path: 'shop/orders.py',
+    start_line: 1,
+  },
+  mermaid: `sequenceDiagram
+  autonumber
+  actor Client as User / Client
+  participant orders as orders (create_order)
+  participant cart as cart
+  participant payment as payment
+  participant utils as utils
+  Client->>+orders: create_order()
+  orders->>+cart: calculate_total()
+  cart-->>-orders: return
+  orders->>+payment: charge_card()
+  payment->>+utils: format_money()
+  utils-->>-payment: return
+  payment-->>-orders: return
+  orders-->>-Client: response`,
+  steps_count: 4,
+  steps: [
+    { caller: 'Client', callee: 'create_order', module: 'orders', certainty: 'certain' },
+    { caller: 'create_order', callee: 'calculate_total', module: 'cart', certainty: 'certain' },
+    { caller: 'create_order', callee: 'charge_card', module: 'payment', certainty: 'certain' },
+    { caller: 'charge_card', callee: 'format_money', module: 'utils', certainty: 'certain' },
+  ],
+}
+
 

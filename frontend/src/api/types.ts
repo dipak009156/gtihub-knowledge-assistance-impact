@@ -183,3 +183,114 @@ export type Validation = {
   commits: ValidationCommit[]
 }
 
+// ── ML & Predictive Graph Intelligence Types ──
+
+export type DefectPrediction = {
+  file_id: number
+  path: string
+  line_count: number
+  symbol_count: number
+  churn_count: number
+  author_count: number
+  inbound_callers: number
+  outbound_callees: number
+  defect_probability: number
+  risk_score: number
+  risk_level: 'CRITICAL' | 'HIGH' | 'MODERATE' | 'LOW'
+  primary_drivers: string[]
+  mitigations: string[]
+}
+
+export type DefectsResponse = {
+  summary: {
+    total_files: number
+    total_commits: number
+    high_risk_files: number
+    average_risk_score: number
+    model: string
+  }
+  predictions: DefectPrediction[]
+}
+
+export type LatentLink = {
+  source_path: string
+  target_path: string
+  link_probability: number
+  shared_neighbor_count: number
+  cochange_count: number
+  inference_type: string
+  reason: string
+}
+
+export type GraphIntelligenceResponse = {
+  summary: {
+    total_direct_edges: number
+    predicted_latent_links: number
+    algorithm: string
+  }
+  links: LatentLink[]
+}
+
+// ── Generative AI & Agentic Assistance Types ──
+
+export type AffectedCaller = {
+  name: string
+  file_path: string
+  level?: string
+  score?: number
+  depth?: number
+}
+
+export type PRReviewResponse = {
+  verdict: 'APPROVE' | 'REVIEW_REQUIRED' | 'BLOCKED_HIGH_RISK'
+  risk_score: number
+  summary: string
+  target_symbol: {
+    id: number
+    name: string
+    file_path: string
+    kind?: string
+  }
+  caller_count: number
+  breaking_risks: string[]
+  affected_callers: AffectedCaller[]
+  security_checklist: string[]
+  suggested_tests: string[]
+}
+
+export type TestGenResponse = {
+  symbol: {
+    id: number
+    name: string
+    file_path: string
+    kind: string
+    start_line: number
+    end_line: number
+  }
+  framework: string
+  language: string
+  caller_count: number
+  callers: Array<{ name: string; file: string; line: number }>
+  test_code: string
+}
+
+export type SequenceStep = {
+  caller: string
+  callee: string
+  module: string
+  certainty: string
+}
+
+export type SequenceFlowResponse = {
+  symbol: {
+    id: number
+    name: string
+    file_path: string
+    start_line: number
+  }
+  mermaid: string
+  steps_count: number
+  steps: SequenceStep[]
+}
+
+
