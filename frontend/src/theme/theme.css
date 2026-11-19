@@ -7,67 +7,75 @@
 /* ── Light Theme (Default) ── */
 :root,
 [data-theme="light"] {
-  /* Exact Surface & Background Tokens */
-  --bg: #F5F5F2;                 /* Warm off-white */
-  --surface: #FFFFFF;            /* Pure white surface */
-  --surface-secondary: #EBECE8;  /* Secondary surface */
-  --surface-subtle: #EBECE8;
+  /* Exact Surface & Background Tokens (Warm Cream & Soft Beige) */
+  --bg: #FDF8EC;                 /* Warm Cream canvas */
+  --surface: #FFFFFF;            /* Clean card surface */
+  --surface-secondary: #EEE8D4;  /* Soft Beige panel surface */
+  --surface-subtle: #EEE8D4;
   --surface-card: #FFFFFF;
-  --surface-hover: #EBECE8;
-  --surface-active: #DEDFDA;
+  --surface-hover: #F7F1DF;
+  --surface-active: #E8E0CB;
 
-  /* Exact Typography Tokens */
-  --text: #202124;               /* Primary text */
-  --text-primary: #202124;
-  --text-secondary: #777B80;     /* Secondary text */
-  --text-muted: #777B80;
-  --text-subtle: #92969A;        /* Muted / subtle text */
+  /* Exact Typography Tokens (Charcoal Primary Text) */
+  --text: #2C2C2C;               /* Charcoal primary text */
+  --text-primary: #2C2C2C;
+  --text-secondary: #706B62;     /* Muted neutral body/subtext */
+  --text-muted: #706B62;
+  --text-subtle: #969085;        /* Muted / subtle metadata */
 
-  /* Exact Border Tokens */
-  --border: #DEDFDA;             /* Minimal neutral border */
-  --border-strong: #C4C6BE;
+  /* Exact Border Tokens (Border Beige) */
+  --border: #E5DDC9;             /* Border Beige subtle separators */
+  --border-strong: #D1C7AF;
 
-  /* Exact Accent Tokens (Signal Red) */
-  --accent: #DF3333;             /* Primary signal-red accent */
-  --accent-hover: #C62929;       /* Accent hover */
-  --accent-soft: #FCE9E9;        /* Soft accent tint */
-  --accent-light: #FCE9E9;
-  --accent-subtle: #FAF0F0;
-  --accent-border: #F4B8B4;
+  /* Primary Accent Tokens (Golden Yellow) */
+  --accent: #FFBC1A;             /* Golden Yellow primary highlight */
+  --accent-hover: #EAA80C;       /* Warm yellow hover */
+  --accent-soft: #FFF3D6;        /* Soft yellow tint */
+  --accent-light: #FFF3D6;
+  --accent-subtle: #FFF9EB;
+  --accent-border: #F5D382;
+  --accent-text: #191817;        /* High-contrast charcoal text on yellow */
 
-  /* Exact Semantic Status Tokens */
-  --ok: #287A50;                 /* Success */
-  --ok-bg: #EAF4EE;
-  --ok-border: #B6DEC5;
+  /* Secondary Accent Tokens (Muted Purple) */
+  --accent-purple: #8966BD;      /* Muted Purple secondary accent */
+  --accent-purple-hover: #7855AB;
+  --accent-purple-soft: #F2ECFA;
+  --accent-purple-subtle: #F9F5FD;
+  --accent-purple-border: #D3C3EB;
 
-  --warn: #A66B17;               /* Warning */
-  --warn-bg: #F9F2E6;
-  --warn-border: #E8D1A8;
+  /* Semantic Status Tokens */
+  --ok: #2E7D5B;                 /* Success */
+  --ok-bg: #ECF5F0;
+  --ok-border: #A9DCBF;
 
-  --danger: #C03932;             /* Error / High Risk */
-  --danger-bg: #FCEBEA;
-  --danger-border: #F4B8B4;
+  --warn: #D6A653;               /* Warning / Amber */
+  --warn-bg: #FBF6EC;
+  --warn-border: #EADBBA;
 
-  --info: #365F91;               /* Info */
-  --info-bg: #EAF0F8;
-  --info-border: #B7CEE8;
+  --danger: #D44338;             /* Error / High Risk */
+  --danger-bg: #FDF0EE;
+  --danger-border: #F7B8B2;
 
-  --caution: #A66B17;            /* Caution / Medium */
-  --caution-bg: #F9F2E6;
-  --caution-border: #E8D1A8;
+  --info: #8966BD;               /* Info (Muted Purple) */
+  --info-bg: #F2ECFA;
+  --info-border: #D3C3EB;
+
+  --caution: #D6A653;            /* Caution / Medium */
+  --caution-bg: #FBF6EC;
+  --caution-border: #EADBBA;
 
   /* Risk semantics for LevelBadge / Blast Radius */
-  --risk-high: #C03932;
-  --risk-high-bg: #FCEBEA;
-  --risk-high-border: #F4B8B4;
+  --risk-high: #D44338;
+  --risk-high-bg: #FDF0EE;
+  --risk-high-border: #F7B8B2;
 
-  --risk-medium: #A66B17;
-  --risk-medium-bg: #F9F2E6;
-  --risk-medium-border: #E8D1A8;
+  --risk-medium: #D6A653;
+  --risk-medium-bg: #FBF6EC;
+  --risk-medium-border: #EADBBA;
 
-  --risk-low: #287A50;
-  --risk-low-bg: #EAF4EE;
-  --risk-low-border: #B6DEC5;
+  --risk-low: #2E7D5B;
+  --risk-low-bg: #ECF5F0;
+  --risk-low-border: #A9DCBF;
 
   /* Box Radii */
   --radius-xs: 4px;
@@ -79,29 +87,29 @@
   --radius-bubble: 9999px;
 
   /* Elevation Shadows */
-  --shadow-xs: 0 1px 2px rgba(32, 33, 36, 0.04);
-  --shadow-sm: 0 2px 6px rgba(32, 33, 36, 0.06), 0 1px 2px rgba(32, 33, 36, 0.03);
-  --shadow: 0 6px 16px -2px rgba(32, 33, 36, 0.08), 0 2px 6px -1px rgba(32, 33, 36, 0.04);
-  --shadow-lg: 0 14px 32px -4px rgba(32, 33, 36, 0.1), 0 4px 12px -2px rgba(32, 33, 36, 0.05);
+  --shadow-xs: 0 1px 2px rgba(44, 44, 44, 0.04);
+  --shadow-sm: 0 2px 6px rgba(44, 44, 44, 0.05), 0 1px 2px rgba(44, 44, 44, 0.03);
+  --shadow: 0 6px 16px -2px rgba(44, 44, 44, 0.06), 0 2px 6px -1px rgba(44, 44, 44, 0.03);
+  --shadow-lg: 0 14px 32px -4px rgba(44, 44, 44, 0.08), 0 4px 12px -2px rgba(44, 44, 44, 0.04);
 
   /* Advanced Glassmorphism Tokens (Light) */
-  --glass-bg: rgba(255, 255, 255, 0.76);
-  --glass-surface: rgba(255, 255, 255, 0.88);
-  --glass-surface-subtle: rgba(235, 236, 232, 0.65);
-  --glass-border: rgba(222, 223, 218, 0.85);
-  --glass-border-subtle: rgba(222, 223, 218, 0.5);
+  --glass-bg: rgba(253, 248, 236, 0.82);
+  --glass-surface: rgba(255, 255, 255, 0.92);
+  --glass-surface-subtle: rgba(238, 232, 212, 0.75);
+  --glass-border: rgba(229, 221, 201, 0.85);
+  --glass-border-subtle: rgba(229, 221, 201, 0.55);
   --glass-border-light: rgba(255, 255, 255, 0.95);
   --glass-blur: blur(20px) saturate(190%);
   --glass-specular: inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
-  --glass-shadow: 0 10px 30px -5px rgba(32, 33, 36, 0.08), 0 3px 10px -2px rgba(32, 33, 36, 0.04);
-  --glass-shadow-lg: 0 20px 48px -8px rgba(32, 33, 36, 0.12), 0 6px 16px -2px rgba(32, 33, 36, 0.05);
+  --glass-shadow: 0 10px 30px -5px rgba(44, 44, 44, 0.06), 0 3px 10px -2px rgba(44, 44, 44, 0.03);
+  --glass-shadow-lg: 0 20px 48px -8px rgba(44, 44, 44, 0.09), 0 6px 16px -2px rgba(44, 44, 44, 0.04);
 
   /* Bubble Specific Tokens (Light) */
-  --glass-bubble-bg: rgba(255, 255, 255, 0.72);
-  --glass-bubble-hover: rgba(255, 255, 255, 0.95);
-  --glass-bubble-active: rgba(223, 51, 51, 0.12);
-  --glass-bubble-border: rgba(222, 223, 218, 0.8);
-  --glass-bubble-glow: 0 6px 20px -2px rgba(223, 51, 51, 0.3);
+  --glass-bubble-bg: rgba(255, 255, 255, 0.85);
+  --glass-bubble-hover: rgba(255, 255, 255, 0.98);
+  --glass-bubble-active: rgba(255, 188, 26, 0.18);
+  --glass-bubble-border: rgba(229, 221, 201, 0.85);
+  --glass-bubble-glow: 0 6px 20px -2px rgba(255, 188, 26, 0.35);
 
   /* Typography Stacks: Inter & JetBrains Mono */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -112,69 +120,77 @@
   background-color: var(--bg);
 }
 
-/* ── Dark Theme (Deep Charcoal + Glassmorphism) ── */
+/* ── Dark Theme (Complementary Dark Palette) ── */
 [data-theme="dark"] {
   /* Exact Surface & Background Tokens */
-  --bg: #202124;                 /* Deep charcoal */
-  --surface: #282A2D;            /* Slightly lighter charcoal card */
-  --surface-secondary: #303338;  /* Secondary surface */
-  --surface-subtle: #303338;
-  --surface-card: #282A2D;
-  --surface-hover: #303338;
-  --surface-active: #383C42;
+  --bg: #191817;                 /* Deep charcoal canvas */
+  --surface: #24221F;            /* Secondary background surface */
+  --surface-secondary: #24221F;
+  --surface-subtle: #24221F;
+  --surface-card: #2D2A25;       /* Card background */
+  --surface-hover: #332F2A;
+  --surface-active: #3D3933;
 
-  /* Exact Typography Tokens */
-  --text: #F5F5F2;               /* Off-white text */
-  --text-primary: #F5F5F2;
-  --text-secondary: #B2B4B7;     /* Secondary text */
-  --text-muted: #B2B4B7;
-  --text-subtle: #85898E;        /* Muted text */
+  /* Typography Tokens */
+  --text: #FDF8EC;               /* Warm off-white primary text */
+  --text-primary: #FDF8EC;
+  --text-secondary: #C5BDAF;     /* Secondary text */
+  --text-muted: #C5BDAF;
+  --text-subtle: #8F887C;        /* Muted / subtle metadata */
 
-  /* Exact Border Tokens */
-  --border: #414449;             /* Charcoal border */
-  --border-strong: #54575E;
+  /* Border Tokens */
+  --border: #454039;             /* Muted charcoal border */
+  --border-strong: #5A544B;
 
-  /* Exact Accent Tokens (Signal Red in Dark Theme) */
-  --accent: #DF3333;             /* Primary signal-red */
-  --accent-hover: #F05A50;       /* Lighter red hover in dark */
-  --accent-soft: #432725;        /* Deep red tint */
-  --accent-light: #432725;
-  --accent-subtle: #352120;
-  --accent-border: #6B3430;
+  /* Primary Accent Tokens (Golden Yellow) */
+  --accent: #FFBC1A;             /* Golden Yellow primary highlight */
+  --accent-hover: #FFC947;
+  --accent-soft: #38301D;
+  --accent-light: #38301D;
+  --accent-subtle: #2C2618;
+  --accent-border: #6B5723;
+  --accent-text: #191817;        /* Contrast-safe dark text on yellow */
 
-  /* Exact Semantic Status Tokens */
-  --ok: #69B88A;                 /* Success */
-  --ok-bg: #1B2F23;
-  --ok-border: #2D583F;
+  /* Secondary Accent Tokens (Muted Purple in Dark) */
+  --accent-purple: #A98AD5;      /* Complementary purple accent in dark */
+  --accent-purple-hover: #BBA0E3;
+  --accent-purple-soft: #2D253A;
+  --accent-purple-subtle: #231D2D;
+  --accent-purple-border: #52406B;
 
-  --warn: #D6A653;               /* Warning */
-  --warn-bg: #352918;
-  --warn-border: #5C4726;
+  /* Semantic Status Tokens */
+  --ok: #63BE8C;                 /* Success */
+  --ok-bg: #1B3024;
+  --ok-border: #2C573E;
 
-  --danger: #F07870;             /* Error / High Risk */
-  --danger-bg: #3B201F;
-  --danger-border: #6C2E2A;
+  --warn: #E5B45C;               /* Warning */
+  --warn-bg: #352A18;
+  --warn-border: #5E4A25;
 
-  --info: #86A9D5;               /* Info */
-  --info-bg: #1D2A3D;
-  --info-border: #2F476B;
+  --danger: #EE7268;             /* Error / High Risk */
+  --danger-bg: #3A201E;
+  --danger-border: #6B2E2A;
 
-  --caution: #D6A653;
-  --caution-bg: #352918;
-  --caution-border: #5C4726;
+  --info: #A98AD5;               /* Info (Muted Purple) */
+  --info-bg: #2D253A;
+  --info-border: #52406B;
+
+  --caution: #E5B45C;
+  --caution-bg: #352A18;
+  --caution-border: #5E4A25;
 
   /* Risk semantics for LevelBadge / Blast Radius */
-  --risk-high: #F07870;
-  --risk-high-bg: #3B201F;
-  --risk-high-border: #6C2E2A;
+  --risk-high: #EE7268;
+  --risk-high-bg: #3A201E;
+  --risk-high-border: #6B2E2A;
 
-  --risk-medium: #D6A653;
-  --risk-medium-bg: #352918;
-  --risk-medium-border: #5C4726;
+  --risk-medium: #E5B45C;
+  --risk-medium-bg: #352A18;
+  --risk-medium-border: #5E4A25;
 
-  --risk-low: #69B88A;
-  --risk-low-bg: #1B2F23;
-  --risk-low-border: #2D583F;
+  --risk-low: #63BE8C;
+  --risk-low-bg: #1B3024;
+  --risk-low-border: #2C573E;
 
   /* Dark Elevation Shadows */
   --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -183,11 +199,11 @@
   --shadow-lg: 0 18px 40px -6px rgba(0, 0, 0, 0.55), 0 6px 18px -2px rgba(0, 0, 0, 0.35);
 
   /* Advanced Glassmorphism Tokens (Dark) */
-  --glass-bg: rgba(40, 42, 45, 0.68);
-  --glass-surface: rgba(48, 51, 56, 0.78);
-  --glass-surface-subtle: rgba(32, 33, 36, 0.65);
-  --glass-border: rgba(65, 68, 73, 0.7);
-  --glass-border-subtle: rgba(65, 68, 73, 0.4);
+  --glass-bg: rgba(36, 34, 31, 0.72);
+  --glass-surface: rgba(45, 42, 37, 0.82);
+  --glass-surface-subtle: rgba(36, 34, 31, 0.75);
+  --glass-border: rgba(69, 64, 57, 0.75);
+  --glass-border-subtle: rgba(69, 64, 57, 0.45);
   --glass-border-light: rgba(255, 255, 255, 0.12);
   --glass-blur: blur(24px) saturate(190%);
   --glass-specular: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
@@ -195,11 +211,11 @@
   --glass-shadow-lg: 0 24px 52px -8px rgba(0, 0, 0, 0.6), 0 8px 22px -3px rgba(0, 0, 0, 0.35);
 
   /* Bubble Specific Tokens (Dark) */
-  --glass-bubble-bg: rgba(48, 51, 56, 0.68);
-  --glass-bubble-hover: rgba(56, 60, 66, 0.9);
-  --glass-bubble-active: rgba(223, 51, 51, 0.22);
-  --glass-bubble-border: rgba(84, 87, 94, 0.65);
-  --glass-bubble-glow: 0 8px 24px -2px rgba(223, 51, 51, 0.45);
+  --glass-bubble-bg: rgba(45, 42, 37, 0.75);
+  --glass-bubble-hover: rgba(56, 52, 46, 0.92);
+  --glass-bubble-active: rgba(255, 188, 26, 0.22);
+  --glass-bubble-border: rgba(69, 64, 57, 0.75);
+  --glass-bubble-glow: 0 8px 24px -2px rgba(255, 188, 26, 0.35);
 }
 
 /* ── Global Resets & Base Styles ── */
@@ -240,7 +256,7 @@ body::before {
   max-width: 720px;
   max-height: 720px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(223, 51, 51, 0.09) 0%, rgba(223, 51, 51, 0.02) 45%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 188, 26, 0.08) 0%, rgba(255, 188, 26, 0.02) 45%, transparent 70%);
   pointer-events: none;
   z-index: 0;
   filter: blur(75px);
@@ -258,7 +274,7 @@ body::after {
   max-width: 760px;
   max-height: 760px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(54, 95, 145, 0.1) 0%, rgba(54, 95, 145, 0.02) 50%, transparent 70%);
+  background: radial-gradient(circle, rgba(137, 102, 189, 0.07) 0%, rgba(137, 102, 189, 0.02) 50%, transparent 70%);
   pointer-events: none;
   z-index: 0;
   filter: blur(85px);
@@ -267,11 +283,11 @@ body::after {
 }
 
 [data-theme="dark"] body::before {
-  background: radial-gradient(circle, rgba(223, 51, 51, 0.14) 0%, rgba(223, 51, 51, 0.03) 45%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 188, 26, 0.12) 0%, rgba(255, 188, 26, 0.03) 45%, transparent 70%);
 }
 
 [data-theme="dark"] body::after {
-  background: radial-gradient(circle, rgba(134, 169, 213, 0.1) 0%, rgba(134, 169, 213, 0.02) 50%, transparent 70%);
+  background: radial-gradient(circle, rgba(169, 138, 213, 0.09) 0%, rgba(169, 138, 213, 0.02) 50%, transparent 70%);
 }
 
 @keyframes ambientFloat1 {
