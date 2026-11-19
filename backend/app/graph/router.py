@@ -102,11 +102,15 @@ def get_repo_graph(
         all_symbols = sym_query.all()
         edges = db.query(Edge).filter(Edge.repo_id == repo_id).all()
 
+        in_degree: dict[int, int] = {s.id: 0 for s, _ in all_symbols}
+        out_degree: dict[int, int] = {s.id: 0 for s, _ in all_symbols}
         degree: dict[int, int] = {s.id: 0 for s, _ in all_symbols}
         for e in edges:
-            if e.caller_id in degree:
+            if e.caller_id in out_degree:
+                out_degree[e.caller_id] += 1
                 degree[e.caller_id] += 1
-            if e.callee_id in degree:
+            if e.callee_id in in_degree:
+                in_degree[e.callee_id] += 1
                 degree[e.callee_id] += 1
 
         total_nodes = len(all_symbols)
@@ -123,6 +127,8 @@ def get_repo_graph(
                 "label": s.qualified_name or s.name,
                 "kind": s.kind,
                 "file_path": file_path,
+                "in_degree": in_degree.get(s.id, 0),
+                "out_degree": out_degree.get(s.id, 0),
             }
             for s, file_path in sorted_symbols
         ]

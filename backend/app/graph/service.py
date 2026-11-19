@@ -156,6 +156,63 @@ def build_graph(
                                     target_file.id
                                 ][bound_name]
 
+        # Multi-language import extraction for JS, TS, Go, etc.
+        js_ts_import_named = re.compile(
+            r'import\s+\{([^}]+)\}\s+from\s+[\'"]([^\'"]+)[\'"]'
+        )
+        js_ts_import_default = re.compile(
+            r'import\s+([A-Za-z0-9_$]+)\s+from\s+[\'"]([^\'"]+)[\'"]'
+        )
+        js_require_named = re.compile(
+            r'(?:const|let|var)\s+\{([^}]+)\}\s*=\s*require\([\'"]([^\'"]+)[\'"]\)'
+        )
+
+        for f in all_files:
+            if f.id in file_trees or f.parse_error:
+                continue
+            text = file_contents.get(f.id)
+            if not text:
+                continue
+
+            for match in js_ts_import_named.finditer(text):
+                names_blob, mod_path = match.group(1), match.group(2)
+                target_file = _find_matching_file(mod_path, file_by_path)
+                if target_file and target_file.id in by_file_and_name:
+                    for part in names_blob.split(","):
+                        part = part.strip()
+                        if not part:
+                            continue
+                        if " as " in part:
+                            orig, alias = [p.strip() for p in part.split(" as ", 1)]
+                        else:
+                            orig, alias = part, part
+                        if orig in by_file_and_name[target_file.id]:
+                            imports_per_file[f.id][alias] = by_file_and_name[target_file.id][orig]
+
+            for match in js_ts_import_default.finditer(text):
+                default_name, mod_path = match.group(1).strip(), match.group(2)
+                target_file = _find_matching_file(mod_path, file_by_path)
+                if target_file and target_file.id in by_file_and_name:
+                    for sym_name, sym_id in by_file_and_name[target_file.id].items():
+                        imports_per_file[f.id][sym_name] = sym_id
+                        imports_per_file[f.id][default_name] = sym_id
+                        break
+
+            for match in js_require_named.finditer(text):
+                names_blob, mod_path = match.group(1), match.group(2)
+                target_file = _find_matching_file(mod_path, file_by_path)
+                if target_file and target_file.id in by_file_and_name:
+                    for part in names_blob.split(","):
+                        part = part.strip()
+                        if not part:
+                            continue
+                        if ":" in part:
+                            orig, alias = [p.strip() for p in part.split(":", 1)]
+                        else:
+                            orig, alias = part, part
+                        if orig in by_file_and_name[target_file.id]:
+                            imports_per_file[f.id][alias] = by_file_and_name[target_file.id][orig]
+
         # Step 3: resolve calls and produce edges
         session.query(Edge).filter(Edge.repo_id == repo_id).delete()
 
@@ -363,6 +420,23 @@ def build_graph(
                             target_name in call_keywords
                             or target_name == caller_sym.name
                         ):
+                            continue
+
+                        # 0. imported symbol
+                        if target_name in imports_per_file.get(f.id, {}):
+                            callee_id = imports_per_file[f.id][target_name]
+                            key = (caller_sym.id, callee_id, curr_line)
+                            if key not in seen_edges:
+                                seen_edges.add(key)
+                                edges_to_insert.append(
+                                    {
+                                        "repo_id": repo_id,
+                                        "caller_id": caller_sym.id,
+                                        "callee_id": callee_id,
+                                        "certainty": "certain",
+                                        "call_line": curr_line,
+                                    }
+                                )
                             continue
 
                         # 1. same file
