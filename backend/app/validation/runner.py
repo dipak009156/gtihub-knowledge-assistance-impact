@@ -42,9 +42,7 @@ def run_validation(repo_id: int, session: Session | None = None) -> None:
                 .filter(CommitFile.commit_id == c.id)
                 .all()
             ]
-            valid_files = sorted(
-                [p for p in cf_paths if p in existing_paths]
-            )
+            valid_files = sorted([p for p in cf_paths if p in existing_paths])
             if len(valid_files) >= 2:
                 usable_commits.append((c, valid_files))
             if len(usable_commits) == 50:

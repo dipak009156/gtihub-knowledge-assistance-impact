@@ -201,7 +201,7 @@ def parse_repo(
                         session.flush()
                         symbol_id_by_qname[sym.qualified_name] = s_record.id
 
-                except SyntaxError:
+                except (SyntaxError, Exception):  # noqa: BLE001
                     file_record.parse_error = True
 
                 session.commit()

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.db.models import Commit, CommitFile
 from app.db.session import SessionLocal
 from app.history.gitlog import BULK_LIMIT, read_git_log
+from app.parser.service import SUPPORTED_EXTENSIONS
 
 
 def delete_old_rows(session: Session, repo_id: int) -> None:
@@ -56,8 +57,10 @@ def analyze(
             session.flush()
 
             if not is_bulk:
-                py_files = {f for f in files if f.endswith(".py")}
-                for path in py_files:
+                tracked_files = {
+                    f for f in files if Path(f).suffix.lower() in SUPPORTED_EXTENSIONS
+                }
+                for path in tracked_files:
                     session.add(CommitFile(commit_id=row.id, path=path))
 
         session.commit()
