@@ -56,7 +56,7 @@ export const ValidationPage: React.FC = () => {
       setValidation((prev) =>
         prev
           ? { ...prev, status: 'running' }
-          : { status: 'running', runs: [], commits: [] }
+          : { status: 'running', commits_tested: 0, runs: [], commits: [] }
       )
     } catch (err: unknown) {
       const apiErr = err as { message?: string }
@@ -121,7 +121,7 @@ export const ValidationPage: React.FC = () => {
   }
 
   const status = validation?.status || 'none'
-  const commitsTested = validation?.runs?.[0]?.commits_tested || 0
+  const commitsTested = validation?.commits_tested || 0
 
   return (
     <div>
