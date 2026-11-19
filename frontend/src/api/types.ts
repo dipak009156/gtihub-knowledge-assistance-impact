@@ -80,20 +80,25 @@ export type Graph = {
 }
 
 export type ImpactItem = {
-  symbol_id: number
+  id: number | null
+  kind: string
   name: string
+  qualified_name: string
   file_path: string
   start_line: number
-  depth: number
+  distance: number
   score: number
   level: 'high' | 'medium' | 'low'
-  reason: string
+  uncertain: boolean
+  reasons: string[]
 }
 
 export type Impact = {
   target: Symbol
   depth: number
-  items: ImpactItem[]
+  variant: string
+  truncated: boolean
+  results: ImpactItem[]
 }
 
 export type Hotspot = {
