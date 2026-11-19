@@ -125,22 +125,19 @@ export const ImpactPage: React.FC = () => {
 
   // Filtered items
   const filteredItems = useMemo(() => {
-    if (!impactData || !impactData.items) return []
-    if (activeFilter === 'all') return impactData.items
-    return impactData.items.filter((item) => item.level === activeFilter)
+    const list = impactData?.results || []
+    if (activeFilter === 'all') return list
+    return list.filter((item) => item.level === activeFilter)
   }, [impactData, activeFilter])
 
   // Summary counts
   const summary = useMemo(() => {
-    if (!impactData || !impactData.items) {
-      return { total: 0, high: 0, medium: 0, low: 0 }
-    }
-    const items = impactData.items
+    const list = impactData?.results || []
     return {
-      total: items.length,
-      high: items.filter((i) => i.level === 'high').length,
-      medium: items.filter((i) => i.level === 'medium').length,
-      low: items.filter((i) => i.level === 'low').length,
+      total: list.length,
+      high: list.filter((i) => i.level === 'high').length,
+      medium: list.filter((i) => i.level === 'medium').length,
+      low: list.filter((i) => i.level === 'low').length,
     }
   }, [impactData])
 
@@ -420,7 +417,7 @@ export const ImpactPage: React.FC = () => {
           title="Pick a function to begin"
           description="Type the name of any function or class in the search box above to calculate its impact score."
         />
-      ) : !impactData || impactData.items.length === 0 ? (
+      ) : !impactData || (impactData.results && impactData.results.length === 0) ? (
         <EmptyState
           icon="🛡️"
           title="Nothing else seems to depend on this"
@@ -463,9 +460,9 @@ export const ImpactPage: React.FC = () => {
 
           {/* Scored Results List */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {filteredItems.map((item) => (
+            {filteredItems.map((item, idx) => (
               <div
-                key={item.symbol_id}
+                key={item.id ?? `${item.file_path}-${idx}`}
                 className="card"
                 style={{
                   padding: '1.25rem',
@@ -490,7 +487,7 @@ export const ImpactPage: React.FC = () => {
                       {item.name}
                     </span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      ({item.depth} {item.depth === 1 ? 'step away' : 'steps away'})
+                      ({item.distance} {item.distance === 1 ? 'step away' : 'steps away'})
                     </span>
                   </div>
 
@@ -505,7 +502,9 @@ export const ImpactPage: React.FC = () => {
                   </div>
 
                   <div style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.4 }}>
-                    {item.reason}
+                    {item.reasons && item.reasons.length > 0
+                      ? item.reasons.join(' ')
+                      : 'Reachable dependency.'}
                   </div>
                 </div>
 
