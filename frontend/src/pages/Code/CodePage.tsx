@@ -507,7 +507,7 @@ export const CodePage: React.FC = () => {
                       {relations.callers.map((c, i) => (
                         <div
                           key={i}
-                          onClick={() => handleSelectSymbol(c, c.call_line)}
+                          onClick={() => handleSelectSymbol(c, c.start_line)}
                           className="card"
                           style={{
                             padding: '0.6rem 0.75rem',
@@ -521,7 +521,7 @@ export const CodePage: React.FC = () => {
                             <CertaintyBadge certainty={c.certainty} />
                           </div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            {c.file_path}:{c.call_line}
+                            {c.file_path}:{c.start_line}
                           </div>
                         </div>
                       ))}
@@ -551,7 +551,7 @@ export const CodePage: React.FC = () => {
                       {relations.callees.map((c, i) => (
                         <div
                           key={i}
-                          onClick={() => handleSelectSymbol(c, c.call_line)}
+                          onClick={() => handleSelectSymbol(c, c.start_line)}
                           className="card"
                           style={{
                             padding: '0.6rem 0.75rem',
@@ -565,7 +565,7 @@ export const CodePage: React.FC = () => {
                             <CertaintyBadge certainty={c.certainty} />
                           </div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            {c.file_path}:{c.call_line}
+                            {c.file_path}:{c.start_line}
                           </div>
                         </div>
                       ))}
