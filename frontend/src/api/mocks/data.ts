@@ -266,14 +266,12 @@ export const mockRelations: Record<number, Relations> = {
       {
         ...mockSymbols[3], // create_order
         certainty: 'certain',
-        call_line: 9,
       },
     ],
     callees: [
       {
         ...mockSymbols[5], // format_money
         certainty: 'certain',
-        call_line: 10,
       },
     ],
   },
@@ -283,24 +281,20 @@ export const mockRelations: Record<number, Relations> = {
       {
         ...mockSymbols[6], // checkout
         certainty: 'certain',
-        call_line: 9,
       },
     ],
     callees: [
       {
         ...mockSymbols[1], // calculate_total
         certainty: 'certain',
-        call_line: 8,
       },
       {
         ...mockSymbols[2], // charge_card
         certainty: 'certain',
-        call_line: 9,
       },
       {
         ...mockSymbols[4], // send_receipt
         certainty: 'certain',
-        call_line: 12,
       },
     ],
   },
@@ -317,36 +311,47 @@ export const mockHotspots: Hotspot[] = [
 export const mockImpactChargeCard: Impact = {
   target: mockSymbols[2], // charge_card
   depth: 2,
-  items: [
+  variant: 'combined',
+  truncated: false,
+  results: [
     {
-      symbol_id: 4,
+      id: 4,
+      kind: 'function',
       name: 'create_order',
+      qualified_name: 'shop.orders.create_order',
       file_path: 'shop/orders.py',
       start_line: 7,
-      depth: 1,
+      distance: 1,
       score: 0.86,
       level: 'high',
-      reason: 'Calls this directly and changed together in 14 of 50 commits.',
+      uncertain: false,
+      reasons: ['Calls this directly and changed together in 14 of 50 commits.'],
     },
     {
-      symbol_id: 7,
+      id: 7,
+      kind: 'function',
       name: 'checkout',
+      qualified_name: 'api.routes.checkout',
       file_path: 'api/routes.py',
       start_line: 6,
-      depth: 2,
+      distance: 2,
       score: 0.47,
       level: 'medium',
-      reason: 'Reaches this through create_order and changed together in 6 of 50 commits.',
+      uncertain: false,
+      reasons: ['Reaches this through create_order and changed together in 6 of 50 commits.'],
     },
     {
-      symbol_id: 5,
+      id: 5,
+      kind: 'function',
       name: 'send_receipt',
+      qualified_name: 'shop.orders.send_receipt',
       file_path: 'shop/orders.py',
       start_line: 17,
-      depth: 2,
+      distance: 2,
       score: 0.21,
       level: 'low',
-      reason: 'Same file as create_order but no recorded changes together.',
+      uncertain: false,
+      reasons: ['Same file as create_order but no recorded changes together.'],
     },
   ],
 }
@@ -423,13 +428,14 @@ export const mockChatAnswer: ChatAnswer = {
 
 export const mockValidation: Validation = {
   status: 'done',
+  commits_tested: 50,
   runs: [
-    { variant: 'combined', k: 5, commits_tested: 50, precision: 0.62, recall: 0.48 },
-    { variant: 'history', k: 5, commits_tested: 50, precision: 0.55, recall: 0.41 },
-    { variant: 'graph', k: 5, commits_tested: 50, precision: 0.38, recall: 0.29 },
-    { variant: 'combined', k: 10, commits_tested: 50, precision: 0.58, recall: 0.64 },
-    { variant: 'history', k: 10, commits_tested: 50, precision: 0.49, recall: 0.57 },
-    { variant: 'graph', k: 10, commits_tested: 50, precision: 0.32, recall: 0.42 },
+    { variant: 'combined', k: 5, precision: 0.62, recall: 0.48 },
+    { variant: 'history', k: 5, precision: 0.55, recall: 0.41 },
+    { variant: 'graph', k: 5, precision: 0.38, recall: 0.29 },
+    { variant: 'combined', k: 10, precision: 0.58, recall: 0.64 },
+    { variant: 'history', k: 10, precision: 0.49, recall: 0.57 },
+    { variant: 'graph', k: 10, precision: 0.32, recall: 0.42 },
   ],
   commits: [
     {
