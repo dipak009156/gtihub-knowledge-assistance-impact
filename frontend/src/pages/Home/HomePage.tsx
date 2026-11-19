@@ -357,14 +357,14 @@ export const HomePage: React.FC = () => {
             <span>Codebase Intelligence and Impact Analysis Platform</span>
           </div>
 
-          {/* Two-Tone Headline (Second line in bold red accent) */}
+          {/* Two-Tone Headline (Second line in bold accent) */}
           <h1
             style={{
-              fontSize: '3.15rem',
+              fontSize: 'clamp(2.4rem, 5vw, var(--font-size-5xl))',
               fontWeight: 800,
-              lineHeight: 1.15,
+              lineHeight: 'var(--line-height-tight)',
               color: 'var(--text)',
-              letterSpacing: '-0.03em',
+              letterSpacing: 'var(--letter-spacing-tighter)',
               maxWidth: '820px',
               margin: '0 auto 1.25rem',
             }}
@@ -377,11 +377,11 @@ export const HomePage: React.FC = () => {
           {/* Subtitle */}
           <p
             style={{
-              fontSize: '1.125rem',
+              fontSize: 'var(--font-size-lg)',
               color: 'var(--text-muted)',
               maxWidth: '680px',
               margin: '0 auto 2.25rem',
-              lineHeight: 1.55,
+              lineHeight: 'var(--line-height-relaxed)',
             }}
           >
             Analyze GitHub repositories, explore code dependencies, and get AI-powered explanations backed by actual source code references.
@@ -546,7 +546,7 @@ export const HomePage: React.FC = () => {
               className="hero-pill-bubble"
               style={{ cursor: 'pointer' }}
             >
-              <span className="hero-pill-icon" style={{ background: 'rgba(54, 95, 145, 0.15)', color: 'var(--info)' }}>
+              <span className="hero-pill-icon" style={{ background: 'var(--accent-purple-soft)', color: 'var(--accent-purple)' }}>
                 <GitFork size={15} />
               </span>
               <span>Explore Dependencies</span>
@@ -559,7 +559,7 @@ export const HomePage: React.FC = () => {
               className="hero-pill-bubble"
               style={{ cursor: 'pointer' }}
             >
-              <span className="hero-pill-icon" style={{ background: 'rgba(214, 166, 83, 0.15)', color: 'var(--warn)' }}>
+              <span className="hero-pill-icon" style={{ background: 'var(--accent-soft)', color: 'var(--text)' }}>
                 <Lightbulb size={15} />
               </span>
               <span>Understand Codebase</span>
@@ -572,7 +572,7 @@ export const HomePage: React.FC = () => {
               className="hero-pill-bubble"
               style={{ cursor: 'pointer' }}
             >
-              <span className="hero-pill-icon" style={{ background: 'rgba(223, 51, 51, 0.15)', color: 'var(--accent)' }}>
+              <span className="hero-pill-icon" style={{ background: 'var(--accent-purple-soft)', color: 'var(--accent-purple)' }}>
                 <Sparkles size={15} />
               </span>
               <span>Get Smart Insights</span>
@@ -585,7 +585,7 @@ export const HomePage: React.FC = () => {
               className="hero-pill-bubble"
               style={{ cursor: 'pointer' }}
             >
-              <span className="hero-pill-icon" style={{ background: 'rgba(40, 122, 80, 0.15)', color: 'var(--ok)' }}>
+              <span className="hero-pill-icon" style={{ background: 'var(--accent-soft)', color: 'var(--text)' }}>
                 <Zap size={15} />
               </span>
               <span>Boost Productivity</span>
