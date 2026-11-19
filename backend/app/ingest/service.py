@@ -56,11 +56,20 @@ def run_pipeline(repo_id: int) -> None:
             pass
 
     except subprocess.TimeoutExpired:
-        set_status(repo_id, "error", "The download took too long.")
-    except subprocess.CalledProcessError:
-        set_status(
-            repo_id, "error", "We could not download this project. Is it public?"
-        )
+        set_status(repo_id, "error", "The repository download took too long.")
+    except subprocess.CalledProcessError as exc:
+        msg = "We could not download this project. Is it public?"
+        if exc.stderr:
+            err_text = exc.stderr.decode("utf-8", errors="replace").strip()
+            if "not found" in err_text.lower():
+                msg = "Repository not found on GitHub. Please check the owner and repository name."
+            elif "terminal prompts disabled" in err_text.lower() or "authentication" in err_text.lower():
+                msg = "Repository is private or requires authentication."
+            else:
+                last_line = err_text.splitlines()[-1] if err_text else ""
+                if last_line:
+                    msg = f"Git clone failed: {last_line}"
+        set_status(repo_id, "error", msg)
     except Exception as exc:
         logger.exception("Error during pipeline execution for repo %s", repo_id)
         set_status(

@@ -45,13 +45,24 @@ def clone_repo(repo_id: int, url: str) -> Path:
     _safe_rmtree(target)
     base.mkdir(parents=True, exist_ok=True)
     env = {**os.environ, "GIT_TERMINAL_PROMPT": "0", "GCM_INTERACTIVE": "never"}
-    subprocess.run(
-        ["git", "clone", "--depth", "50", "--single-branch", url, str(target)],
-        check=True,
-        capture_output=True,
-        timeout=CLONE_TIMEOUT_SECONDS,
-        env=env,
-    )
+    try:
+        subprocess.run(
+            ["git", "clone", "--depth", "50", "--single-branch", url, str(target)],
+            check=True,
+            capture_output=True,
+            timeout=CLONE_TIMEOUT_SECONDS,
+            env=env,
+        )
+    except subprocess.CalledProcessError:
+        # Fallback without --single-branch in case default branch ref is atypical
+        _safe_rmtree(target)
+        subprocess.run(
+            ["git", "clone", "--depth", "20", url, str(target)],
+            check=True,
+            capture_output=True,
+            timeout=CLONE_TIMEOUT_SECONDS,
+            env=env,
+        )
     return target
 
 
