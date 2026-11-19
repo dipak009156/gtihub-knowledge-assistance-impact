@@ -1286,14 +1286,6 @@ label {
 }
 
 .table tr:hover td {
-  background: var(--glass-surface-subtle);
-}
-
-.table tr:last-child td {
-  border-bottom: none;
-}
-
-.table tr:hover td {
   background-color: var(--glass-bubble-hover);
 }
 
