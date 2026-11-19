@@ -49,19 +49,12 @@ def create_repo(
                 "name": existing.name,
                 "status": existing.status,
             }
-        if existing.status == "error":
-            existing.status = "queued"
-            existing.error_message = None
-            db.commit()
-            db.refresh(existing)
-            background_tasks.add_task(run_pipeline, existing.id)
-            return {
-                "id": existing.id,
-                "url": existing.url,
-                "owner": existing.owner,
-                "name": existing.name,
-                "status": existing.status,
-            }
+        # If in error or stuck in cloning/parsing/analyzing, re-queue and execute
+        existing.status = "queued"
+        existing.error_message = None
+        db.commit()
+        db.refresh(existing)
+        background_tasks.add_task(run_pipeline, existing.id)
         return {
             "id": existing.id,
             "url": existing.url,
@@ -121,6 +114,31 @@ def get_repo(repo_id: int, db: Annotated[Session, Depends(get_db)]):
         "name": repo.name,
         "status": repo.status,
         "error_message": repo.error_message,
+    }
+
+
+@router.post("/{repo_id}/reindex", status_code=status.HTTP_202_ACCEPTED)
+def reindex_repo(
+    repo_id: int,
+    background_tasks: BackgroundTasks,
+    db: Annotated[Session, Depends(get_db)],
+):
+    repo = db.query(Repo).filter(Repo.id == repo_id).first()
+    if not repo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
+        )
+    repo.status = "queued"
+    repo.error_message = None
+    db.commit()
+    db.refresh(repo)
+    background_tasks.add_task(run_pipeline, repo.id)
+    return {
+        "id": repo.id,
+        "url": repo.url,
+        "owner": repo.owner,
+        "name": repo.name,
+        "status": repo.status,
     }
 
 

@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.agentic.router import router as agentic_router
 from app.auth.router import router as auth_router
 from app.db.session import engine, init_db
 from app.graph.router import router as graph_router
@@ -14,6 +15,7 @@ from app.history.router import router as history_router
 from app.impact.router import router as impact_router
 from app.ingest.router import router as ingest_router
 from app.llm.router import router as llm_router
+from app.ml.router import router as ml_router
 from app.validation.router import router as validation_router
 
 logger = logging.getLogger(__name__)
@@ -23,6 +25,21 @@ logger = logging.getLogger(__name__)
 async def lifespan(_app: FastAPI):
     try:
         init_db()
+        from app.db.models import Repo
+        from app.db.session import SessionLocal
+
+        with SessionLocal() as session:
+            stuck = (
+                session.query(Repo)
+                .filter(Repo.status.in_(["cloning", "parsing", "analyzing"]))
+                .all()
+            )
+            for r in stuck:
+                r.status = "error"
+                r.error_message = (
+                    "Analysis was interrupted when server restarted. Click Retry to re-run."
+                )
+            session.commit()
     except Exception as exc:  # noqa: BLE001
         logger.warning("Could not auto-initialize DB tables: %s", exc)
     yield
@@ -44,6 +61,8 @@ app.include_router(ingest_router)
 app.include_router(graph_router)
 app.include_router(history_router)
 app.include_router(impact_router)
+app.include_router(ml_router)
+app.include_router(agentic_router)
 app.include_router(validation_router)
 app.include_router(llm_router)
 
