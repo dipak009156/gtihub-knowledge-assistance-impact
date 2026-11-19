@@ -695,8 +695,8 @@ p:last-child {
 }
 
 .bubble-nav-item.active {
-  color: var(--accent);
-  font-weight: 600;
+  color: var(--text);
+  font-weight: var(--font-weight-semibold);
   border-color: var(--accent-border);
   box-shadow: var(--glass-bubble-glow), var(--glass-specular);
   transform: scale(1.02);
@@ -738,9 +738,9 @@ p:last-child {
 
 .bubble-nav-item.active .bubble-icon-sphere {
   background: var(--accent);
-  color: #ffffff;
-  border-color: var(--accent);
-  box-shadow: 0 0 14px rgba(223, 51, 51, 0.45);
+  color: var(--accent-text);
+  border-color: var(--accent-hover);
+  box-shadow: 0 0 14px rgba(255, 188, 26, 0.45);
   transform: scale(1.05);
 }
 

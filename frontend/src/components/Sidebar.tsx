@@ -67,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   position: 'absolute',
                   inset: -4,
                   borderRadius: '50%',
-                  background: 'radial-gradient(circle, rgba(223, 51, 51, 0.35) 0%, transparent 70%)',
+                  background: 'radial-gradient(circle, rgba(255, 188, 26, 0.35) 0%, transparent 70%)',
                   filter: 'blur(4px)',
                   pointerEvents: 'none',
                 }}
@@ -78,9 +78,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span
                 style={{
                   fontWeight: 700,
-                  fontSize: '0.875rem',
-                  color: 'var(--accent)',
-                  letterSpacing: '-0.02em',
+                  fontSize: 'var(--font-size-sm)',
+                  color: 'var(--text)',
+                  letterSpacing: 'var(--letter-spacing-tight)',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
