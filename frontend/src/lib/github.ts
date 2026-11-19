@@ -22,6 +22,15 @@ export function validateGitHubUrl(rawUrl: string): {
     }
   }
 
+  // Helpful hint for plain owner/repo format
+  if (!url.startsWith('https://') && !url.startsWith('github.com')) {
+    return {
+      valid: false,
+      error:
+        'Please enter the full URL, e.g. https://github.com/owner/repo.',
+    }
+  }
+
   const match = url.match(
     /^https:\/\/github\.com\/([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+?)(?:\.git|\/)?$/
   )
@@ -47,4 +56,3 @@ export function validateGitHubUrl(rawUrl: string): {
     },
   }
 }
-
