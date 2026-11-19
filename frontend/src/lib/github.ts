@@ -9,21 +9,42 @@ export function validateGitHubUrl(rawUrl: string): {
   error?: string
   info?: GitHubRepoInfo
 } {
-  const url = rawUrl.trim()
-  if (!url) {
+  const trimmed = rawUrl.trim()
+  if (!trimmed) {
     return { valid: false, error: 'Please enter a GitHub repository URL.' }
   }
 
-  // Must start with https://github.com/
-  if (url.startsWith('http://')) {
+  // Must not be http://
+  if (trimmed.startsWith('http://')) {
     return {
       valid: false,
       error: 'Please use https:// instead of http://.',
     }
   }
 
-  const match = url.match(
-    /^https:\/\/github\.com\/([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+?)(?:\.git|\/)?$/
+  // If another domain on https://
+  if (trimmed.startsWith('https://') && !trimmed.startsWith('https://github.com/')) {
+    return {
+      valid: false,
+      error: 'Only public github.com links work (e.g. https://github.com/owner/repo).',
+    }
+  }
+
+  // Strip query and hash
+  let clean = trimmed.split('?')[0].split('#')[0].replace(/\/+$/, '')
+
+  // Normalize github.com/owner/repo or owner/repo
+  if (clean.startsWith('github.com/')) {
+    clean = 'https://' + clean
+  } else if (!clean.startsWith('https://') && !clean.includes('://')) {
+    const parts = clean.split('/')
+    if (parts.length === 2 && /^[a-zA-Z0-9_.-]+$/.test(parts[0]) && /^[a-zA-Z0-9_.-]+$/.test(parts[1])) {
+      clean = `https://github.com/${parts[0]}/${parts[1]}`
+    }
+  }
+
+  const match = clean.match(
+    /^https:\/\/github\.com\/([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+?)(?:\.git)?(?:\/.*)?$/
   )
 
   if (!match) {
