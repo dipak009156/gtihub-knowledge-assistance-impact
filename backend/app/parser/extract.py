@@ -22,7 +22,7 @@ def parse_file(text: str) -> list[ParsedSymbol]:
         for child in ast.iter_child_nodes(node):
             if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
                 is_class = isinstance(child, ast.ClassDef)
-                in_class = bool(stack) and stack[-1][1] == "class"
+                in_class = any(kind == "class" for _, kind in stack)
                 kind = "class" if is_class else ("method" if in_class else "function")
                 qualified = ".".join([s[0] for s in stack] + [child.name])
                 found.append(
