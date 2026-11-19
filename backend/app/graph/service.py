@@ -1,4 +1,5 @@
 import ast
+import re
 from pathlib import Path
 
 from sqlalchemy.orm import Session
@@ -10,22 +11,38 @@ from app.ingest.cloner import get_repo_dir
 
 
 def _find_matching_file(module_name: str, file_by_path: dict[str, File]) -> File | None:
-    """Find a project file matching an imported module name like 'utils' or 'app.utils'."""
-    parts = module_name.split(".")
-    target_py = "/".join(parts) + ".py"
-    target_init = "/".join(parts) + "/__init__.py"
+    """Find a project file matching an imported module name across languages."""
+    clean_mod = module_name.lstrip("./").replace("\\", "/")
+    parts = clean_mod.split(".") if "/" not in clean_mod else clean_mod.split("/")
+    base_target = "/".join(parts)
+
+    common_exts = (
+        ".py",
+        ".ts",
+        ".tsx",
+        ".js",
+        ".jsx",
+        ".go",
+        ".rs",
+        ".java",
+        ".c",
+        ".cpp",
+    )
+    candidates = [base_target] + [f"{base_target}{ext}" for ext in common_exts]
+    candidates += [f"{base_target}/index{ext}" for ext in common_exts]
+    candidates += [f"{base_target}/__init__.py"]
 
     for path, f in file_by_path.items():
         norm_p = path.replace("\\", "/")
-        if norm_p in (target_py, target_init) or norm_p.endswith(
-            ("/" + target_py, "/" + target_init)
-        ):
+        if any(norm_p == c or norm_p.endswith("/" + c) for c in candidates):
             return f
-    # Fallback: if module is just 'utils', match 'utils.py' filename
-    last_name = parts[-1] + ".py"
+
+    # Fallback to stem match
+    last_name = parts[-1]
     for path, f in file_by_path.items():
         norm_p = path.replace("\\", "/")
-        if norm_p == last_name or norm_p.endswith("/" + last_name):
+        stem = Path(norm_p).stem
+        if stem == last_name:
             return f
     return None
 
@@ -72,6 +89,7 @@ def build_graph(
             base_path = Path(repo_path)
 
         file_trees: dict[int, ast.AST] = {}
+        file_contents: dict[int, str] = {}
 
         for f in all_files:
             imports_per_file[f.id] = {}
@@ -91,6 +109,8 @@ def build_graph(
 
             if not text:
                 continue
+
+            file_contents[f.id] = text
 
             try:
                 tree = ast.parse(text)
@@ -296,6 +316,88 @@ def build_graph(
                         continue
 
                     # 5. Anything else -> skip it
+
+        # Multi-language call resolution for non-Python or non-AST files
+        non_ast_files = [
+            f for f in all_files if f.id not in file_trees and not f.parse_error
+        ]
+        regex_call = re.compile(r"\b([A-Za-z0-9_$]{2,})\s*\(")
+        call_keywords = {
+            "if",
+            "for",
+            "while",
+            "switch",
+            "catch",
+            "return",
+            "sizeof",
+            "typeof",
+            "new",
+            "super",
+            "require",
+            "import",
+            "console",
+            "make",
+            "len",
+            "append",
+            "panic",
+            "assert",
+            "func",
+            "function",
+        }
+
+        for f in non_ast_files:
+            text = file_contents.get(f.id)
+            if not text:
+                continue
+            lines = text.splitlines()
+            syms_in_file = [s for s in all_symbols if s.file_id == f.id]
+
+            for caller_sym in syms_in_file:
+                s_idx = max(0, caller_sym.start_line - 1)
+                e_idx = min(len(lines), caller_sym.end_line)
+                for line_offset, line_str in enumerate(lines[s_idx:e_idx]):
+                    curr_line = s_idx + line_offset + 1
+                    for match in regex_call.finditer(line_str):
+                        target_name = match.group(1)
+                        if (
+                            target_name in call_keywords
+                            or target_name == caller_sym.name
+                        ):
+                            continue
+
+                        # 1. same file
+                        if target_name in by_file_and_name.get(f.id, {}):
+                            callee_id = by_file_and_name[f.id][target_name]
+                            key = (caller_sym.id, callee_id, curr_line)
+                            if key not in seen_edges:
+                                seen_edges.add(key)
+                                edges_to_insert.append(
+                                    {
+                                        "repo_id": repo_id,
+                                        "caller_id": caller_sym.id,
+                                        "callee_id": callee_id,
+                                        "certainty": "certain",
+                                        "call_line": curr_line,
+                                    }
+                                )
+                            continue
+
+                        # 2. across repo (1 to 3 matches)
+                        matches = by_name.get(target_name, [])
+                        if 1 <= len(matches) <= 3:
+                            for callee_id in matches:
+                                key = (caller_sym.id, callee_id, curr_line)
+                                if key not in seen_edges:
+                                    seen_edges.add(key)
+                                    edges_to_insert.append(
+                                        {
+                                            "repo_id": repo_id,
+                                            "caller_id": caller_sym.id,
+                                            "callee_id": callee_id,
+                                            "certainty": "uncertain",
+                                            "call_line": curr_line,
+                                        }
+                                    )
 
         for edge_data in edges_to_insert:
             session.add(Edge(**edge_data))

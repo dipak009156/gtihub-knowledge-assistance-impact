@@ -129,7 +129,7 @@ export const OverviewPage: React.FC = () => {
   }
 
   const statCards = [
-    { label: 'Python Files', value: overview.files ?? 0, icon: FileCode2, highlight: false },
+    { label: 'Source Files', value: overview.files ?? 0, icon: FileCode2, highlight: false },
     { label: 'Functions', value: overview.functions ?? 0, icon: Code2, highlight: true },
     { label: 'Classes', value: overview.classes ?? 0, icon: Boxes, highlight: false },
     { label: 'Call References', value: overview.calls ?? 0, icon: PhoneCall, highlight: false },

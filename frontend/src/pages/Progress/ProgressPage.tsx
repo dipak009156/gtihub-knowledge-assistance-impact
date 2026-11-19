@@ -413,7 +413,7 @@ export const ProgressPage: React.FC = () => {
                 </div>
                 <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
                   {repo?.error_message ||
-                    'We could not parse this repository. Please confirm the project is public and contains valid Python files.'}
+                    'We could not parse this repository. Please confirm the project is public and contains valid source code files.'}
                 </p>
               </div>
             )}

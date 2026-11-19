@@ -80,3 +80,43 @@ def test_parse_sample_folder(db_session):
     # Method has parent_id pointing to class
     assert sym_map["Order.save"].parent_id == sym_map["Order"].id
     assert sym_map["Order.validate"].parent_id == sym_map["Order"].id
+
+
+def test_parse_typescript_and_go_symbols():
+    ts_code = """
+    export class CartService {
+      public calculateTotal(items: any[]): number {
+        return 100;
+      }
+    }
+
+    export async function checkout(cartId: string) {
+      return true;
+    }
+    """
+    ts_syms = parse_file(ts_code, filename="cart.ts")
+    ts_names = {(s.qualified_name, s.kind) for s in ts_syms}
+    assert ("CartService", "class") in ts_names
+    assert ("CartService.calculateTotal", "method") in ts_names
+    assert ("checkout", "function") in ts_names
+
+    go_code = """
+    package main
+
+    type Server struct {
+      Port int
+    }
+
+    func (s *Server) Start() error {
+      return nil
+    }
+
+    func NewServer() *Server {
+      return &Server{}
+    }
+    """
+    go_syms = parse_file(go_code, filename="server.go")
+    go_names = {(s.qualified_name, s.kind) for s in go_syms}
+    assert ("Server", "class") in go_names
+    assert ("Server.Start", "method") in go_names
+    assert ("NewServer", "function") in go_names

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.db.models import File, Symbol
 
-CITATION = re.compile(r"\[([^\[\]:]+\.py):(\d+)(?:-(\d+))?\]")
+CITATION = re.compile(r"\[([^\[\]:\s]+):(\d+)(?:-(\d+))?\]")
 BACKTICK_FUNC = re.compile(r"`([A-Za-z0-9_]+)\(\)`")
 
 

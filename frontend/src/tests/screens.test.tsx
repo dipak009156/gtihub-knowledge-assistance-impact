@@ -74,7 +74,7 @@ describe('Screen tests', () => {
     )
 
     expect(
-      await screen.findByText(/Python Files/i, {}, { timeout: 3000 })
+      await screen.findByText(/(?:Source|Python) Files/i, {}, { timeout: 3000 })
     ).toBeInTheDocument()
     expect(screen.getByText('Functions')).toBeInTheDocument()
     expect(

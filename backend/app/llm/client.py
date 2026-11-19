@@ -216,7 +216,7 @@ class GroundedFallbackClient:
         endpoint_items: list[str] = []
 
         for file_path, start_str, end_str, code in chunks:
-            if file_path.endswith("__init__.py"):
+            if file_path.endswith(("__init__.py", "index.d.ts")):
                 continue
 
             start_line = int(start_str)
@@ -310,7 +310,7 @@ class GroundedFallbackClient:
             # 7. General module code (avoid duplicate mentions of the same module file)
             if file_path not in seen_modules:
                 seen_modules.add(file_path)
-                file_stem = file_path.rsplit("/", 1)[-1].replace(".py", "")
+                file_stem = file_path.rsplit("/", 1)[-1].split(".")[0]
                 friendly_stem = _friendly_name(file_stem)
                 categorized_items.append(
                     (

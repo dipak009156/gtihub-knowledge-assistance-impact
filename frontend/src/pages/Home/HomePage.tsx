@@ -1099,7 +1099,7 @@ export const HomePage: React.FC = () => {
                 <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Repository Intelligence</h3>
               </div>
               <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                Comprehensive metrics on Python files, functions, classes, and call hierarchies, with hotspot file detection.
+                Comprehensive metrics on source code files, functions, classes, and call hierarchies, with hotspot file detection.
               </p>
             </motion.div>
 
@@ -1260,7 +1260,7 @@ export const HomePage: React.FC = () => {
             {[
               {
                 q: 'Which programming languages are supported?',
-                a: 'The current engine specializes in Python repositories (Python 3.8 through 3.12), parsing abstract syntax trees for def and class blocks.',
+                a: 'All major programming languages are supported: Python, TypeScript, JavaScript, Go, Rust, Java, C#, C, C++, Ruby, PHP, Swift, and Kotlin, with AST symbol extraction, call-graph traversal, and grounded semantic retrieval.',
               },
               {
                 q: 'How does the system calculate change impact?',

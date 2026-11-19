@@ -16,9 +16,81 @@ SKIP_DIRS = {
     "site-packages",
     "build",
     "dist",
+    "target",
+    ".idea",
+    ".vscode",
+    "coverage",
 }
 MAX_FILE_SIZE = 1024 * 1024  # 1 MB
 MAX_FILES = 500
+
+SUPPORTED_EXTENSIONS = {
+    # Python
+    ".py",
+    # JavaScript & TypeScript
+    ".js",
+    ".jsx",
+    ".ts",
+    ".tsx",
+    ".mjs",
+    ".cjs",
+    # Systems & Compiled
+    ".go",
+    ".rs",
+    ".java",
+    ".c",
+    ".cpp",
+    ".cc",
+    ".cxx",
+    ".h",
+    ".hpp",
+    ".cs",
+    # Scripting & Others
+    ".rb",
+    ".php",
+    ".swift",
+    ".kt",
+    ".scala",
+    ".sh",
+    ".bash",
+    ".sql",
+    # Config & Documentation
+    ".json",
+    ".yaml",
+    ".yml",
+    ".toml",
+    ".md",
+    ".html",
+    ".css",
+}
+
+CODE_EXTENSIONS = {
+    ".py",
+    ".js",
+    ".jsx",
+    ".ts",
+    ".tsx",
+    ".mjs",
+    ".cjs",
+    ".go",
+    ".rs",
+    ".java",
+    ".c",
+    ".cpp",
+    ".cc",
+    ".cxx",
+    ".h",
+    ".hpp",
+    ".cs",
+    ".rb",
+    ".php",
+    ".swift",
+    ".kt",
+    ".scala",
+    ".sh",
+    ".bash",
+    ".sql",
+}
 
 
 def parse_repo(
@@ -42,7 +114,8 @@ def parse_repo(
             dirs.sort()
 
             for fname in sorted(files):
-                if not fname.endswith(".py"):
+                ext = Path(fname).suffix.lower()
+                if ext not in SUPPORTED_EXTENSIONS:
                     continue
 
                 if file_count >= max_files:
@@ -97,7 +170,10 @@ def parse_repo(
                 session.query(Symbol).filter(Symbol.file_id == file_record.id).delete()
 
                 try:
-                    parsed_symbols = parse_file(text)
+                    if ext in CODE_EXTENSIONS:
+                        parsed_symbols = parse_file(text, filename=fname)
+                    else:
+                        parsed_symbols = []
                     file_record.parse_error = False
                     session.flush()
 

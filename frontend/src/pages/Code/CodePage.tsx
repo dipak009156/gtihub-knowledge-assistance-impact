@@ -25,6 +25,60 @@ const MonacoEditor = React.lazy(() =>
   }))
 )
 
+function getEditorLanguage(filePath: string): string {
+  const ext = filePath.split('.').pop()?.toLowerCase() || ''
+  switch (ext) {
+    case 'js':
+    case 'jsx':
+    case 'mjs':
+    case 'cjs':
+      return 'javascript'
+    case 'ts':
+    case 'tsx':
+      return 'typescript'
+    case 'go':
+      return 'go'
+    case 'rs':
+      return 'rust'
+    case 'java':
+      return 'java'
+    case 'cs':
+      return 'csharp'
+    case 'c':
+    case 'h':
+      return 'c'
+    case 'cpp':
+    case 'cc':
+    case 'cxx':
+    case 'hpp':
+      return 'cpp'
+    case 'rb':
+      return 'ruby'
+    case 'php':
+      return 'php'
+    case 'html':
+      return 'html'
+    case 'css':
+    case 'scss':
+      return 'css'
+    case 'json':
+      return 'json'
+    case 'yaml':
+    case 'yml':
+      return 'yaml'
+    case 'md':
+      return 'markdown'
+    case 'sql':
+      return 'sql'
+    case 'sh':
+    case 'bash':
+      return 'shell'
+    case 'py':
+    default:
+      return 'python'
+  }
+}
+
 export const CodePage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const repoId = Number(id)
@@ -358,7 +412,7 @@ export const CodePage: React.FC = () => {
             <ErrorBox message={filesError} onRetry={loadFiles} />
           ) : files.length === 0 ? (
             <div style={{ padding: '1rem', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-              No Python files were found.
+              No source files were found.
             </div>
           ) : (
             <div>{fileTree.map(renderTreeNode)}</div>
@@ -419,7 +473,7 @@ export const CodePage: React.FC = () => {
             <Suspense fallback={<LoadingBox height="100%" lines={1} />}>
               <MonacoEditor
                 height="100%"
-                language="python"
+                language={getEditorLanguage(activePath)}
                 theme={resolvedTheme === 'dark' ? 'vs-dark' : 'light'}
                 value={content}
                 onMount={handleEditorMount}
