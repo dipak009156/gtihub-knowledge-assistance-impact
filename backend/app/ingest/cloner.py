@@ -14,6 +14,7 @@ def clone_repo(repo_id: int, url: str) -> Path:
         ["git", "clone", "--depth", "50", url, str(target)],
         check=True,
         capture_output=True,
+        text=True,
         timeout=CLONE_TIMEOUT_SECONDS,
     )
     return target
