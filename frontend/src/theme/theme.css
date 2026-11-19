@@ -1770,6 +1770,25 @@ label {
   }
 }
 
+/* ── GPU Performance & Motion Acceleration ── */
+.hero-flank-container,
+.blueprint-flank-container,
+.hero-3d-editor,
+.blueprint-3d-editor,
+.hero-3d-cube,
+.blueprint-3d-cube {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.card-hover,
+.bubble-nav-item,
+.btn {
+  will-change: transform, box-shadow;
+  backface-visibility: hidden;
+}
+
 /* ── Accessibility & Reduced Motion ── */
 :focus-visible {
   outline: 2px solid var(--accent);
