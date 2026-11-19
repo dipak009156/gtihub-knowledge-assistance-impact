@@ -27,7 +27,11 @@ def callers_map(edges: list[dict]) -> dict[int, list[tuple[int, str]]]:
 def walk_callers(
     m: dict[int, list[tuple[int, str]]], start_id: int, depth: int
 ) -> dict[int, tuple[int, bool]]:
-    """Traverse callers backwards from start_id up to depth, returning {caller_id: (distance, is_uncertain)}."""
+    """Traverse callers backwards from start_id up to depth, returning {caller_id: (distance, is_uncertain)}.
+
+    Uses BFS. If a node is reachable by multiple paths, the shortest certain
+    path wins (lowest distance; prefer certain over uncertain at same distance).
+    """
     found: dict[int, tuple[int, bool]] = {}
     seen = {start_id}
     queue: deque[tuple[int, int, bool]] = deque([(start_id, 0, False)])
@@ -37,12 +41,19 @@ def walk_callers(
         if dist == depth:
             continue
         for caller_id, certainty in m.get(node, []):
+            is_unc = unc or (certainty == "uncertain")
+            new_dist = dist + 1
+            if caller_id in found:
+                prev_dist, prev_unc = found[caller_id]
+                # Update only if shorter path or same distance but more certain
+                if new_dist < prev_dist or (new_dist == prev_dist and prev_unc and not is_unc):
+                    found[caller_id] = (new_dist, is_unc)
+                continue
             if caller_id in seen:
                 continue
             seen.add(caller_id)
-            is_unc = unc or (certainty == "uncertain")
-            found[caller_id] = (dist + 1, is_unc)
-            queue.append((caller_id, dist + 1, is_unc))
+            found[caller_id] = (new_dist, is_unc)
+            queue.append((caller_id, new_dist, is_unc))
     return found
 
 
