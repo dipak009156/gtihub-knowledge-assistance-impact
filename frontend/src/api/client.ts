@@ -136,8 +136,13 @@ export const getGraph = (
 }
 
 // 10. Impact scored list
-export const getImpact = (id: number, symbolId?: number, depth: number = 2) => {
-  const params = new URLSearchParams({ depth: String(depth) })
+export const getImpact = (
+  id: number,
+  symbolId?: number,
+  depth: number = 2,
+  variant: string = 'combined'
+) => {
+  const params = new URLSearchParams({ depth: String(depth), variant })
   if (symbolId) params.set('symbol_id', String(symbolId))
   return request<Impact>(
     `/api/repos/${id}/impact?${params.toString()}`,
