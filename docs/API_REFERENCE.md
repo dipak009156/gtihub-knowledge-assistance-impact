@@ -68,3 +68,11 @@ All backend endpoints are served under `/api` and documented interactively via O
 * `POST /api/repos/{id}/chat`: Questions codebase architecture with grounded citations.
   * Body: `{"query": "How is authentication handled?", "history": []}`
   * Returns response text with explicit file/line citations and verified code citations.
+
+---
+
+## 8. Executive Codebase Audit Report
+
+* `GET /api/repos/{id}/report`: Compiles full executive audit report JSON (scorecard grade, radar scores, metrics, high-risk ML files, hubs, recommendations).
+* `GET /api/repos/{id}/report/markdown`: Generates downloadable `.md` audit report with attachment headers.
+

@@ -330,5 +330,46 @@ export const handlers = {
   ): SequenceFlowResponse => {
     return { ...mockSequenceFlowResponse }
   },
+
+  getExecutiveReport: (id: number) => ({
+    repository: {
+      id,
+      owner: 'pallets',
+      name: 'click',
+      url: 'https://github.com/pallets/click',
+      status: 'ready',
+      generated_at: new Date().toISOString(),
+    },
+    scorecard: {
+      grade: 'A',
+      overall_score: 91,
+      architecture_score: 94,
+      reliability_score: 88,
+      testability_score: 92,
+    },
+    metrics: {
+      total_files: 24,
+      total_lines_of_code: 8420,
+      total_symbols: 312,
+      total_call_edges: 498,
+      certainty_percentage: 95.8,
+      languages: { py: 24 },
+    },
+    top_hubs: [
+      { id: 1, name: 'command', qualified_name: 'click.core.command', kind: 'function', callers: 42, callees: 6 },
+      { id: 2, name: 'group', qualified_name: 'click.core.group', kind: 'function', callers: 31, callees: 4 },
+      { id: 3, name: 'echo', qualified_name: 'click.utils.echo', kind: 'function', callers: 28, callees: 3 },
+    ],
+    hotspots: [
+      { path: 'click/core.py', changes: 85, connections: 42, score: 0.92 },
+      { path: 'click/types.py', changes: 64, connections: 28, score: 0.78 },
+    ],
+    top_defect_risks: [
+      { file_path: 'click/core.py', complexity: 28, churn: 85, defect_propensity_score: 0.48, risk_level: 'Medium' },
+    ],
+    recommendations: [
+      { priority: 'MEDIUM' as const, category: 'Coupling', message: 'Core command decorator has 42 callers. Maintain robust regression testing.' },
+    ],
+  }),
 }
 

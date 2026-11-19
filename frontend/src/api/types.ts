@@ -293,4 +293,61 @@ export type SequenceFlowResponse = {
   steps: SequenceStep[]
 }
 
+export type Scorecard = {
+  grade: string
+  overall_score: number
+  architecture_score: number
+  reliability_score: number
+  testability_score: number
+}
+
+export type ReportRecommendation = {
+  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM'
+  category: string
+  message: string
+}
+
+export type ExecutiveReport = {
+  repository: {
+    id: number
+    owner: string
+    name: string
+    url: string
+    status: string
+    generated_at: string
+  }
+  scorecard: Scorecard
+  metrics: {
+    total_files: number
+    total_lines_of_code: number
+    total_symbols: number
+    total_call_edges: number
+    certainty_percentage: number
+    languages: Record<string, number>
+  }
+  top_hubs: Array<{
+    id: number
+    name: string
+    qualified_name: string
+    kind: string
+    callers: number
+    callees: number
+  }>
+  hotspots: Array<{
+    path: string
+    changes: number
+    connections: number
+    score: number
+  }>
+  top_defect_risks: Array<{
+    file_path: string
+    complexity: number
+    churn: number
+    defect_propensity_score: number
+    risk_level: string
+  }>
+  recommendations: ReportRecommendation[]
+}
+
+
 

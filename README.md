@@ -18,6 +18,8 @@
 * 🧠 **Machine Learning Bug Propensity**: Statistical defect prediction combining cyclomatic complexity, churn velocity, and dependency graph centrality.
 * 🤖 **Agentic Code Review & Test Synthesis**: Autonomous PR reviewer detecting contract breaking changes and synthesizing targeted pytest unit tests.
 * ⌨️ **Global Command Palette (`Ctrl+K`)**: Rapid symbol jumping, file lookup, and screen routing directly from the keyboard.
+* 📋 **1-Click Executive Audit Report**: Health scorecard (Grades A+ to F, architecture dials, defect density) with instant Markdown export & PDF printing.
+* 🚀 **GitHub Action CI/CD Guard (`action.yml`)**: Automated pull request guard analyzing blast radius and posting rich step summaries.
 * 💬 **AI Code Chat with Grounded Citations**: Interactive architecture Q&A backed by LLM reasoning with strict citation grounding.
 
 ---

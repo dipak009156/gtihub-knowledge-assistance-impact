@@ -14,10 +14,17 @@ import {
   Send,
   Sparkles,
   Loader2,
+  Award,
+  Download,
+  Printer,
+  X,
+  ShieldCheck,
+  AlertTriangle,
+  CheckCircle2,
 } from 'lucide-react'
-import { motion } from 'framer-motion'
-import { chat, getHotspots, getOverview } from '../../api/client'
-import type { Hotspot, Overview, Source } from '../../api/types'
+import { motion, AnimatePresence } from 'framer-motion'
+import { chat, getHotspots, getOverview, getExecutiveReport, downloadReportMarkdown } from '../../api/client'
+import type { Hotspot, Overview, Source, ExecutiveReport } from '../../api/types'
 import { CodeLink } from '../../components/CodeLink'
 import { EmptyState } from '../../components/EmptyState'
 import { ErrorBox } from '../../components/ErrorBox'
@@ -42,6 +49,28 @@ export const OverviewPage: React.FC = () => {
     grounded: boolean
   } | null>(null)
   const [chatError, setChatError] = useState<string | null>(null)
+
+  // Executive Audit Report Modal state
+  const [reportModalOpen, setReportModalOpen] = useState(false)
+  const [reportLoading, setReportLoading] = useState(false)
+  const [reportData, setReportData] = useState<ExecutiveReport | null>(null)
+  const [reportError, setReportError] = useState<string | null>(null)
+
+  const handleOpenReport = async () => {
+    setReportModalOpen(true)
+    if (reportData || !repoId) return
+    setReportLoading(true)
+    setReportError(null)
+    try {
+      const data = await getExecutiveReport(repoId)
+      setReportData(data)
+    } catch (err: unknown) {
+      const apiErr = err as { message?: string }
+      setReportError(apiErr.message || 'Could not load executive audit report.')
+    } finally {
+      setReportLoading(false)
+    }
+  }
 
   const handleAskQuestion = async (qText?: string) => {
     const q = (qText || chatQuestion).trim()
@@ -151,23 +180,46 @@ export const OverviewPage: React.FC = () => {
 
   return (
     <div style={{ padding: '1.75rem 2rem', maxWidth: '1240px' }}>
-      {/* Header */}
-      <div className="page-header" style={{ marginBottom: '2rem' }}>
-        <h1
-          className="page-title"
-          style={{
-            fontSize: 'var(--font-size-2xl)',
-            fontWeight: 800,
-            color: 'var(--text)',
-            letterSpacing: 'var(--letter-spacing-tight)',
-            marginBottom: '0.25rem',
-          }}
+      {/* Header with Title & Executive Audit Report Action */}
+      <div
+        className="page-header"
+        style={{
+          marginBottom: '2rem',
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '1rem',
+        }}
+      >
+        <div>
+          <h1
+            className="page-title"
+            style={{
+              fontSize: 'var(--font-size-2xl)',
+              fontWeight: 800,
+              color: 'var(--text)',
+              letterSpacing: 'var(--letter-spacing-tight)',
+              marginBottom: '0.25rem',
+            }}
+          >
+            {overview.repo.owner}/{overview.repo.name}
+          </h1>
+          <p className="page-subtitle" style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-base)', lineHeight: 'var(--line-height-normal)' }}>
+            Repository structure, symbol index, and deterministic architecture verification.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleOpenReport}
+          className="btn btn-primary"
+          style={{ gap: '0.5rem', boxShadow: 'var(--shadow-sm)', whiteSpace: 'nowrap' }}
+          title="Open Executive Architecture & Risk Audit Report"
         >
-          {overview.repo.owner}/{overview.repo.name}
-        </h1>
-        <p className="page-subtitle" style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-base)', lineHeight: 'var(--line-height-normal)' }}>
-          Repository structure, symbol index, and impact metrics.
-        </p>
+          <Award size={16} />
+          <span>Executive Audit Report</span>
+        </button>
       </div>
 
       {/* Metric Stat Cards with Staggered Animation */}
@@ -513,6 +565,271 @@ export const OverviewPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Executive Audit Report Modal */}
+      <AnimatePresence>
+        {reportModalOpen && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.65)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              zIndex: 100,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1.5rem',
+            }}
+            onClick={() => setReportModalOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+              className="card"
+              style={{
+                width: '100%',
+                maxWidth: '820px',
+                maxHeight: '90vh',
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '1.75rem',
+                backgroundColor: 'var(--surface-card)',
+                boxShadow: 'var(--shadow-lg)',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border-strong)',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Modal Header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.85rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: 'var(--radius)', background: 'rgba(223, 51, 51, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
+                    <ShieldCheck size={20} />
+                  </div>
+                  <div>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text)' }}>
+                      Codebase Architecture & Risk Audit
+                    </h2>
+                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      Deterministic AST call graph, ML bug risk scoring, and maintainability metrics.
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => downloadReportMarkdown(repoId, overview.repo.name)}
+                    className="btn btn-secondary btn-sm"
+                    style={{ gap: '0.35rem', fontSize: '0.75rem' }}
+                    title="Download Markdown Report"
+                  >
+                    <Download size={13} />
+                    <span>Download .md</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="btn btn-secondary btn-sm"
+                    style={{ gap: '0.35rem', fontSize: '0.75rem' }}
+                    title="Print or Save PDF"
+                  >
+                    <Printer size={13} />
+                    <span>Print PDF</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setReportModalOpen(false)}
+                    className="btn btn-ghost btn-sm"
+                    style={{ padding: '4px' }}
+                    title="Close"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.25rem' }}>
+                {reportLoading ? (
+                  <div style={{ padding: '3rem' }}>
+                    <LoadingBox height={160} text="Compiling architectural audit & ML predictions..." />
+                  </div>
+                ) : reportError ? (
+                  <ErrorBox message={reportError} onRetry={handleOpenReport} />
+                ) : reportData ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    {/* Scorecard Banner */}
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '140px 1fr 1fr 1fr',
+                        gap: '1rem',
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 'var(--radius)',
+                        padding: '1.25rem',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <div style={{ textAlign: 'center', borderRight: '1px solid var(--border)', paddingRight: '1rem' }}>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                          Health Grade
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '2.75rem',
+                            fontWeight: 900,
+                            color: reportData.scorecard.grade.startsWith('A') ? '#10B981' : reportData.scorecard.grade.startsWith('B') ? '#0EA5E9' : '#F59E0B',
+                            lineHeight: 1.1,
+                            marginTop: '0.2rem',
+                          }}
+                        >
+                          {reportData.scorecard.grade}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', fontWeight: 600 }}>
+                          Score: {reportData.scorecard.overall_score}/100
+                        </div>
+                      </div>
+
+                      <div style={{ padding: '0 0.5rem' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.25rem' }}>
+                          Architecture
+                        </div>
+                        <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text)' }}>
+                          {reportData.scorecard.architecture_score}%
+                        </div>
+                        <div style={{ fontSize: '0.6875rem', color: '#10B981', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <CheckCircle2 size={11} /> Verified coupling
+                        </div>
+                      </div>
+
+                      <div style={{ padding: '0 0.5rem' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.25rem' }}>
+                          Reliability (ML)
+                        </div>
+                        <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text)' }}>
+                          {reportData.scorecard.reliability_score}%
+                        </div>
+                        <div style={{ fontSize: '0.6875rem', color: 'var(--text-subtle)' }}>
+                          Defect resistance
+                        </div>
+                      </div>
+
+                      <div style={{ padding: '0 0.5rem' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.25rem' }}>
+                          Testability
+                        </div>
+                        <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text)' }}>
+                          {reportData.scorecard.testability_score}%
+                        </div>
+                        <div style={{ fontSize: '0.6875rem', color: 'var(--text-subtle)' }}>
+                          Churn protection
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Metrics Grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+                      <div className="card" style={{ padding: '0.85rem' }}>
+                        <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Analyzed Files</div>
+                        <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)' }}>{reportData.metrics.total_files}</div>
+                      </div>
+                      <div className="card" style={{ padding: '0.85rem' }}>
+                        <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Lines of Code</div>
+                        <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)' }}>{reportData.metrics.total_lines_of_code.toLocaleString()}</div>
+                      </div>
+                      <div className="card" style={{ padding: '0.85rem' }}>
+                        <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Call References</div>
+                        <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)' }}>{reportData.metrics.total_call_edges}</div>
+                      </div>
+                      <div className="card" style={{ padding: '0.85rem' }}>
+                        <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Call Certainty</div>
+                        <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#10B981' }}>{reportData.metrics.certainty_percentage}%</div>
+                      </div>
+                    </div>
+
+                    {/* Top Defect Risks Table */}
+                    {reportData.top_defect_risks.length > 0 && (
+                      <div>
+                        <h4 style={{ fontSize: '0.875rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: 'var(--text)' }}>
+                          High-Risk Defect Propensity Files (ML Predicted)
+                        </h4>
+                        <table className="table" style={{ fontSize: '0.75rem', width: '100%' }}>
+                          <thead>
+                            <tr>
+                              <th>File Path</th>
+                              <th>Complexity</th>
+                              <th>Churn</th>
+                              <th>Risk Score</th>
+                              <th>Risk Level</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {reportData.top_defect_risks.map((p, idx) => (
+                              <tr key={idx}>
+                                <td style={{ fontFamily: 'var(--font-mono)' }}>{p.file_path}</td>
+                                <td>{p.complexity}</td>
+                                <td>{p.churn}</td>
+                                <td style={{ fontWeight: 600 }}>{p.defect_propensity_score.toFixed(2)}</td>
+                                <td>
+                                  <span className={`badge ${p.risk_level === 'High' ? 'badge-danger' : 'badge-warning'}`}>
+                                    {p.risk_level}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {/* Actionable Recommendations */}
+                    {reportData.recommendations.length > 0 && (
+                      <div>
+                        <h4 style={{ fontSize: '0.875rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: 'var(--text)' }}>
+                          Actionable Architecture Recommendations
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          {reportData.recommendations.map((rec, idx) => (
+                            <div
+                              key={idx}
+                              style={{
+                                padding: '0.65rem 0.85rem',
+                                background: 'var(--surface)',
+                                border: '1px solid var(--border)',
+                                borderRadius: 'var(--radius)',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: '0.65rem',
+                              }}
+                            >
+                              <AlertTriangle size={15} style={{ color: rec.priority === 'CRITICAL' ? 'var(--danger)' : '#F59E0B', flexShrink: 0, marginTop: '2px' }} />
+                              <div>
+                                <span style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+                                  [{rec.priority}] {rec.category}:
+                                </span>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text)', marginTop: '2px' }}>
+                                  {rec.message}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -467,3 +467,21 @@ export const generateSequenceFlow = (
     }
   )
 
+// 20. Executive Codebase Audit Report
+export const getExecutiveReport = (id: number) =>
+  request<any>(
+    `/api/repos/${id}/report`,
+    () => handlers.getExecutiveReport(id)
+  )
+
+export const downloadReportMarkdown = (id: number, repoName: string) => {
+  const url = `/api/repos/${id}/report/markdown`
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${repoName}-codebase-audit-report.md`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+
