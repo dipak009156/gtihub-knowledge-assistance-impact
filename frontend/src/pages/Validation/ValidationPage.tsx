@@ -132,7 +132,7 @@ export const ValidationPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ padding: '2rem', maxWidth: '1080px', margin: '0 auto' }}>
+      <div style={{ padding: '1.75rem 2rem', maxWidth: '1240px' }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em', marginBottom: '0.25rem' }}>
           Validation & Empirical Proof
         </h1>
@@ -145,7 +145,11 @@ export const ValidationPage: React.FC = () => {
   }
 
   if (error) {
-    return <ErrorBox message={error} onRetry={fetchValidation} />
+    return (
+      <div style={{ padding: '1.75rem 2rem', maxWidth: '1240px' }}>
+        <ErrorBox message={error} onRetry={fetchValidation} />
+      </div>
+    )
   }
 
   const status = validation?.status || 'none'
@@ -156,7 +160,7 @@ export const ValidationPage: React.FC = () => {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      style={{ padding: '2rem', maxWidth: '1080px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}
+      style={{ padding: '1.75rem 2rem', maxWidth: '1240px', display: 'flex', flexDirection: 'column', gap: '2rem' }}
     >
       {/* Header section */}
       <div

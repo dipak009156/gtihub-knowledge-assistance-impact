@@ -309,12 +309,12 @@ export const CodePage: React.FC = () => {
     )
   }
 
-  // Render tree node recursively
-  const renderTreeNode = (node: FileTreeNode) => {
+  // Render tree node recursively with aligned hierarchical indentation
+  const renderTreeNode = (node: FileTreeNode, depth = 0): React.ReactNode => {
     if (node.isFolder) {
       const isOpen = openFolders[node.path] ?? true
       return (
-        <div key={node.path} style={{ marginLeft: '0.5rem' }}>
+        <div key={node.path}>
           <div
             onClick={() =>
               setOpenFolders((prev) => ({ ...prev, [node.path]: !isOpen }))
@@ -322,22 +322,32 @@ export const CodePage: React.FC = () => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.25rem 0.4rem',
+              gap: '0.45rem',
+              padding: '0.3rem 0.5rem',
+              paddingLeft: `${depth * 1.05 + 0.5}rem`,
               borderRadius: 'var(--radius-sm)',
               cursor: 'pointer',
               fontSize: '0.8125rem',
               fontWeight: 600,
               color: 'var(--text-muted)',
               userSelect: 'none',
+              transition: 'background-color 0.15s ease, color 0.15s ease',
             }}
           >
-            {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            {isOpen ? <FolderOpen size={14} style={{ color: 'var(--accent)' }} /> : <Folder size={14} style={{ color: 'var(--text-subtle)' }} />}
-            <span>{node.name}</span>
+            <span style={{ display: 'inline-flex', width: '14px', justifyContent: 'center', flexShrink: 0 }}>
+              {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </span>
+            {isOpen ? (
+              <FolderOpen size={15} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+            ) : (
+              <Folder size={15} style={{ color: 'var(--text-subtle)', flexShrink: 0 }} />
+            )}
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {node.name}
+            </span>
           </div>
           {isOpen && node.children && (
-            <div>{node.children.map(renderTreeNode)}</div>
+            <div>{node.children.map((child) => renderTreeNode(child, depth + 1))}</div>
           )}
         </div>
       )
@@ -349,11 +359,11 @@ export const CodePage: React.FC = () => {
         key={node.path}
         onClick={() => handleSelectFile(node.path)}
         style={{
-          marginLeft: '1.25rem',
           display: 'flex',
           alignItems: 'center',
           gap: '0.45rem',
-          padding: '0.25rem 0.5rem',
+          padding: '0.3rem 0.5rem',
+          paddingLeft: `${depth * 1.05 + 0.5}rem`,
           borderRadius: 'var(--radius-sm)',
           cursor: 'pointer',
           fontSize: '0.8125rem',
@@ -361,9 +371,12 @@ export const CodePage: React.FC = () => {
           color: isActive ? 'var(--accent)' : 'var(--text)',
           fontWeight: isActive ? 600 : 400,
           fontFamily: 'var(--font-mono)',
+          transition: 'all 0.15s ease',
         }}
       >
-        <FileCode2 size={13} style={{ color: isActive ? 'var(--accent)' : 'var(--text-subtle)' }} />
+        {/* Fixed 14px spacer so file icons line up directly with folder icons */}
+        <span style={{ display: 'inline-flex', width: '14px', flexShrink: 0 }} />
+        <FileCode2 size={14} style={{ color: isActive ? 'var(--accent)' : 'var(--text-subtle)', flexShrink: 0 }} />
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {node.name}
         </span>
@@ -391,8 +404,18 @@ export const CodePage: React.FC = () => {
           flexShrink: 0,
         }}
       >
-        <div style={{ padding: '0.75rem', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ position: 'relative' }}>
+        <div
+          style={{
+            padding: '0.5rem 0.75rem',
+            height: '44px',
+            boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'center',
+            borderBottom: '1px solid var(--border)',
+            background: 'var(--surface-secondary)',
+          }}
+        >
+          <div style={{ position: 'relative', width: '100%' }}>
             <Search size={14} style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-subtle)' }} />
             <input
               type="text"
@@ -400,7 +423,7 @@ export const CodePage: React.FC = () => {
               placeholder="Filter files..."
               value={fileFilter}
               onChange={(e) => setFileFilter(e.target.value)}
-              style={{ paddingLeft: '2rem', fontSize: '0.8125rem' }}
+              style={{ paddingLeft: '2rem', fontSize: '0.8125rem', height: '30px' }}
             />
           </div>
         </div>
@@ -415,7 +438,7 @@ export const CodePage: React.FC = () => {
               No source files were found.
             </div>
           ) : (
-            <div>{fileTree.map(renderTreeNode)}</div>
+            <div>{fileTree.map((node) => renderTreeNode(node, 0))}</div>
           )}
         </div>
       </div>
@@ -434,7 +457,9 @@ export const CodePage: React.FC = () => {
         {/* Editor Tab Bar */}
         <div
           style={{
-            padding: '0.5rem 1rem',
+            padding: '0 1rem',
+            height: '44px',
+            boxSizing: 'border-box',
             background: 'var(--surface-secondary)',
             borderBottom: '1px solid var(--border)',
             display: 'flex',
@@ -501,15 +526,26 @@ export const CodePage: React.FC = () => {
           display: 'flex',
           flexDirection: 'column',
           flexShrink: 0,
-          overflowY: 'auto',
-          padding: '1.25rem',
         }}
       >
-        <h2 style={{ fontSize: '0.9375rem', fontWeight: 700, marginBottom: '0.875rem', color: 'var(--text)' }}>
-          Call Relations
-        </h2>
+        <div
+          style={{
+            height: '44px',
+            boxSizing: 'border-box',
+            padding: '0 1rem',
+            display: 'flex',
+            alignItems: 'center',
+            borderBottom: '1px solid var(--border)',
+            background: 'var(--surface-secondary)',
+          }}
+        >
+          <h2 style={{ fontSize: '0.8125rem', fontWeight: 700, margin: 0, color: 'var(--text)' }}>
+            Call Relations
+          </h2>
+        </div>
 
-        {activeSymbol ? (
+        <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}>
+          {activeSymbol ? (
           <div>
             <div
               className="card"
@@ -646,6 +682,7 @@ export const CodePage: React.FC = () => {
             Click or position cursor on any function to view its callers and callees.
           </div>
         )}
+        </div>
       </div>
     </div>
   )

@@ -91,7 +91,7 @@ export const OverviewPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ padding: '2rem 2.5rem' }}>
+      <div style={{ padding: '1.75rem 2rem', maxWidth: '1240px' }}>
         <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '1.5rem', letterSpacing: '-0.02em' }}>
           Overview
         </h1>
@@ -109,7 +109,7 @@ export const OverviewPage: React.FC = () => {
 
   if (error) {
     return (
-      <div style={{ padding: '2rem 2.5rem' }}>
+      <div style={{ padding: '1.75rem 2rem', maxWidth: '1240px' }}>
         <ErrorBox message={error} onRetry={loadData} />
       </div>
     )
@@ -117,7 +117,7 @@ export const OverviewPage: React.FC = () => {
 
   if (!overview) {
     return (
-      <div style={{ padding: '2rem 2.5rem' }}>
+      <div style={{ padding: '1.75rem 2rem', maxWidth: '1240px' }}>
         <EmptyState
           title="No overview data"
           description="We could not find statistics for this repository."
@@ -150,7 +150,7 @@ export const OverviewPage: React.FC = () => {
   ]
 
   return (
-    <div style={{ padding: '2rem 2.5rem', maxWidth: '1200px' }}>
+    <div style={{ padding: '1.75rem 2rem', maxWidth: '1240px' }}>
       {/* Header */}
       <div style={{ marginBottom: '2rem' }}>
         <h1
@@ -449,7 +449,10 @@ export const OverviewPage: React.FC = () => {
             <table className="table">
               <thead>
                 <tr>
-                  <th>File Path</th>
+                  <th style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <FileCode2 size={13} style={{ color: 'var(--text-subtle)' }} />
+                    <span>File Path</span>
+                  </th>
                   <th>Changes</th>
                   <th>Connections</th>
                   <th>Impact Score</th>
@@ -462,9 +465,12 @@ export const OverviewPage: React.FC = () => {
                   return (
                     <tr key={h.path}>
                       <td>
-                        <CodeLink file={h.path} repoId={repoId}>
-                          {h.path}
-                        </CodeLink>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                          <FileCode2 size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                          <CodeLink file={h.path} repoId={repoId}>
+                            {h.path}
+                          </CodeLink>
+                        </div>
                       </td>
                       <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}>
                         {h.changes}

@@ -943,6 +943,31 @@ code, pre, kbd {
   background-color: var(--glass-bubble-hover);
 }
 
+/* ── Code Link & Tree Node Alignments ── */
+.code-link {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.code-link:hover {
+  text-decoration: underline;
+  color: var(--accent-hover);
+}
+
+.tree-node-row {
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.tree-node-row:hover {
+  background-color: var(--glass-surface-subtle);
+  color: var(--text);
+}
+
 /* ── Empty State ── */
 .empty-state {
   display: flex;

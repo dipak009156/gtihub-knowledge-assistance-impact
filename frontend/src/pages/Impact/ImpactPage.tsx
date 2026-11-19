@@ -216,7 +216,7 @@ export const ImpactPage: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: '1120px', margin: '0 auto', padding: '2rem 2.5rem' }}>
+    <div style={{ maxWidth: '1240px', padding: '1.75rem 2rem' }}>
       {/* Title & Explainer Header */}
       <div style={{ marginBottom: '1.75rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.35rem' }}>

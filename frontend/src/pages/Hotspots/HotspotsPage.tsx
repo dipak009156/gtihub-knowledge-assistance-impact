@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Flame, ArrowUpDown } from 'lucide-react'
+import { Flame, ArrowUpDown, FileCode2 } from 'lucide-react'
 import { getHotspots } from '../../api/client'
 import type { Hotspot } from '../../api/types'
 import { EmptyState } from '../../components/EmptyState'
@@ -73,7 +73,7 @@ export const HotspotsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ padding: '2rem 2.5rem', maxWidth: '1080px', margin: '0 auto' }}>
+      <div style={{ padding: '1.75rem 2rem', maxWidth: '1240px' }}>
         <h1 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.25rem', letterSpacing: '-0.02em' }}>
           Hotspot Files
         </h1>
@@ -87,7 +87,7 @@ export const HotspotsPage: React.FC = () => {
 
   if (error) {
     return (
-      <div style={{ padding: '2rem 2.5rem', maxWidth: '1080px', margin: '0 auto' }}>
+      <div style={{ padding: '1.75rem 2rem', maxWidth: '1240px' }}>
         <ErrorBox message={error} onRetry={loadData} />
       </div>
     )
@@ -95,7 +95,7 @@ export const HotspotsPage: React.FC = () => {
 
   if (hotspots.length === 0) {
     return (
-      <div style={{ padding: '2rem 2.5rem', maxWidth: '1080px', margin: '0 auto' }}>
+      <div style={{ padding: '1.75rem 2rem', maxWidth: '1240px' }}>
         <EmptyState
           icon={Flame}
           title="No git history was found for this project"
@@ -108,7 +108,7 @@ export const HotspotsPage: React.FC = () => {
   }
 
   return (
-    <div style={{ padding: '2rem 2.5rem', maxWidth: '1080px', margin: '0 auto' }}>
+    <div style={{ padding: '1.75rem 2rem', maxWidth: '1240px' }}>
       <div style={{ marginBottom: '2rem' }}>
         <h1
           style={{
@@ -176,9 +176,12 @@ export const HotspotsPage: React.FC = () => {
                     #{index + 1}
                   </td>
                   <td>
-                    <CodeLink file={h.path} repoId={repoId}>
-                      {h.path}
-                    </CodeLink>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                      <FileCode2 size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                      <CodeLink file={h.path} repoId={repoId}>
+                        {h.path}
+                      </CodeLink>
+                    </div>
                   </td>
                   <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}>
                     {h.changes} commits

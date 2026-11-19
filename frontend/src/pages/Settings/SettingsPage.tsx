@@ -14,7 +14,7 @@ export const SettingsPage: React.FC = () => {
   }
 
   return (
-    <div style={{ padding: '2rem 2.5rem', maxWidth: '960px', margin: '0 auto' }}>
+    <div style={{ padding: '1.75rem 2rem', maxWidth: '1240px' }}>
       <div style={{ marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
           <Settings size={22} style={{ color: 'var(--accent)' }} />

@@ -140,8 +140,7 @@ export const ChatPage: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
       style={{
-        maxWidth: '960px',
-        margin: '0 auto',
+        maxWidth: '1240px',
         padding: '1.5rem 2rem',
         display: 'flex',
         flexDirection: 'column',

@@ -1,42 +1,17 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight, AlertCircle } from 'lucide-react'
+import { ArrowRight, AlertCircle, Sparkles, FolderTree, ShieldCheck } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { BrandIcon } from '../../components/BrandIcon'
 import { GithubIcon } from '../../components/GithubIcon'
 import { GitHubLoginModal } from '../../components/GitHubLoginModal'
 import { ThemeToggle } from '../../components/ThemeToggle'
-import { useAuth } from '../../context/AuthContext'
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate()
-  const { registerWithCredentials } = useAuth()
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading] = useState(false)
   const [showGithubModal, setShowGithubModal] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name || !email) {
-      setError('Please fill in all registration fields.')
-      return
-    }
-
-    setLoading(true)
-    setError(null)
-    try {
-      await registerWithCredentials(name, email, password)
-      navigate('/')
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Could not create account.'
-      setError(msg)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [error] = useState<string | null>(null)
 
   const handleGitHubOAuth = () => {
     setShowGithubModal(true)
@@ -145,11 +120,11 @@ export const RegisterPage: React.FC = () => {
               GitHub Knowledge Assistance
             </span>
           </Link>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em' }}>
-            Create developer account
+          <h1 style={{ fontSize: '1.625rem', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>
+            Get started with GitHub
           </h1>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-            Start analyzing codebases and exploring dependency graphs.
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.35rem', lineHeight: 1.5 }}>
+            No password needed. Connect seamlessly with your GitHub account to start analyzing codebases.
           </p>
         </div>
 
@@ -176,98 +151,102 @@ export const RegisterPage: React.FC = () => {
             </div>
           )}
 
+          {/* Primary GitHub Sign-Up Button */}
           <button
             type="button"
-            className="btn btn-secondary"
+            className="btn btn-primary"
             onClick={handleGitHubOAuth}
             disabled={loading}
-            style={{ width: '100%', marginBottom: '1.25rem', justifyContent: 'center' }}
-          >
-            <GithubIcon size={16} />
-            <span>Sign up with GitHub</span>
-          </button>
-
-          <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              margin: '1.25rem 0',
-              color: 'var(--text-subtle)',
-              fontSize: '0.75rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
+              width: '100%',
+              padding: '0.875rem 1.25rem',
+              fontSize: '0.9375rem',
+              fontWeight: 600,
+              justifyContent: 'center',
+              borderRadius: 'var(--radius-bubble)',
+              gap: '0.625rem',
+              boxShadow: '0 4px 14px rgba(223, 51, 51, 0.28)',
             }}
           >
-            <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-            <span style={{ padding: '0 0.75rem' }}>Or register with email</span>
-            <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+            <GithubIcon size={18} />
+            <span>Sign up with GitHub</span>
+            <ArrowRight size={16} />
+          </button>
+
+          {/* Benefits List */}
+          <div
+            style={{
+              marginTop: '1.5rem',
+              paddingTop: '1.25rem',
+              borderTop: '1px solid var(--border)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.85rem',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <div
+                style={{
+                  width: '26px',
+                  height: '26px',
+                  borderRadius: '50%',
+                  background: 'var(--accent-subtle)',
+                  color: 'var(--accent)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <Sparkles size={14} />
+              </div>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                <strong>Zero Setup Required</strong> &mdash; Link with GitHub in under 5 seconds.
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <div
+                style={{
+                  width: '26px',
+                  height: '26px',
+                  borderRadius: '50%',
+                  background: 'var(--accent-subtle)',
+                  color: 'var(--accent)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <FolderTree size={14} />
+              </div>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                <strong>Polyglot Parser</strong> &mdash; Instant indexing for Python, TS, JS, Go, Rust, Java, and C++.
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <div
+                style={{
+                  width: '26px',
+                  height: '26px',
+                  borderRadius: '50%',
+                  background: 'var(--accent-subtle)',
+                  color: 'var(--accent)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <ShieldCheck size={14} />
+              </div>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                <strong>Grounded AI Citations</strong> &mdash; Every answer cites exact AST node line numbers.
+              </div>
+            </div>
           </div>
-
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div>
-              <label
-                htmlFor="name"
-                style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.35rem' }}
-              >
-                Full Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                className="input"
-                placeholder="Ada Lovelace"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={loading}
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="reg-email"
-                style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.35rem' }}
-              >
-                Work Email
-              </label>
-              <input
-                id="reg-email"
-                type="email"
-                className="input"
-                placeholder="developer@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="reg-password"
-                style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.35rem' }}
-              >
-                Password
-              </label>
-              <input
-                id="reg-password"
-                type="password"
-                className="input"
-                placeholder="Minimum 8 characters"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={loading}
-              style={{ width: '100%', marginTop: '0.5rem', justifyContent: 'center' }}
-            >
-              <span>{loading ? 'Creating Account...' : 'Get Started'}</span>
-              <ArrowRight size={15} />
-            </button>
-          </form>
         </div>
 
         <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
@@ -287,4 +266,5 @@ export const RegisterPage: React.FC = () => {
     </div>
   )
 }
+
 export default RegisterPage
