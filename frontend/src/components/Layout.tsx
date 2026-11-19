@@ -12,6 +12,10 @@ import {
   MessageSquareCode,
   ShieldCheck,
   Settings,
+  Sparkles,
+  ExternalLink,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getRepo } from '../api/client'
@@ -23,6 +27,7 @@ import { LoadingBox } from './LoadingBox'
 import { Sidebar } from './Sidebar'
 import { StatusBadge } from './StatusBadge'
 import { ThemeToggle } from './ThemeToggle'
+import { CommandPalette } from './CommandPalette'
 
 export const Layout: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -34,6 +39,19 @@ export const Layout: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [is404, setIs404] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [paletteOpen, setPaletteOpen] = useState(false)
+
+  // Global Ctrl+K / Cmd+K Command Palette Trigger
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setPaletteOpen((prev) => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   const loadRepo = async () => {
     if (!repoId || isNaN(repoId)) {
@@ -71,6 +89,7 @@ export const Layout: React.FC = () => {
     if (pathname.endsWith('/code')) return 'Code Explorer'
     if (pathname.endsWith('/graph')) return 'Dependency Graph'
     if (pathname.endsWith('/impact')) return 'Impact Explorer'
+    if (pathname.endsWith('/intelligence')) return 'AI & ML Intelligence'
     if (pathname.endsWith('/hotspots')) return 'Hotspots'
     if (pathname.endsWith('/chat')) return 'AI Code Chat'
     if (pathname.endsWith('/validation')) return 'Validation'
@@ -155,101 +174,119 @@ export const Layout: React.FC = () => {
           />
         </svg>
 
-        {/* Top Header Bar */}
-        <header className="topbar" style={{ position: 'relative', zIndex: 10 }}>
-          <div className="topbar-left">
-            <nav className="breadcrumb" aria-label="Breadcrumb">
-              <Link to="/">Projects</Link>
-              <ChevronRight size={14} style={{ color: 'var(--text-subtle)' }} />
-              {repo && (
-                <>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}>
-                    {repo.owner}/{repo.name}
-                  </span>
-                  <ChevronRight size={14} style={{ color: 'var(--text-subtle)' }} />
-                </>
-              )}
-              <span className="breadcrumb-current">{getBreadcrumbTitle()}</span>
-            </nav>
-          </div>
+        {/* Unified Sleek Enterprise Repository Header */}
+        <header className="repo-unified-header">
+          <div className="repo-unified-topbar">
+            <div className="topbar-left" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <button
+                type="button"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="btn btn-ghost btn-sm"
+                style={{
+                  padding: '0.35rem 0.45rem',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--text-muted)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface)',
+                }}
+                title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                {sidebarCollapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
+              </button>
 
-          <div className="topbar-right">
-            {repo && <StatusBadge status={repo.status} />}
-            <div
-              className="badge badge-neutral"
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.75rem',
-                gap: '0.35rem',
-              }}
-            >
-              <GitBranch size={12} />
-              <span>main</span>
+              <nav className="breadcrumb" aria-label="Breadcrumb">
+                <Link to="/">Projects</Link>
+                <ChevronRight size={14} style={{ color: 'var(--text-subtle)' }} />
+                {repo && (
+                  <>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text)' }}>
+                      {repo.owner}/{repo.name}
+                    </span>
+                    <ChevronRight size={14} style={{ color: 'var(--text-subtle)' }} />
+                  </>
+                )}
+                <span className="breadcrumb-current">{getBreadcrumbTitle()}</span>
+              </nav>
             </div>
-            <ThemeToggle />
-          </div>
-        </header>
 
-        {/* Horizontal Navigation Tab Bar for 1-Click Access across all pages */}
-        {repo && (
-          <nav
-            aria-label="Repository sections"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              padding: '0 1.25rem',
-              margin: '0.5rem 1rem 0 0.75rem',
-              borderBottom: '1px solid var(--border)',
-              overflowX: 'auto',
-              scrollbarWidth: 'none',
-              position: 'relative',
-              zIndex: 10,
-            }}
-          >
-            {[
-              { label: 'Overview', path: `/repos/${repoId}`, icon: LayoutDashboard, end: true },
-              { label: 'Code Explorer', path: `/repos/${repoId}/code`, icon: FileCode2 },
-              { label: 'Dependency Graph', path: `/repos/${repoId}/graph`, icon: GitFork },
-              { label: 'Impact Explorer', path: `/repos/${repoId}/impact`, icon: Zap },
-              { label: 'Hotspots', path: `/repos/${repoId}/hotspots`, icon: Flame },
-              { label: 'AI Code Chat', path: `/repos/${repoId}/chat`, icon: MessageSquareCode },
-              { label: 'Validation', path: `/repos/${repoId}/validation`, icon: ShieldCheck },
-              { label: 'Settings', path: `/repos/${repoId}/settings`, icon: Settings },
-            ].map((tab) => {
-              const isActive = tab.end
-                ? location.pathname === tab.path
-                : location.pathname.startsWith(tab.path)
-              const TabIcon = tab.icon
-              return (
-                <NavLink
-                  key={tab.path}
-                  to={tab.path}
-                  end={tab.end}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.45rem',
-                    padding: '0.55rem 0.85rem',
-                    fontSize: '0.8125rem',
-                    fontWeight: isActive ? 600 : 500,
-                    color: isActive ? 'var(--accent)' : 'var(--text-muted)',
-                    borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
-                    textDecoration: 'none',
-                    whiteSpace: 'nowrap',
-                    borderRadius: 'var(--radius) var(--radius) 0 0',
-                    backgroundColor: isActive ? 'var(--accent-subtle)' : 'transparent',
-                    transition: 'all 0.15s ease',
-                    marginBottom: '-1px',
-                  }}
+            <div className="topbar-right" style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+              <button
+                type="button"
+                onClick={() => setPaletteOpen(true)}
+                className="command-trigger-btn"
+                title="Search symbols, files, actions (Ctrl + K)"
+              >
+                <Search size={13} style={{ color: 'var(--text-muted)' }} />
+                <span>Commands</span>
+                <kbd>Ctrl K</kbd>
+              </button>
+
+              {repo && <StatusBadge status={repo.status} />}
+              <div
+                className="badge badge-neutral"
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.75rem',
+                  gap: '0.35rem',
+                }}
+              >
+                <GitBranch size={12} />
+                <span>main</span>
+              </div>
+              {repo?.url && (
+                <a
+                  href={repo.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-ghost btn-sm"
+                  style={{ gap: '0.35rem', fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                  title="View on GitHub"
                 >
-                  <TabIcon size={14} style={{ color: isActive ? 'var(--accent)' : 'var(--text-subtle)' }} />
-                  <span>{tab.label}</span>
-                </NavLink>
-              )
-            })}
-          </nav>
-        )}
+                  <ExternalLink size={12} />
+                  <span>GitHub</span>
+                </a>
+              )}
+              <ThemeToggle />
+            </div>
+          </div>
+
+          {/* Horizontal Navigation Tab Bar for 1-Click Access across all pages */}
+          {repo && (
+            <nav className="repo-header-tabs" aria-label="Repository sections">
+              {[
+                { label: 'Overview', path: `/repos/${repoId}`, icon: LayoutDashboard, end: true },
+                { label: 'Code Explorer', path: `/repos/${repoId}/code`, icon: FileCode2 },
+                { label: 'Dependency Graph', path: `/repos/${repoId}/graph`, icon: GitFork },
+                { label: 'Impact Explorer', path: `/repos/${repoId}/impact`, icon: Zap },
+                { label: 'AI Intelligence', path: `/repos/${repoId}/intelligence`, icon: Sparkles },
+                { label: 'Hotspots', path: `/repos/${repoId}/hotspots`, icon: Flame },
+                { label: 'AI Code Chat', path: `/repos/${repoId}/chat`, icon: MessageSquareCode },
+                { label: 'Validation', path: `/repos/${repoId}/validation`, icon: ShieldCheck },
+                { label: 'Settings', path: `/repos/${repoId}/settings`, icon: Settings },
+              ].map((tab) => {
+                const isActive = tab.end
+                  ? location.pathname === tab.path
+                  : location.pathname.startsWith(tab.path)
+                const TabIcon = tab.icon
+                return (
+                  <NavLink
+                    key={tab.path}
+                    to={tab.path}
+                    end={tab.end}
+                    className={`repo-tab-link ${isActive ? 'active' : ''}`}
+                  >
+                    <TabIcon size={14} style={{ color: isActive ? 'var(--accent)' : 'var(--text-subtle)' }} />
+                    <span>{tab.label}</span>
+                  </NavLink>
+                )
+              })}
+            </nav>
+          )}
+        </header>
 
         {/* Dynamic Route Content with Smooth Motion Transition */}
         <main className="content-area" style={{ flex: 1, minWidth: 0 }}>
@@ -269,6 +306,13 @@ export const Layout: React.FC = () => {
           </ErrorBoundary>
         </main>
       </div>
+
+      {/* Global Command Palette (Ctrl+K / Cmd+K) */}
+      <CommandPalette
+        isOpen={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        repoId={repoId}
+      />
     </div>
   )
 }
