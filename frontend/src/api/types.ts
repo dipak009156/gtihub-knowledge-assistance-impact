@@ -51,7 +51,6 @@ export type Symbol = {
 
 export type RelationItem = Symbol & {
   certainty: Certainty
-  call_line: number
 }
 
 export type Relations = {
