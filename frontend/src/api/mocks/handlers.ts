@@ -188,7 +188,9 @@ export const handlers = {
           end_line: 0,
         },
         depth,
-        items: [],
+        variant: 'combined',
+        truncated: false,
+        results: [],
       }
     }
 
@@ -203,11 +205,13 @@ export const handlers = {
       }
     }
 
-    // Return empty items for other symbols to test empty state
+    // Return empty results for other symbols to test empty state
     return {
       target: sym,
       depth,
-      items: [],
+      variant: 'combined',
+      truncated: false,
+      results: [],
     }
   },
 
@@ -251,7 +255,7 @@ export const handlers = {
   getValidation: (_id: number): Validation => {
     const opts = getDevMockOptions()
     if (opts.returnEmptyData) {
-      return { status: 'none', runs: [], commits: [] }
+      return { status: 'none', commits_tested: 0, runs: [], commits: [] }
     }
 
     if (validationStatus === 'running') {
@@ -259,7 +263,7 @@ export const handlers = {
       if (elapsed > 4) {
         validationStatus = 'done'
       } else {
-        return { status: 'running', runs: [], commits: [] }
+        return { status: 'running', commits_tested: 0, runs: [], commits: [] }
       }
     }
 
