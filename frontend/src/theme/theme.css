@@ -111,9 +111,45 @@
   --glass-bubble-border: rgba(229, 221, 201, 0.85);
   --glass-bubble-glow: 0 6px 20px -2px rgba(255, 188, 26, 0.35);
 
-  /* Typography Stacks: Inter & JetBrains Mono */
+  /* ── Typography Systematic Scale & Tokens ── */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Font Sizes */
+  --font-size-2xs: 0.6875rem; /* 11px - micro tags, mono metadata */
+  --font-size-xs: 0.75rem;    /* 12px - badges, timestamps, fine captions */
+  --font-size-sm: 0.8125rem;  /* 13px - compact labels, table headers, sub-text */
+  --font-size-base: 0.875rem; /* 14px - standard UI text, inputs, buttons */
+  --font-size-md: 1rem;       /* 16px - prominent body, card headings */
+  --font-size-lg: 1.125rem;   /* 18px - h4, feature cards, modal headers */
+  --font-size-xl: 1.25rem;    /* 20px - h3, section sub-headers */
+  --font-size-2xl: 1.5rem;    /* 24px - h2, page sub-titles */
+  --font-size-3xl: 1.75rem;   /* 28px - h1, standard page header */
+  --font-size-4xl: 2.25rem;   /* 36px - hero section sub-titles */
+  --font-size-5xl: 3.15rem;   /* 50px - hero display headline */
+
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  /* Line Heights */
+  --line-height-none: 1;
+  --line-height-tight: 1.15;  /* Hero display & display banners */
+  --line-height-snug: 1.25;   /* Page headings h1, h2 */
+  --line-height-normal: 1.45; /* UI components, cards, buttons, inputs */
+  --line-height-relaxed: 1.6; /* Body text & paragraphs for editorial readability */
+  --line-height-loose: 1.75;  /* Extended reading text & lead paragraphs */
+
+  /* Letter Spacing (Tracking) */
+  --letter-spacing-tighter: -0.03em; /* Hero display headings */
+  --letter-spacing-tight: -0.02em;    /* Page headings h1, h2 */
+  --letter-spacing-snug: -0.01em;     /* Card titles, buttons, UI labels */
+  --letter-spacing-normal: -0.005em;  /* Standard body copy */
+  --letter-spacing-wide: 0.02em;      /* Micro tags, small caps */
+  --letter-spacing-wider: 0.05em;     /* Uppercase category labels */
 
   font-family: var(--font-sans);
   color: var(--text);
@@ -317,11 +353,14 @@ body::after {
 a {
   color: inherit;
   text-decoration: none;
+  transition: color 0.15s ease;
 }
 
 button {
   font-family: inherit;
   cursor: pointer;
+  border: none;
+  background: none;
 }
 
 input, select, textarea {
@@ -330,6 +369,145 @@ input, select, textarea {
 
 code, pre, kbd {
   font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/* ── Heading Hierarchy & Typographic Defaults ── */
+h1, .h1 {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-extrabold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+h2, .h2 {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+h3, .h3 {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-snug);
+  color: var(--text);
+  margin-bottom: 0.375rem;
+}
+
+h4, .h4 {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-snug);
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+
+h5, .h5 {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--text);
+}
+
+h6, .h6 {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-wider);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ── Paragraphs & Body Readability ── */
+p, .p {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-relaxed);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Typography Utilities ── */
+.text-lead {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-relaxed);
+  color: var(--text-secondary);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-subtle {
+  color: var(--text-subtle);
+  font-size: var(--font-size-xs);
+}
+
+.text-mono {
+  font-family: var(--font-mono);
+}
+
+/* ── Standardized Page & Section Headers ── */
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-extrabold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--text);
+  margin-bottom: 0.375rem;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.page-subtitle {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  color: var(--text-muted);
+  max-width: 720px;
+}
+
+.section-header {
+  margin-bottom: 1.25rem;
+}
+
+.section-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--text);
+  margin-bottom: 0.35rem;
+}
+
+.section-subtitle {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--text-muted);
 }
 
 /* ── Layout Shell ── */
