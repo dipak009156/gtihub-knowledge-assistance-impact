@@ -689,7 +689,7 @@ export const HomePage: React.FC = () => {
                   fontWeight: 600,
                   border: 'none',
                   background: previewTab === 'graph' ? 'var(--accent)' : 'transparent',
-                  color: previewTab === 'graph' ? '#ffffff' : 'var(--text-muted)',
+                  color: previewTab === 'graph' ? 'var(--accent-text)' : 'var(--text-muted)',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
@@ -706,7 +706,7 @@ export const HomePage: React.FC = () => {
                   fontWeight: 600,
                   border: 'none',
                   background: previewTab === 'impact' ? 'var(--accent)' : 'transparent',
-                  color: previewTab === 'impact' ? '#ffffff' : 'var(--text-muted)',
+                  color: previewTab === 'impact' ? 'var(--accent-text)' : 'var(--text-muted)',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
@@ -723,7 +723,7 @@ export const HomePage: React.FC = () => {
                   fontWeight: 600,
                   border: 'none',
                   background: previewTab === 'chat' ? 'var(--accent)' : 'transparent',
-                  color: previewTab === 'chat' ? '#ffffff' : 'var(--text-muted)',
+                  color: previewTab === 'chat' ? 'var(--accent-text)' : 'var(--text-muted)',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
@@ -740,7 +740,7 @@ export const HomePage: React.FC = () => {
                   fontWeight: 600,
                   border: 'none',
                   background: previewTab === 'code' ? 'var(--accent)' : 'transparent',
-                  color: previewTab === 'code' ? '#ffffff' : 'var(--text-muted)',
+                  color: previewTab === 'code' ? 'var(--accent-text)' : 'var(--text-muted)',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
@@ -764,7 +764,7 @@ export const HomePage: React.FC = () => {
                     <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>POST /checkout (L28-62)</div>
                     <div style={{ marginTop: '0.625rem', color: 'var(--ok)', fontSize: '0.75rem', fontWeight: 600 }}>calls: validate_order, pay</div>
                   </div>
-                  <div style={{ background: 'var(--glass-bg)', padding: '1.25rem', borderRadius: '16px', border: '1px solid var(--accent)', boxShadow: '0 0 20px rgba(223, 51, 51, 0.15)' }}>
+                  <div style={{ background: 'var(--glass-bg)', padding: '1.25rem', borderRadius: '16px', border: '1px solid var(--accent)', boxShadow: '0 0 20px rgba(255, 188, 26, 0.25)' }}>
                     <div style={{ color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>shop/services.py</div>
                     <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>pay() (L45-85)</div>
                     <div style={{ marginTop: '0.625rem', color: 'var(--warn)', fontSize: '0.75rem', fontWeight: 600 }}>calls: calculate_total, charge</div>
@@ -790,7 +790,7 @@ export const HomePage: React.FC = () => {
                       <span style={{ color: 'var(--accent)', fontWeight: 700 }}>shop.services.pay</span>
                       <span style={{ color: 'var(--text-muted)', marginLeft: '0.75rem' }}>Direct Caller (Depth 1)</span>
                     </div>
-                    <span style={{ background: 'var(--accent)', color: '#fff', padding: '3px 10px', borderRadius: 'var(--radius-bubble)', fontSize: '0.75rem', fontWeight: 700 }}>Risk: 0.85</span>
+                    <span style={{ background: 'var(--accent)', color: 'var(--accent-text)', padding: '3px 10px', borderRadius: 'var(--radius-bubble)', fontSize: '0.75rem', fontWeight: 700 }}>Risk: 0.85</span>
                   </div>
                   <div style={{ background: 'var(--glass-bg)', padding: '0.875rem 1.25rem', borderRadius: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--glass-border)' }}>
                     <div>
@@ -895,10 +895,10 @@ export const HomePage: React.FC = () => {
             <div className="badge badge-accent" style={{ marginBottom: '0.85rem' }}>
               Architecture Pipeline
             </div>
-            <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>
+            <h2 style={{ fontSize: 'var(--font-size-3xl)', fontWeight: 800, color: 'var(--text)', letterSpacing: 'var(--letter-spacing-tight)' }}>
               How It Works
             </h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', marginTop: '0.5rem', maxWidth: '620px', margin: '0.5rem auto 0' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-base)', marginTop: '0.5rem', maxWidth: '620px', margin: '0.5rem auto 0', lineHeight: 'var(--line-height-relaxed)' }}>
               From repository ingestion to actionable dependency intelligence in four steps.
             </p>
           </div>
