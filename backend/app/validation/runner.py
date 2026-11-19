@@ -21,8 +21,8 @@ def run_validation(repo_id: int, session: Session | None = None) -> None:
     try:
         # Existing files in repo
         existing_paths = {
-            f.path
-            for f in session.query(File.path).filter(File.repo_id == repo_id).all()
+            path
+            for (path,) in session.query(File.path).filter(File.repo_id == repo_id).all()
         }
 
         # Commits that are not bulk and touched at least 2 .py files that exist today
@@ -36,8 +36,8 @@ def run_validation(repo_id: int, session: Session | None = None) -> None:
         usable_commits: list[tuple[Commit, list[str]]] = []
         for c in candidate_commits:
             cf_paths = [
-                cf.path
-                for cf in session.query(CommitFile.path)
+                path
+                for (path,) in session.query(CommitFile.path)
                 .filter(CommitFile.commit_id == c.id)
                 .all()
             ]
