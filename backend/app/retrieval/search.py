@@ -47,15 +47,24 @@ def load_results(
     return [by_id[cid] for cid in best_chunk_ids if cid in by_id]
 
 
+def _is_postgres(session: Session) -> bool:
+    """Return True if the session is connected to PostgreSQL."""
+    try:
+        return session.get_bind().dialect.name == "postgresql"
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def search(session: Session, repo_id: int, question: str, top_k: int = 8) -> list[dict]:
     """Execute hybrid search (semantic embedding + keyword) and merge via reciprocal rank fusion."""
     lists: list[list[int]] = []
+    is_pg = _is_postgres(session)
 
     # 1) Meaning search
     try:
         qvec = embed([question])[0]
         # Check dialect: if PostgreSQL, use pgvector cosine_distance
-        if session.bind and session.bind.dialect.name == "postgresql":
+        if is_pg:
             ids = session.scalars(
                 select(Chunk.id)
                 .where(Chunk.repo_id == repo_id, Chunk.embedding.is_not(None))
@@ -91,7 +100,7 @@ def search(session: Session, repo_id: int, question: str, top_k: int = 8) -> lis
         unique_words = list(dict.fromkeys(expanded))
 
         try:
-            if session.bind and session.bind.dialect.name == "postgresql":
+            if is_pg:
                 tsq = func.to_tsquery("english", " | ".join(unique_words))
                 ids = session.scalars(
                     select(Chunk.id)
