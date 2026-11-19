@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -15,19 +16,14 @@ def get_impact_analysis(
     repo_id: int,
     symbol_id: Annotated[int, Query()],
     db: Annotated[Session, Depends(get_db)],
-    depth: Annotated[int, Query()] = 3,
+    depth: Annotated[int, Query(ge=1, le=5)] = 3,
     variant: Annotated[str, Query()] = "combined",
+    before: Annotated[datetime | None, Query()] = None,
 ):
     repo = db.query(Repo).filter(Repo.id == repo_id).first()
     if not repo:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
-        )
-
-    if depth < 1 or depth > 5:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Depth must be between 1 and 5",
         )
 
     if variant not in ("graph", "history", "combined"):
@@ -52,6 +48,7 @@ def get_impact_analysis(
         symbol_id=symbol_id,
         depth=depth,
         variant=variant,
+        before=before,
     )
     if not impact:
         raise HTTPException(
