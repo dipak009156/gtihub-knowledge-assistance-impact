@@ -1,0 +1,32 @@
+name: 'GKA Codebase Intelligence & PR Guard'
+description: 'Automated AST Call Graph Analysis, Blast Radius Check, and ML Bug Propensity Guard for Pull Requests.'
+author: 'GitHub Knowledge Assistance'
+
+inputs:
+  github-token:
+    description: 'GitHub Token for authentication'
+    required: false
+    default: ''
+  depth:
+    description: 'Max blast radius traversal depth'
+    required: false
+    default: '3'
+  fail-on-critical:
+    description: 'Fail step if critical defect risks or breaking contracts are found'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Run GKA PR Audit Guard
+      shell: bash
+      run: |
+        python ${{ github.action_path }}/scripts/ci_audit.py \
+          --depth ${{ inputs.depth }} \
+          --fail-on-critical ${{ inputs.fail-on-critical }}
