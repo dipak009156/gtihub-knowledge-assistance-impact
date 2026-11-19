@@ -124,7 +124,6 @@ export type ChatAnswer = {
 export type ValidationRun = {
   variant: 'graph' | 'history' | 'combined'
   k: 5 | 10
-  commits_tested: number
   precision: number
   recall: number
 }
@@ -142,6 +141,7 @@ export type ValidationCommit = {
 
 export type Validation = {
   status: 'none' | 'running' | 'done' | 'error'
+  commits_tested: number
   runs: ValidationRun[]
   commits: ValidationCommit[]
 }
