@@ -8,7 +8,8 @@ PATTERN = re.compile(
 def parse_github_url(url: str) -> tuple[str, str]:
     if not isinstance(url, str):
         raise TypeError("URL must be a string")
-    match = PATTERN.match(url.strip())
+    cleaned = url.strip().rstrip("/")
+    match = PATTERN.match(cleaned)
     if not match:
         raise ValueError("Please paste a link like https://github.com/owner/name")
     return match.group(1), match.group(2)
