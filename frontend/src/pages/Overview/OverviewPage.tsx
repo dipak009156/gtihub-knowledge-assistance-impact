@@ -152,19 +152,20 @@ export const OverviewPage: React.FC = () => {
   return (
     <div style={{ padding: '1.75rem 2rem', maxWidth: '1240px' }}>
       {/* Header */}
-      <div style={{ marginBottom: '2rem' }}>
+      <div className="page-header" style={{ marginBottom: '2rem' }}>
         <h1
+          className="page-title"
           style={{
-            fontSize: '1.75rem',
+            fontSize: 'var(--font-size-2xl)',
             fontWeight: 800,
             color: 'var(--text)',
-            letterSpacing: '-0.02em',
+            letterSpacing: 'var(--letter-spacing-tight)',
             marginBottom: '0.25rem',
           }}
         >
           {overview.repo.owner}/{overview.repo.name}
         </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>
+        <p className="page-subtitle" style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-base)', lineHeight: 'var(--line-height-normal)' }}>
           Repository structure, symbol index, and impact metrics.
         </p>
       </div>
