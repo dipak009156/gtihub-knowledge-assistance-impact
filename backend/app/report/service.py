@@ -38,9 +38,31 @@ def generate_executive_report(session: Session, repo_id: int) -> dict[str, Any]:
     # ML Defect Predictions
     try:
         defect_data = predict_repo_defects(session, repo_id)
-        predictions = defect_data.get("predictions", [])
+        raw_predictions = defect_data.get("predictions", [])
     except Exception:
-        predictions = []
+        raw_predictions = []
+
+    formatted_risks = []
+    for p in raw_predictions[:5]:
+        prob = float(p.get("defect_probability", 0.0))
+        formatted_risks.append(
+            {
+                "file_id": p.get("file_id"),
+                "file_path": p.get("path", ""),
+                "path": p.get("path", ""),
+                "complexity": p.get("symbol_count", 0),
+                "line_count": p.get("line_count", 0),
+                "symbol_count": p.get("symbol_count", 0),
+                "churn": p.get("churn_count", 0),
+                "churn_count": p.get("churn_count", 0),
+                "defect_propensity_score": prob,
+                "defect_probability": prob,
+                "risk_score": p.get("risk_score", round(prob * 100, 1)),
+                "risk_level": p.get("risk_level", "Medium"),
+                "primary_drivers": p.get("primary_drivers", []),
+                "mitigations": p.get("mitigations", []),
+            }
+        )
 
     # Hotspots & Churn
     try:
@@ -77,14 +99,14 @@ def generate_executive_report(session: Session, repo_id: int) -> dict[str, Any]:
     # Health Grading Algorithm
     # Deductions: high defect density, low certainty, extreme hotspot concentration
     avg_risk = (
-        sum(p.get("defect_propensity_score", 0) for p in predictions)
-        / len(predictions)
-        if predictions
+        sum(p.get("defect_probability", 0.0) for p in raw_predictions)
+        / len(raw_predictions)
+        if raw_predictions
         else 0.15
     )
     architecture_score = max(50, min(100, int(certainty_pct * 0.7 + (1 - avg_risk) * 30)))
     reliability_score = max(50, min(100, int((1 - avg_risk) * 90 + (certainty_pct * 0.1))))
-    testability_score = max(50, min(100, int(100 - (len(predictions) * 2) + 10)))
+    testability_score = max(50, min(100, int(100 - (len(raw_predictions) * 2) + 10)))
 
     overall_numeric = int((architecture_score * 0.4) + (reliability_score * 0.35) + (testability_score * 0.25))
 
@@ -109,8 +131,8 @@ def generate_executive_report(session: Session, repo_id: int) -> dict[str, Any]:
             "category": "Architecture",
             "message": f"Static call certainty is {certainty_pct}%. Standardize dynamic imports to improve compile-time verification.",
         })
-    if predictions and predictions[0].get("defect_propensity_score", 0) > 0.65:
-        top_risk_file = predictions[0].get("file_path")
+    if formatted_risks and formatted_risks[0].get("defect_propensity_score", 0) > 0.65:
+        top_risk_file = formatted_risks[0].get("file_path")
         recommendations.append({
             "priority": "CRITICAL",
             "category": "Risk Mitigation",
@@ -149,7 +171,7 @@ def generate_executive_report(session: Session, repo_id: int) -> dict[str, Any]:
         },
         "top_hubs": top_hubs,
         "hotspots": hotspots[:5],
-        "top_defect_risks": predictions[:5],
+        "top_defect_risks": formatted_risks,
         "recommendations": recommendations,
     }
 
@@ -198,8 +220,13 @@ def generate_report_markdown(session: Session, repo_id: int) -> str:
     ]
 
     for p in rep["top_defect_risks"]:
+        file_path = p.get("file_path") or p.get("path") or "unknown"
+        score = float(p.get("defect_propensity_score", p.get("defect_probability", 0.0)))
+        complexity = p.get("complexity", p.get("symbol_count", 0))
+        churn = p.get("churn", p.get("churn_count", 0))
+        risk_level = p.get("risk_level", "Medium")
         md.append(
-            f"| `{p.get('file_path')}` | {p.get('complexity', 0)} | {p.get('churn', 0)} | {p.get('defect_propensity_score', 0):.2f} | **{p.get('risk_level', 'Medium')}** |"
+            f"| `{file_path}` | {complexity} | {churn} | {score:.2f} | **{risk_level}** |"
         )
 
     md.extend([

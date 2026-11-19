@@ -72,6 +72,21 @@ export const OverviewPage: React.FC = () => {
     }
   }
 
+  const handleRetryReport = async () => {
+    if (!repoId) return
+    setReportLoading(true)
+    setReportError(null)
+    try {
+      const data = await getExecutiveReport(repoId)
+      setReportData(data)
+    } catch (err: unknown) {
+      const apiErr = err as { message?: string }
+      setReportError(apiErr.message || 'Could not load executive audit report.')
+    } finally {
+      setReportLoading(false)
+    }
+  }
+
   const handleAskQuestion = async (qText?: string) => {
     const q = (qText || chatQuestion).trim()
     if (!q || !repoId || chatLoading) return
@@ -115,6 +130,8 @@ export const OverviewPage: React.FC = () => {
   }
 
   useEffect(() => {
+    setReportData(null)
+    setReportModalOpen(false)
     loadData()
   }, [repoId])
 
@@ -661,7 +678,7 @@ export const OverviewPage: React.FC = () => {
                     <LoadingBox height={160} text="Compiling architectural audit & ML predictions..." />
                   </div>
                 ) : reportError ? (
-                  <ErrorBox message={reportError} onRetry={handleOpenReport} />
+                  <ErrorBox message={reportError} onRetry={handleRetryReport} />
                 ) : reportData ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                     {/* Scorecard Banner */}
@@ -685,15 +702,21 @@ export const OverviewPage: React.FC = () => {
                           style={{
                             fontSize: '2.75rem',
                             fontWeight: 900,
-                            color: reportData.scorecard.grade.startsWith('A') ? '#10B981' : reportData.scorecard.grade.startsWith('B') ? '#0EA5E9' : '#F59E0B',
+                            color: (reportData.scorecard?.grade || '').startsWith('A')
+                              ? '#10B981'
+                              : (reportData.scorecard?.grade || '').startsWith('B')
+                              ? '#0EA5E9'
+                              : (reportData.scorecard?.grade || '').startsWith('C')
+                              ? '#F59E0B'
+                              : '#EF4444',
                             lineHeight: 1.1,
                             marginTop: '0.2rem',
                           }}
                         >
-                          {reportData.scorecard.grade}
+                          {reportData.scorecard?.grade || 'N/A'}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', fontWeight: 600 }}>
-                          Score: {reportData.scorecard.overall_score}/100
+                          Score: {reportData.scorecard?.overall_score ?? 0}/100
                         </div>
                       </div>
 
@@ -702,7 +725,7 @@ export const OverviewPage: React.FC = () => {
                           Architecture
                         </div>
                         <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text)' }}>
-                          {reportData.scorecard.architecture_score}%
+                          {reportData.scorecard?.architecture_score ?? 0}%
                         </div>
                         <div style={{ fontSize: '0.6875rem', color: '#10B981', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <CheckCircle2 size={11} /> Verified coupling
@@ -714,7 +737,7 @@ export const OverviewPage: React.FC = () => {
                           Reliability (ML)
                         </div>
                         <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text)' }}>
-                          {reportData.scorecard.reliability_score}%
+                          {reportData.scorecard?.reliability_score ?? 0}%
                         </div>
                         <div style={{ fontSize: '0.6875rem', color: 'var(--text-subtle)' }}>
                           Defect resistance
@@ -726,7 +749,7 @@ export const OverviewPage: React.FC = () => {
                           Testability
                         </div>
                         <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text)' }}>
-                          {reportData.scorecard.testability_score}%
+                          {reportData.scorecard?.testability_score ?? 0}%
                         </div>
                         <div style={{ fontSize: '0.6875rem', color: 'var(--text-subtle)' }}>
                           Churn protection
@@ -738,24 +761,24 @@ export const OverviewPage: React.FC = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
                       <div className="card" style={{ padding: '0.85rem' }}>
                         <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Analyzed Files</div>
-                        <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)' }}>{reportData.metrics.total_files}</div>
+                        <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)' }}>{reportData.metrics?.total_files ?? 0}</div>
                       </div>
                       <div className="card" style={{ padding: '0.85rem' }}>
                         <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Lines of Code</div>
-                        <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)' }}>{reportData.metrics.total_lines_of_code.toLocaleString()}</div>
+                        <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)' }}>{(reportData.metrics?.total_lines_of_code ?? 0).toLocaleString()}</div>
                       </div>
                       <div className="card" style={{ padding: '0.85rem' }}>
                         <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Call References</div>
-                        <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)' }}>{reportData.metrics.total_call_edges}</div>
+                        <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)' }}>{reportData.metrics?.total_call_edges ?? 0}</div>
                       </div>
                       <div className="card" style={{ padding: '0.85rem' }}>
                         <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Call Certainty</div>
-                        <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#10B981' }}>{reportData.metrics.certainty_percentage}%</div>
+                        <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#10B981' }}>{reportData.metrics?.certainty_percentage ?? 100}%</div>
                       </div>
                     </div>
 
                     {/* Top Defect Risks Table */}
-                    {reportData.top_defect_risks.length > 0 && (
+                    {reportData.top_defect_risks && reportData.top_defect_risks.length > 0 && (
                       <div>
                         <h4 style={{ fontSize: '0.875rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: 'var(--text)' }}>
                           High-Risk Defect Propensity Files (ML Predicted)
@@ -773,12 +796,14 @@ export const OverviewPage: React.FC = () => {
                           <tbody>
                             {reportData.top_defect_risks.map((p, idx) => (
                               <tr key={idx}>
-                                <td style={{ fontFamily: 'var(--font-mono)' }}>{p.file_path}</td>
-                                <td>{p.complexity}</td>
-                                <td>{p.churn}</td>
-                                <td style={{ fontWeight: 600 }}>{p.defect_propensity_score.toFixed(2)}</td>
+                                <td style={{ fontFamily: 'var(--font-mono)' }}>{p.file_path || (p as any).path}</td>
+                                <td>{p.complexity ?? (p as any).symbol_count ?? 0}</td>
+                                <td>{p.churn ?? (p as any).churn_count ?? 0}</td>
+                                <td style={{ fontWeight: 600 }}>
+                                  {(p.defect_propensity_score ?? (p as any).defect_probability ?? 0).toFixed(2)}
+                                </td>
                                 <td>
-                                  <span className={`badge ${p.risk_level === 'High' ? 'badge-danger' : 'badge-warning'}`}>
+                                  <span className={`badge ${p.risk_level === 'CRITICAL' || p.risk_level === 'High' ? 'badge-danger' : 'badge-warning'}`}>
                                     {p.risk_level}
                                   </span>
                                 </td>

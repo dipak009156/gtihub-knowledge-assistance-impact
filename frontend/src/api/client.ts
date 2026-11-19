@@ -474,14 +474,61 @@ export const getExecutiveReport = (id: number) =>
     () => handlers.getExecutiveReport(id)
   )
 
-export const downloadReportMarkdown = (id: number, repoName: string) => {
-  const url = `/api/repos/${id}/report/markdown`
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `${repoName}-codebase-audit-report.md`
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+export const downloadReportMarkdown = async (id: number, repoName: string) => {
+  const sanitizedName = repoName.replace(/[^a-zA-Z0-9_-]/g, '_')
+  const filename = `${sanitizedName}-executive-audit-report.md`
+
+  if (USE_MOCKS) {
+    const mockRep = handlers.getExecutiveReport(id)
+    const mockMd = `# 🛡️ Codebase Architecture & Risk Audit: ${mockRep.repository.owner}/${mockRep.repository.name}
+*Generated via GitHub Knowledge Assistance (GKA) Deterministic Engine*
+
+## 1. Executive Health Scorecard
+- Overall Grade: ${mockRep.scorecard.grade} (${mockRep.scorecard.overall_score}/100)
+- Architecture Score: ${mockRep.scorecard.architecture_score}/100
+- Reliability Score: ${mockRep.scorecard.reliability_score}/100
+- Testability Score: ${mockRep.scorecard.testability_score}/100
+
+## 2. Codebase Metrics
+- Files: ${mockRep.metrics.total_files}
+- LOC: ${mockRep.metrics.total_lines_of_code}
+- Symbols: ${mockRep.metrics.total_symbols}
+- Call Edges: ${mockRep.metrics.total_call_edges}
+- Call Certainty: ${mockRep.metrics.certainty_percentage}%
+`
+    const blob = new Blob([mockMd], { type: 'text/markdown;charset=utf-8' })
+    const blobUrl = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = blobUrl
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(blobUrl)
+    return
+  }
+
+  const token = typeof window !== 'undefined' ? localStorage.getItem('gka_token') : null
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
+
+  try {
+    const res = await fetch(`/api/repos/${id}/report/markdown`, { headers })
+    if (!res.ok) {
+      throw new Error(`Failed to download report (${res.status})`)
+    }
+    const blob = await res.blob()
+    const blobUrl = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = blobUrl
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(blobUrl)
+  } catch (err) {
+    console.error('Download error:', err)
+    window.open(`/api/repos/${id}/report/markdown`, '_blank')
+  }
 }
 
 
