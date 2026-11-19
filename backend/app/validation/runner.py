@@ -61,14 +61,22 @@ def run_validation(repo_id: int, session: Session | None = None) -> None:
             for e in ast_edges:
                 cf = sym_file.get(e["caller_id"])
                 df = sym_file.get(e["callee_id"])
-                if cf and df and cf != df and cf in existing_paths and df in existing_paths:
+                if (
+                    cf
+                    and df
+                    and cf != df
+                    and cf in existing_paths
+                    and df in existing_paths
+                ):
                     dep_map[df].add(cf)
 
             for changed_f, true_deps in dep_map.items():
                 if len(true_deps) >= 1:
                     clean_sha = f"ast_{changed_f.replace('/', '_')[:10]}"
-                    mock_c = type("MockCommit", (), {"sha": clean_sha, "committed_at": None})()
-                    usable_commits.append((mock_c, [changed_f] + sorted(list(true_deps))))
+                    mock_c = type(
+                        "MockCommit", (), {"sha": clean_sha, "committed_at": None}
+                    )()
+                    usable_commits.append((mock_c, [changed_f] + sorted(true_deps)))
                 if len(usable_commits) >= 25:
                     break
 

@@ -92,19 +92,24 @@ if not FRONTEND_DIST.exists():
     FRONTEND_DIST = Path("/app/dist")
 
 if FRONTEND_DIST.exists():
-    from fastapi.staticfiles import StaticFiles
     from fastapi.responses import FileResponse
+    from fastapi.staticfiles import StaticFiles
 
     assets_dir = FRONTEND_DIST / "assets"
     if assets_dir.exists():
-        app.mount("/assets", StaticFiles(directory=assets_dir.as_posix()), name="assets")
+        app.mount(
+            "/assets", StaticFiles(directory=assets_dir.as_posix()), name="assets"
+        )
 
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_spa(_request: Request, full_path: str):
-        if full_path.startswith("api/") or full_path in ("docs", "openapi.json", "redoc"):
+        if full_path.startswith("api/") or full_path in (
+            "docs",
+            "openapi.json",
+            "redoc",
+        ):
             raise HTTPException(status_code=404, detail="Not Found")
         file_path = FRONTEND_DIST / full_path
         if file_path.is_file():
             return FileResponse(file_path.as_posix())
         return FileResponse((FRONTEND_DIST / "index.html").as_posix())
-

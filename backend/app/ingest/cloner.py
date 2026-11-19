@@ -57,4 +57,3 @@ def clone_repo(repo_id: int, url: str) -> Path:
 
 def delete_clone(repo_id: int) -> None:
     _safe_rmtree(get_repo_dir(repo_id))
-

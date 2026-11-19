@@ -21,6 +21,7 @@ from app.db.models import (
     File,
     Repo,
     Symbol,
+    User,
     ValidationRun,
 )
 from app.db.session import get_db
@@ -89,6 +90,7 @@ def test_engine():
             CommitFile.__table__,
             ValidationRun.__table__,
             Chunk.__table__,
+            User.__table__,
         ],
     )
     return engine

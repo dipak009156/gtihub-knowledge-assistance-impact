@@ -38,12 +38,19 @@ class OllamaClient:
 
 class GeminiClient:
     def generate(self, system: str, user: str) -> str:
-        api_key = (settings.gemini_api_key or os.environ.get("GEMINI_API_KEY", "")).strip()
+        api_key = (
+            settings.gemini_api_key or os.environ.get("GEMINI_API_KEY", "")
+        ).strip()
         if not api_key:
             raise LLMUnavailable("LLM_PROVIDER is gemini but GEMINI_API_KEY is empty")
 
         preferred = settings.gemini_model or "gemini-3-flash-preview"
-        candidates = [preferred, "gemini-3-flash-preview", "gemini-3.8-flash", "gemini-flash-latest"]
+        candidates = [
+            preferred,
+            "gemini-3-flash-preview",
+            "gemini-3.8-flash",
+            "gemini-flash-latest",
+        ]
         seen_models = set()
         last_error = None
 
@@ -109,13 +116,46 @@ def _friendly_name(name: str) -> str:
 def _categorize_path(file_path: str) -> str:
     """Categorize file path into workflow stage."""
     low = file_path.lower()
-    if any(k in low for k in ("config", "settings", "db", "database", "connection", "setup", "init")):
+    if any(
+        k in low
+        for k in ("config", "settings", "db", "database", "connection", "setup", "init")
+    ):
         return "setup"
-    if any(k in low for k in ("data", "feature", "validate", "ingest", "marker", "candle", "schema", "input")):
+    if any(
+        k in low
+        for k in (
+            "data",
+            "feature",
+            "validate",
+            "ingest",
+            "marker",
+            "candle",
+            "schema",
+            "input",
+        )
+    ):
         return "data"
-    if any(k in low for k in ("scheduler", "main", "api", "server", "app", "cli", "route", "run")):
+    if any(
+        k in low
+        for k in ("scheduler", "main", "api", "server", "app", "cli", "route", "run")
+    ):
         return "service"
-    if any(k in low for k in ("strategy", "engine", "process", "calc", "core", "service", "handler", "order", "payment", "eval", "news")):
+    if any(
+        k in low
+        for k in (
+            "strategy",
+            "engine",
+            "process",
+            "calc",
+            "core",
+            "service",
+            "handler",
+            "order",
+            "payment",
+            "eval",
+            "news",
+        )
+    ):
         return "core"
     return "general"
 
@@ -138,12 +178,37 @@ class GroundedFallbackClient:
         # Extract target search terms from question to spotlight specific function/class requests
         q_words = re.findall(r"[a-zA-Z_][a-zA-Z0-9_]+", question)
         stop_words = {
-            "what", "does", "where", "which", "explain", "about", "project",
-            "code", "repo", "function", "class", "module", "work", "mean",
-            "system", "file", "this", "that", "from", "with", "show", "tell",
-            "used", "using", "call", "calls", "called",
+            "what",
+            "does",
+            "where",
+            "which",
+            "explain",
+            "about",
+            "project",
+            "code",
+            "repo",
+            "function",
+            "class",
+            "module",
+            "work",
+            "mean",
+            "system",
+            "file",
+            "this",
+            "that",
+            "from",
+            "with",
+            "show",
+            "tell",
+            "used",
+            "using",
+            "call",
+            "calls",
+            "called",
         }
-        candidate_targets = [w.lower() for w in q_words if len(w) > 2 and w.lower() not in stop_words]
+        candidate_targets = [
+            w.lower() for w in q_words if len(w) > 2 and w.lower() not in stop_words
+        ]
 
         categorized_items: list[tuple[str, str, bool]] = []
         seen_citations: set[str] = set()
@@ -165,15 +230,17 @@ class GroundedFallbackClient:
             seen_citations.add(citation)
 
             # 1. Extract functions and classes (excluding private dunders)
-            funcs = [f for f in re.findall(r"def\s+([a-zA-Z0-9_]+)\s*\(", clean_code) if not f.startswith("__")]
+            funcs = [
+                f
+                for f in re.findall(r"def\s+([a-zA-Z0-9_]+)\s*\(", clean_code)
+                if not f.startswith("__")
+            ]
             classes = re.findall(r"class\s+([a-zA-Z0-9_]+)", clean_code)
 
             # Check if this chunk directly defines a target symbol from the user's question
             is_target_hit = any(
                 any(t == f.lower() for t in candidate_targets) for f in funcs
-            ) or any(
-                any(t == c.lower() for t in candidate_targets) for c in classes
-            )
+            ) or any(any(t == c.lower() for t in candidate_targets) for c in classes)
 
             # 2. Extract docstring
             doc_match = re.search(r'"""([\s\S]*?)"""', clean_code) or re.search(
@@ -204,7 +271,11 @@ class GroundedFallbackClient:
                 prefix_match = re.search(r'prefix=["\']([^"\']+)["\']', clean_code)
                 prefix = prefix_match.group(1) if prefix_match else "API routes"
                 categorized_items.append(
-                    (cat, f"• **Router Configuration**: Connects `{prefix}` endpoints into the main application in {citation}.", False)
+                    (
+                        cat,
+                        f"• **Router Configuration**: Connects `{prefix}` endpoints into the main application in {citation}.",
+                        False,
+                    )
                 )
                 continue
 
@@ -215,7 +286,11 @@ class GroundedFallbackClient:
                 method_phrase = f" with method(s) {methods_str}" if methods_str else ""
                 desc = doc_summary or f"Manages {_friendly_name(cls_name)} operations."
                 categorized_items.append(
-                    (cat, f"• **Class `{cls_name}`**: Defined in {citation}{method_phrase} — {desc}", is_target_hit)
+                    (
+                        cat,
+                        f"• **Class `{cls_name}`**: Defined in {citation}{method_phrase} — {desc}",
+                        is_target_hit,
+                    )
                 )
                 continue
 
@@ -224,7 +299,11 @@ class GroundedFallbackClient:
                 fn_name = funcs[0]
                 desc = doc_summary or f"Implements {_friendly_name(fn_name)} logic."
                 categorized_items.append(
-                    (cat, f"• **Function `{fn_name}()`**: Located in {citation} — {desc}", is_target_hit)
+                    (
+                        cat,
+                        f"• **Function `{fn_name}()`**: Located in {citation} — {desc}",
+                        is_target_hit,
+                    )
                 )
                 continue
 
@@ -234,7 +313,11 @@ class GroundedFallbackClient:
                 file_stem = file_path.rsplit("/", 1)[-1].replace(".py", "")
                 friendly_stem = _friendly_name(file_stem)
                 categorized_items.append(
-                    (cat, f"• **Module `{file_path}`**: Implements core {friendly_stem} logic in {citation}.", False)
+                    (
+                        cat,
+                        f"• **Module `{file_path}`**: Implements core {friendly_stem} logic in {citation}.",
+                        False,
+                    )
                 )
 
         if not categorized_items:
@@ -260,7 +343,17 @@ class GroundedFallbackClient:
 
         is_endpoints = any(
             w in q_lower
-            for w in ("endpoint", "endpoints", "api route", "api routes", "api", "routes", "route", "urls", "url")
+            for w in (
+                "endpoint",
+                "endpoints",
+                "api route",
+                "api routes",
+                "api",
+                "routes",
+                "route",
+                "urls",
+                "url",
+            )
         )
 
         is_location = any(
@@ -291,7 +384,7 @@ class GroundedFallbackClient:
         other_items = [t for _, t, hit in categorized_items if not hit]
         if target_hits and not is_usage and not is_general and not is_endpoints:
             lines = [
-                f"Here is the definition and role of the target component in this codebase:",
+                "Here is the definition and role of the target component in this codebase:",
                 "",
                 "### 🎯 Primary Definition",
             ]
@@ -301,7 +394,9 @@ class GroundedFallbackClient:
                 lines.append("### Related Components & Callers")
                 lines.extend(other_items[:3])
             lines.append("")
-            lines.append("Each citation links directly to its source lines in the code viewer.")
+            lines.append(
+                "Each citation links directly to its source lines in the code viewer."
+            )
             return "\n".join(lines)
 
         # ── Case 2: API Endpoints Discovery ──
@@ -317,7 +412,9 @@ class GroundedFallbackClient:
                 lines.append("### Connected Service Handlers")
                 lines.extend(other_items[:2])
             lines.append("")
-            lines.append("Click on any endpoint citation to inspect the request schema and route handler.")
+            lines.append(
+                "Click on any endpoint citation to inspect the request schema and route handler."
+            )
             return "\n".join(lines)
 
         # ── Case 3: Usage & Getting Started Guide ──
@@ -345,13 +442,17 @@ class GroundedFallbackClient:
                 step_idx += 1
 
             if core_items:
-                lines.append(f"### Step {step_idx}: Execute Core Engine & Strategy Logic")
+                lines.append(
+                    f"### Step {step_idx}: Execute Core Engine & Strategy Logic"
+                )
                 lines.extend(core_items[:2])
                 lines.append("")
                 step_idx += 1
 
             if service_items:
-                lines.append(f"### Step {step_idx}: Run Service or Background Automation")
+                lines.append(
+                    f"### Step {step_idx}: Run Service or Background Automation"
+                )
                 lines.extend(service_items[:2])
                 lines.append("")
                 step_idx += 1
@@ -375,13 +476,15 @@ class GroundedFallbackClient:
         # ── Case 4: Location Query ("Where is...") ──
         if is_location:
             lines = [
-                f"In this codebase, **\"{question}\"** is primarily handled in:",
+                f'In this codebase, **"{question}"** is primarily handled in:',
                 "",
             ]
             for _, itm, _ in categorized_items[:4]:
                 lines.append(itm)
             lines.append("")
-            lines.append("Click on any citation above to jump directly to the code implementation.")
+            lines.append(
+                "Click on any citation above to jump directly to the code implementation."
+            )
             return "\n".join(lines)
 
         # ── Case 5: Project Overview ──
@@ -400,7 +503,7 @@ class GroundedFallbackClient:
 
         # ── Case 6: General Question ──
         lines = [
-            f"Here is what the codebase implements regarding \"{question}\":",
+            f'Here is what the codebase implements regarding "{question}":',
             "",
         ]
         for _, itm, _ in categorized_items[:5]:

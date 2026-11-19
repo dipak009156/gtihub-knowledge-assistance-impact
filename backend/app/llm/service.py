@@ -67,7 +67,9 @@ def answer_question(session: Session, repo_id: int, question: str) -> dict:
         )
     )
     if is_usage_query:
-        extra_chunks = search(session, repo_id, "config database setup strategy engine scheduler", top_k=6)
+        extra_chunks = search(
+            session, repo_id, "config database setup strategy engine scheduler", top_k=6
+        )
         seen_ids = {c.get("chunk_id") for c in chunks}
         for ec in extra_chunks:
             if ec.get("chunk_id") not in seen_ids:

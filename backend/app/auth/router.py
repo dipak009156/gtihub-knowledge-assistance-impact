@@ -48,8 +48,7 @@ def _format_user(user: User) -> dict:
         "username": user.username,
         "name": user.name or user.username,
         "email": user.email,
-        "avatar_url": user.avatar_url
-        or f"https://github.com/{user.username}.png",
+        "avatar_url": user.avatar_url or f"https://github.com/{user.username}.png",
         "has_token": bool(user.access_token),
     }
 
@@ -159,9 +158,7 @@ def github_callback(
         error_desc = token_data.get(
             "error_description", "Failed to obtain GitHub access token."
         )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=error_desc
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error_desc)
 
     # 2. Fetch GitHub User profile
     gh_user = _call_github_api(
@@ -211,9 +208,7 @@ def github_username_login(
     return _sync_github_user(db, gh_user, None)
 
 
-def _sync_github_user(
-    db: Session, gh_user: dict, access_token: str | None
-) -> dict:
+def _sync_github_user(db: Session, gh_user: dict, access_token: str | None) -> dict:
     username = gh_user.get("login")
     if not username:
         raise HTTPException(
@@ -224,9 +219,7 @@ def _sync_github_user(
     github_id = str(gh_user.get("id"))
     email = gh_user.get("email")
     name = gh_user.get("name") or username
-    avatar_url = (
-        gh_user.get("avatar_url") or f"https://github.com/{username}.png"
-    )
+    avatar_url = gh_user.get("avatar_url") or f"https://github.com/{username}.png"
 
     user = (
         db.query(User)
@@ -310,9 +303,7 @@ def login(payload: LoginRequest, db: Annotated[Session, Depends(get_db)]):
     """Log in with email or username."""
     user = (
         db.query(User)
-        .filter(
-            (User.email == payload.email) | (User.username == payload.email)
-        )
+        .filter((User.email == payload.email) | (User.username == payload.email))
         .first()
     )
     if not user:
@@ -419,7 +410,5 @@ def list_user_github_repos(
             if isinstance(r, dict) and "name" in r
         ]
     except Exception as e:  # noqa: BLE001
-        logger.warning(
-            "Could not fetch GitHub repos for %s: %s", user.username, e
-        )
+        logger.warning("Could not fetch GitHub repos for %s: %s", user.username, e)
         return []
