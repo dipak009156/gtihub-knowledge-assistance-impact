@@ -357,14 +357,14 @@ export const HomePage: React.FC = () => {
             <span>Codebase Intelligence and Impact Analysis Platform</span>
           </div>
 
-          {/* Two-Tone Headline (Second line in bold accent) */}
+          {/* Two-Tone Headline (Second line in bold red accent) */}
           <h1
             style={{
-              fontSize: 'clamp(2.4rem, 5vw, var(--font-size-5xl))',
+              fontSize: '3.15rem',
               fontWeight: 800,
-              lineHeight: 'var(--line-height-tight)',
+              lineHeight: 1.15,
               color: 'var(--text)',
-              letterSpacing: 'var(--letter-spacing-tighter)',
+              letterSpacing: '-0.03em',
               maxWidth: '820px',
               margin: '0 auto 1.25rem',
             }}
@@ -377,11 +377,11 @@ export const HomePage: React.FC = () => {
           {/* Subtitle */}
           <p
             style={{
-              fontSize: 'var(--font-size-lg)',
+              fontSize: '1.125rem',
               color: 'var(--text-muted)',
               maxWidth: '680px',
               margin: '0 auto 2.25rem',
-              lineHeight: 'var(--line-height-relaxed)',
+              lineHeight: 1.55,
             }}
           >
             Analyze GitHub repositories, explore code dependencies, and get AI-powered explanations backed by actual source code references.
@@ -546,7 +546,7 @@ export const HomePage: React.FC = () => {
               className="hero-pill-bubble"
               style={{ cursor: 'pointer' }}
             >
-              <span className="hero-pill-icon" style={{ background: 'var(--accent-purple-soft)', color: 'var(--accent-purple)' }}>
+              <span className="hero-pill-icon" style={{ background: 'rgba(54, 95, 145, 0.15)', color: 'var(--info)' }}>
                 <GitFork size={15} />
               </span>
               <span>Explore Dependencies</span>
@@ -559,7 +559,7 @@ export const HomePage: React.FC = () => {
               className="hero-pill-bubble"
               style={{ cursor: 'pointer' }}
             >
-              <span className="hero-pill-icon" style={{ background: 'var(--accent-soft)', color: 'var(--text)' }}>
+              <span className="hero-pill-icon" style={{ background: 'rgba(214, 166, 83, 0.15)', color: 'var(--warn)' }}>
                 <Lightbulb size={15} />
               </span>
               <span>Understand Codebase</span>
@@ -572,7 +572,7 @@ export const HomePage: React.FC = () => {
               className="hero-pill-bubble"
               style={{ cursor: 'pointer' }}
             >
-              <span className="hero-pill-icon" style={{ background: 'var(--accent-purple-soft)', color: 'var(--accent-purple)' }}>
+              <span className="hero-pill-icon" style={{ background: 'rgba(223, 51, 51, 0.15)', color: 'var(--accent)' }}>
                 <Sparkles size={15} />
               </span>
               <span>Get Smart Insights</span>
@@ -585,7 +585,7 @@ export const HomePage: React.FC = () => {
               className="hero-pill-bubble"
               style={{ cursor: 'pointer' }}
             >
-              <span className="hero-pill-icon" style={{ background: 'var(--accent-soft)', color: 'var(--text)' }}>
+              <span className="hero-pill-icon" style={{ background: 'rgba(40, 122, 80, 0.15)', color: 'var(--ok)' }}>
                 <Zap size={15} />
               </span>
               <span>Boost Productivity</span>
@@ -689,7 +689,7 @@ export const HomePage: React.FC = () => {
                   fontWeight: 600,
                   border: 'none',
                   background: previewTab === 'graph' ? 'var(--accent)' : 'transparent',
-                  color: previewTab === 'graph' ? 'var(--accent-text)' : 'var(--text-muted)',
+                  color: previewTab === 'graph' ? '#ffffff' : 'var(--text-muted)',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
@@ -706,7 +706,7 @@ export const HomePage: React.FC = () => {
                   fontWeight: 600,
                   border: 'none',
                   background: previewTab === 'impact' ? 'var(--accent)' : 'transparent',
-                  color: previewTab === 'impact' ? 'var(--accent-text)' : 'var(--text-muted)',
+                  color: previewTab === 'impact' ? '#ffffff' : 'var(--text-muted)',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
@@ -723,7 +723,7 @@ export const HomePage: React.FC = () => {
                   fontWeight: 600,
                   border: 'none',
                   background: previewTab === 'chat' ? 'var(--accent)' : 'transparent',
-                  color: previewTab === 'chat' ? 'var(--accent-text)' : 'var(--text-muted)',
+                  color: previewTab === 'chat' ? '#ffffff' : 'var(--text-muted)',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
@@ -740,7 +740,7 @@ export const HomePage: React.FC = () => {
                   fontWeight: 600,
                   border: 'none',
                   background: previewTab === 'code' ? 'var(--accent)' : 'transparent',
-                  color: previewTab === 'code' ? 'var(--accent-text)' : 'var(--text-muted)',
+                  color: previewTab === 'code' ? '#ffffff' : 'var(--text-muted)',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
@@ -764,7 +764,7 @@ export const HomePage: React.FC = () => {
                     <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>POST /checkout (L28-62)</div>
                     <div style={{ marginTop: '0.625rem', color: 'var(--ok)', fontSize: '0.75rem', fontWeight: 600 }}>calls: validate_order, pay</div>
                   </div>
-                  <div style={{ background: 'var(--glass-bg)', padding: '1.25rem', borderRadius: '16px', border: '1px solid var(--accent)', boxShadow: '0 0 20px rgba(255, 188, 26, 0.25)' }}>
+                  <div style={{ background: 'var(--glass-bg)', padding: '1.25rem', borderRadius: '16px', border: '1px solid var(--accent)', boxShadow: '0 0 20px rgba(223, 51, 51, 0.15)' }}>
                     <div style={{ color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>shop/services.py</div>
                     <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>pay() (L45-85)</div>
                     <div style={{ marginTop: '0.625rem', color: 'var(--warn)', fontSize: '0.75rem', fontWeight: 600 }}>calls: calculate_total, charge</div>
@@ -790,7 +790,7 @@ export const HomePage: React.FC = () => {
                       <span style={{ color: 'var(--accent)', fontWeight: 700 }}>shop.services.pay</span>
                       <span style={{ color: 'var(--text-muted)', marginLeft: '0.75rem' }}>Direct Caller (Depth 1)</span>
                     </div>
-                    <span style={{ background: 'var(--accent)', color: 'var(--accent-text)', padding: '3px 10px', borderRadius: 'var(--radius-bubble)', fontSize: '0.75rem', fontWeight: 700 }}>Risk: 0.85</span>
+                    <span style={{ background: 'var(--accent)', color: '#fff', padding: '3px 10px', borderRadius: 'var(--radius-bubble)', fontSize: '0.75rem', fontWeight: 700 }}>Risk: 0.85</span>
                   </div>
                   <div style={{ background: 'var(--glass-bg)', padding: '0.875rem 1.25rem', borderRadius: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--glass-border)' }}>
                     <div>
@@ -895,10 +895,10 @@ export const HomePage: React.FC = () => {
             <div className="badge badge-accent" style={{ marginBottom: '0.85rem' }}>
               Architecture Pipeline
             </div>
-            <h2 style={{ fontSize: 'var(--font-size-3xl)', fontWeight: 800, color: 'var(--text)', letterSpacing: 'var(--letter-spacing-tight)' }}>
+            <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>
               How It Works
             </h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-base)', marginTop: '0.5rem', maxWidth: '620px', margin: '0.5rem auto 0', lineHeight: 'var(--line-height-relaxed)' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', marginTop: '0.5rem', maxWidth: '620px', margin: '0.5rem auto 0' }}>
               From repository ingestion to actionable dependency intelligence in four steps.
             </p>
           </div>
@@ -1248,10 +1248,10 @@ export const HomePage: React.FC = () => {
             <div className="badge badge-accent" style={{ marginBottom: '0.85rem' }}>
               Common Questions
             </div>
-            <h2 style={{ fontSize: 'var(--font-size-3xl)', fontWeight: 800, color: 'var(--text)', letterSpacing: 'var(--letter-spacing-tight)' }}>
+            <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>
               Frequently Asked Questions
             </h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-base)', marginTop: '0.5rem', lineHeight: 'var(--line-height-relaxed)' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', marginTop: '0.5rem' }}>
               Everything you need to know about codebase analysis.
             </p>
           </div>
@@ -1292,7 +1292,7 @@ export const HomePage: React.FC = () => {
                     backdropFilter: 'var(--glass-blur)',
                     WebkitBackdropFilter: 'var(--glass-blur)',
                     border: isOpen ? '1px solid var(--accent)' : '1px solid var(--glass-border)',
-                    boxShadow: isOpen ? '0 0 20px rgba(255, 188, 26, 0.25)' : 'var(--glass-shadow)',
+                    boxShadow: isOpen ? '0 0 20px rgba(223, 51, 51, 0.15)' : 'var(--glass-shadow)',
                     transition: 'all 0.25s ease',
                   }}
                 >
@@ -1347,7 +1347,7 @@ export const HomePage: React.FC = () => {
         <div style={{ maxWidth: '1080px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
             <BrandIcon size={24} />
-            <span style={{ fontWeight: 700, fontSize: 'var(--font-size-sm)', color: 'var(--text)', letterSpacing: 'var(--letter-spacing-tight)' }}>
+            <span style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--accent)', letterSpacing: '-0.02em' }}>
               GitHub Knowledge Assistance
             </span>
           </div>

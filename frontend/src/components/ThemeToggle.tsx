@@ -28,7 +28,6 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '', showLa
       }}
       title={isDark ? 'Switch to Light theme' : 'Switch to Dark theme'}
       aria-label={isDark ? 'Switch to Light theme' : 'Switch to Dark theme'}
-      aria-pressed={isDark}
     >
       {isDark ? (
         <Sun size={15} style={{ color: 'var(--text)' }} />

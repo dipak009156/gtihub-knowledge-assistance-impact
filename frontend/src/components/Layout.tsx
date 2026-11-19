@@ -143,12 +143,12 @@ export const Layout: React.FC = () => {
             d="M-50 180 C 250 80, 520 280, 800 140 C 1080 0, 1300 200, 1520 120"
             stroke="var(--accent)"
             strokeWidth="1.2"
-            strokeOpacity="0.14"
+            strokeOpacity="0.1"
             fill="none"
           />
           <path
             d="M-80 300 C 220 180, 480 380, 780 240 C 1080 100, 1280 280, 1560 200"
-            stroke="var(--accent-purple)"
+            stroke="var(--border-strong)"
             strokeWidth="1"
             strokeOpacity="0.16"
             fill="none"

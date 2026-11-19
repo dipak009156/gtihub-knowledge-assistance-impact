@@ -278,14 +278,13 @@ export const ChatPage: React.FC = () => {
                   style={{
                     alignSelf: 'flex-end',
                     background: 'var(--accent)',
-                    color: 'var(--accent-text)',
-                    fontWeight: 600,
+                    color: '#ffffff',
                     padding: '0.75rem 1.15rem',
                     borderRadius: '20px 20px 4px 20px',
                     maxWidth: '80%',
                     fontSize: '0.875rem',
                     lineHeight: 1.5,
-                    boxShadow: '0 4px 16px -2px rgba(255, 188, 26, 0.35), var(--glass-specular)',
+                    boxShadow: '0 4px 16px -2px rgba(223, 51, 51, 0.4), var(--glass-specular)',
                   }}
                 >
                   {msg.text}

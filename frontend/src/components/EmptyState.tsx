@@ -40,32 +40,29 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         padding: '3rem 1.5rem',
         textAlign: 'center',
         backgroundColor: 'var(--surface-subtle)',
-        border: '1px solid var(--border)',
-        borderRadius: '20px',
       }}
     >
       <div
         style={{
-          width: '52px',
-          height: '52px',
-          borderRadius: '50%',
-          backgroundColor: 'var(--glass-surface-subtle)',
-          border: '1px solid var(--glass-border)',
-          boxShadow: 'var(--glass-specular)',
+          width: '48px',
+          height: '48px',
+          borderRadius: 'var(--radius-md)',
+          backgroundColor: 'var(--surface)',
+          border: '1px solid var(--border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: 'var(--accent)',
+          color: 'var(--text-subtle)',
           marginBottom: '1rem',
         }}
       >
         {renderIcon()}
       </div>
-      <div style={{ fontSize: 'var(--font-size-md)', fontWeight: 'var(--font-weight-bold)', color: 'var(--text)', letterSpacing: 'var(--letter-spacing-tight)', marginBottom: '0.35rem' }}>
+      <div style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.25rem' }}>
         {title}
       </div>
       {description && (
-        <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', maxWidth: '420px', lineHeight: 'var(--line-height-relaxed)', marginBottom: '1.25rem' }}>
+        <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', maxWidth: '420px', marginBottom: '1.25rem' }}>
           {description}
         </div>
       )}

@@ -199,9 +199,8 @@ export const ProgressPage: React.FC = () => {
           to="/"
           style={{
             fontWeight: 700,
-            fontSize: 'var(--font-size-sm)',
-            color: 'var(--text)',
-            letterSpacing: 'var(--letter-spacing-tight)',
+            fontSize: '1rem',
+            color: 'var(--accent)',
             display: 'flex',
             alignItems: 'center',
             gap: '0.625rem',
@@ -231,11 +230,11 @@ export const ProgressPage: React.FC = () => {
         <div className="card" style={{ padding: '2.5rem', textAlign: 'center', boxShadow: 'var(--glass-shadow-lg)', borderRadius: '24px' }}>
           <h1
             style={{
-              fontSize: 'var(--font-size-2xl)',
-              fontWeight: 800,
+              fontSize: '1.625rem',
+              fontWeight: 700,
               marginBottom: '0.35rem',
               color: 'var(--text)',
-              letterSpacing: 'var(--letter-spacing-tight)',
+              letterSpacing: '-0.02em',
             }}
           >
             {repo?.owner}/{repo?.name}
