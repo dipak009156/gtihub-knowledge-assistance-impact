@@ -153,7 +153,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                     {/* Icon Bubble Sphere */}
                     <span className="bubble-icon-sphere">
-                      <Icon size={17} />
+                      <Icon size={16} />
                     </span>
 
                     {/* Navigation Label */}
@@ -263,7 +263,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }}
           >
             <span className="bubble-icon-sphere">
-              <ArrowLeft size={15} />
+              <ArrowLeft size={16} />
             </span>
             {!collapsed && (
               <span className="bubble-nav-label">
