@@ -109,23 +109,24 @@ export const HotspotsPage: React.FC = () => {
 
   return (
     <div style={{ padding: '1.75rem 2rem', maxWidth: '1240px' }}>
-      <div style={{ marginBottom: '2rem' }}>
+      <div className="page-header" style={{ marginBottom: '2rem' }}>
         <h1
+          className="page-title"
           style={{
-            fontSize: '1.75rem',
+            fontSize: 'var(--font-size-2xl)',
             fontWeight: 800,
             color: 'var(--text)',
-            letterSpacing: '-0.02em',
+            letterSpacing: 'var(--letter-spacing-tight)',
             marginBottom: '0.25rem',
             display: 'flex',
             alignItems: 'center',
             gap: '0.625rem',
           }}
         >
-          <Flame size={22} style={{ color: 'var(--warn)' }} />
+          <Flame size={24} style={{ color: 'var(--warn)' }} />
           <span>Hotspot Files</span>
         </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>
+        <p className="page-subtitle" style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-base)', lineHeight: 'var(--line-height-normal)' }}>
           Files that change frequently and connect with multiple modules present higher regression risk.
         </p>
       </div>
