@@ -9,6 +9,7 @@ import {
   MessageSquareCode,
   ShieldCheck,
   Settings,
+  Sparkles,
   ArrowLeft,
   PanelLeftClose,
   PanelLeftOpen,
@@ -40,6 +41,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Code Explorer', path: `/repos/${id}/code`, icon: FileCode2 },
     { label: 'Dependency Graph', path: `/repos/${id}/graph`, icon: GitFork },
     { label: 'Impact Explorer', path: `/repos/${id}/impact`, icon: Zap },
+    { label: 'AI Intelligence', path: `/repos/${id}/intelligence`, icon: Sparkles },
     { label: 'Hotspots', path: `/repos/${id}/hotspots`, icon: Flame },
     { label: 'AI Code Chat', path: `/repos/${id}/chat`, icon: MessageSquareCode },
     { label: 'Validation', path: `/repos/${id}/validation`, icon: ShieldCheck },
@@ -54,12 +56,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
       aria-label="Sidebar navigation"
     >
       {/* ── Brand Header Bubble ── */}
-      <div className="sidebar-header">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+      <div className="sidebar-header" style={collapsed ? { alignItems: 'center' } : undefined}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: collapsed ? 'center' : 'space-between',
+            flexDirection: collapsed ? 'column' : 'row',
+            gap: '0.65rem',
+            width: '100%',
+          }}
+        >
           <Link
             to="/"
             className="sidebar-brand sidebar-brand-bubble"
             title="GitHub Knowledge Assistance"
+            style={collapsed ? { padding: '0.45rem', justifyContent: 'center' } : undefined}
           >
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <div
