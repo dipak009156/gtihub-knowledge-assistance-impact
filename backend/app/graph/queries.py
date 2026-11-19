@@ -24,13 +24,13 @@ def load_symbols(session: Session, repo_id: int) -> list[dict]:
     return [
         {
             "id": r.id,
-            "name": r.name,
-            "qualified_name": r.qualified_name,
-            "kind": r.kind,
+            "name": r.name or "",
+            "qualified_name": r.qualified_name or r.name or "",
+            "kind": r.kind or "function",
             "file_id": r.file_id,
-            "file_path": r.file_path,
-            "start_line": r.start_line,
-            "end_line": r.end_line,
+            "file_path": r.file_path or "",
+            "start_line": r.start_line or 1,
+            "end_line": r.end_line or r.start_line or 1,
         }
         for r in rows
     ]
