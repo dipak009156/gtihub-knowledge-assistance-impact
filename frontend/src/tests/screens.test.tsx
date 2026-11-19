@@ -3,6 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { setDevMockOptions } from '../api/config'
 import { ChatPage } from '../pages/Chat/ChatPage'
+import { GraphPage } from '../pages/Graph/GraphPage'
 import { HomePage } from '../pages/Home/HomePage'
 import { HotspotsPage } from '../pages/Hotspots/HotspotsPage'
 import { ImpactPage } from '../pages/Impact/ImpactPage'
@@ -201,5 +202,22 @@ describe('Screen tests', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('Precision@5')).toBeInTheDocument()
     expect(screen.getByText('Recall@5')).toBeInTheDocument()
+  })
+
+  it('Graph: renders dependency graph controls, search input, and layout selector', async () => {
+    render(
+      <MemoryRouter initialEntries={['/repos/1/graph']}>
+        <Routes>
+          <Route path="/repos/:id/graph" element={<GraphPage />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    expect(
+      await screen.findByText(/Dependency and Call Graph/i)
+    ).toBeInTheDocument()
+    expect(screen.getByPlaceholderText(/Search symbol \/ file\.\.\./i)).toBeInTheDocument()
+    expect(screen.getByTitle(/Select Graph Layout Engine/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Neighborhood/i })).toBeInTheDocument()
   })
 })
