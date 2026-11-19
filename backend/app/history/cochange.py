@@ -118,11 +118,7 @@ def top_files(
 
     sort_key = "connections" if sort == "connections" else "changes"
     hotspots.sort(
-        key=lambda item: (item[sort_key], item["path"]),
-        reverse=True,
+        key=lambda item: (-item[sort_key], item["path"]),
     )
-
-    # Secondary tie breaker: alphabetical path ascending if same count
-    hotspots.sort(key=lambda item: item[sort_key], reverse=True)
 
     return hotspots[:limit]
