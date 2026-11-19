@@ -1248,10 +1248,10 @@ export const HomePage: React.FC = () => {
             <div className="badge badge-accent" style={{ marginBottom: '0.85rem' }}>
               Common Questions
             </div>
-            <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>
+            <h2 style={{ fontSize: 'var(--font-size-3xl)', fontWeight: 800, color: 'var(--text)', letterSpacing: 'var(--letter-spacing-tight)' }}>
               Frequently Asked Questions
             </h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', marginTop: '0.5rem' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-base)', marginTop: '0.5rem', lineHeight: 'var(--line-height-relaxed)' }}>
               Everything you need to know about codebase analysis.
             </p>
           </div>
@@ -1292,7 +1292,7 @@ export const HomePage: React.FC = () => {
                     backdropFilter: 'var(--glass-blur)',
                     WebkitBackdropFilter: 'var(--glass-blur)',
                     border: isOpen ? '1px solid var(--accent)' : '1px solid var(--glass-border)',
-                    boxShadow: isOpen ? '0 0 20px rgba(223, 51, 51, 0.15)' : 'var(--glass-shadow)',
+                    boxShadow: isOpen ? '0 0 20px rgba(255, 188, 26, 0.25)' : 'var(--glass-shadow)',
                     transition: 'all 0.25s ease',
                   }}
                 >
@@ -1347,7 +1347,7 @@ export const HomePage: React.FC = () => {
         <div style={{ maxWidth: '1080px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
             <BrandIcon size={24} />
-            <span style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--accent)', letterSpacing: '-0.02em' }}>
+            <span style={{ fontWeight: 700, fontSize: 'var(--font-size-sm)', color: 'var(--text)', letterSpacing: 'var(--letter-spacing-tight)' }}>
               GitHub Knowledge Assistance
             </span>
           </div>
