@@ -55,7 +55,7 @@ def get_validation_results(
             "status": current_status,
             "commits_tested": 0,
             "runs": [],
-            "details": [],
+            "commits": [],
         }
 
     status_str = RUN_STATUS.get(repo_id, "done")
@@ -74,5 +74,5 @@ def get_validation_results(
             }
             for r in runs
         ],
-        "details": details,
+        "commits": details,
     }
