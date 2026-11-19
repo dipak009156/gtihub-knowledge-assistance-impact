@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { chat } from '../../api/client'
 import type { Source } from '../../api/types'
@@ -35,6 +35,10 @@ export const ChatPage: React.FC = () => {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
 
   const handleSend = async (questionText: string) => {
     const q = questionText.trim()
