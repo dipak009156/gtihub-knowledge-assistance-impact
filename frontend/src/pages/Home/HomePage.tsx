@@ -26,6 +26,7 @@ import type { DemoRepo, GitHubRepoItem, Repo } from '../../api/types'
 import { BrandIcon } from '../../components/BrandIcon'
 import { DevMockPanel } from '../../components/DevMockPanel'
 import { ErrorBox } from '../../components/ErrorBox'
+import { GitHubLoginModal } from '../../components/GitHubLoginModal'
 import { GithubIcon } from '../../components/GithubIcon'
 import { StatusBadge } from '../../components/StatusBadge'
 import { ThemeToggle } from '../../components/ThemeToggle'
@@ -46,6 +47,7 @@ export const HomePage: React.FC = () => {
   const [demos, setDemos] = useState<DemoRepo[]>([])
   const [recentRepos, setRecentRepos] = useState<Repo[]>([])
   const [userRepos, setUserRepos] = useState<GitHubRepoItem[]>([])
+  const [showGitHubModal, setShowGitHubModal] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -193,7 +195,7 @@ export const HomePage: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {isAuthenticated && user && (
+          {isAuthenticated && user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
               <div
                 style={{
@@ -228,15 +230,18 @@ export const HomePage: React.FC = () => {
                 <span>Sign Out</span>
               </button>
             </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowGitHubModal(true)}
+              className="btn btn-secondary btn-sm"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}
+              title="Sign in with GitHub"
+            >
+              <GithubIcon size={14} />
+              <span>GitHub</span>
+            </button>
           )}
-          <a
-            href="https://github.com/dipak009156/gtihub-knowledge-assistance-impact"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-secondary btn-sm"
-          >
-            GitHub
-          </a>
           <ThemeToggle />
         </div>
       </header>
@@ -1346,18 +1351,36 @@ export const HomePage: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
             <Link to="/privacy">Privacy Policy</Link>
             <Link to="/terms">Terms and Conditions</Link>
-            <a
-              href="https://github.com/dipak009156/gtihub-knowledge-assistance-impact"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
-            >
-              <span>GitHub</span>
-              <ExternalLink size={12} />
-            </a>
+            {!isAuthenticated && (
+              <button
+                type="button"
+                onClick={() => setShowGitHubModal(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'inherit',
+                  font: 'inherit',
+                  cursor: 'pointer',
+                  padding: 0,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                }}
+              >
+                <GithubIcon size={13} />
+                <span>GitHub Login</span>
+              </button>
+            )}
           </div>
         </div>
       </footer>
+
+      <GitHubLoginModal
+        isOpen={showGitHubModal}
+        onClose={() => setShowGitHubModal(false)}
+        onSuccess={() => setShowGitHubModal(false)}
+        mode="login"
+      />
 
       <DevMockPanel />
     </div>
