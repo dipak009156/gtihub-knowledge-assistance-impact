@@ -193,7 +193,7 @@ export const HomePage: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {isAuthenticated && user ? (
+          {isAuthenticated && user && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
               <div
                 style={{
@@ -228,15 +228,6 @@ export const HomePage: React.FC = () => {
                 <span>Sign Out</span>
               </button>
             </div>
-          ) : (
-            <>
-              <Link to="/login" className="btn btn-ghost btn-sm">
-                Sign In
-              </Link>
-              <Link to="/register" className="btn btn-primary btn-sm">
-                Sign Up
-              </Link>
-            </>
           )}
           <a
             href="https://github.com/dipak009156/gtihub-knowledge-assistance-impact"
@@ -1355,7 +1346,6 @@ export const HomePage: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
             <Link to="/privacy">Privacy Policy</Link>
             <Link to="/terms">Terms and Conditions</Link>
-            <Link to="/login">Sign In</Link>
             <a
               href="https://github.com/dipak009156/gtihub-knowledge-assistance-impact"
               target="_blank"
