@@ -24,6 +24,8 @@ import {
   Workflow,
   ChevronLeft,
   ChevronRight,
+  HelpCircle,
+  BookOpen,
 } from 'lucide-react'
 import { getFiles, getGraph } from '../../api/client'
 import type { FileInfo, Graph, GraphNode } from '../../api/types'
@@ -68,6 +70,7 @@ export const GraphPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [neighborhoodFocus, setNeighborhoodFocus] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [showGuide, setShowGuide] = useState(false)
 
   const cyContainerRef = useRef<HTMLDivElement>(null)
   const cyInstanceRef = useRef<any>(null)
@@ -580,6 +583,51 @@ export const GraphPage: React.FC = () => {
     return { callers, callees }
   }, [selectedNode, graphData])
 
+  // In-depth plain-English interpretation for anyone viewing the selected component
+  const nodePlainEnglish = useMemo(() => {
+    if (!selectedNode) return null
+    const callerCount = nodeRelationships.callers.length
+    const calleeCount = nodeRelationships.callees.length
+
+    let riskLevel: 'low' | 'medium' | 'high' = 'low'
+    let riskBadge = 'Safe to Edit'
+    let riskClass = 'badge-ok'
+    if (callerCount >= 5) {
+      riskLevel = 'high'
+      riskBadge = 'High-Impact Hub (High Ripple Risk)'
+      riskClass = 'badge-danger'
+    } else if (callerCount >= 2) {
+      riskLevel = 'medium'
+      riskBadge = 'Moderate Impact (Check Callers)'
+      riskClass = 'badge-warn'
+    }
+
+    let callerSentence = ''
+    if (callerCount === 0) {
+      callerSentence = 'Nobody else in this codebase calls this directly — it acts as an independent entry-point, route handler, or top-level file.'
+    } else if (callerCount === 1) {
+      callerSentence = `It is relied on by 1 other component (${nodeRelationships.callers[0].label}). Changing its parameters will only affect that one caller.`
+    } else {
+      const names = nodeRelationships.callers.slice(0, 3).map((c) => c.label).join(', ')
+      const extra = callerCount > 3 ? ` and ${callerCount - 3} others` : ''
+      callerSentence = `It is relied on by ${callerCount} other functions (${names}${extra}). If you change its inputs or outputs, all ${callerCount} callers must be updated.`
+    }
+
+    let calleeSentence = ''
+    if (calleeCount === 0) {
+      calleeSentence = 'It is self-contained and makes no outgoing calls to internal project code.'
+    } else {
+      calleeSentence = `To do its job, it delegates work to ${calleeCount} helper function(s).`
+    }
+
+    return {
+      riskLevel,
+      riskBadge,
+      riskClass,
+      summary: `${callerSentence} ${calleeSentence}`,
+    }
+  }, [selectedNode, nodeRelationships])
+
   // Export high-res PNG
   const handleExportPng = () => {
     const cy = cyInstanceRef.current
@@ -650,11 +698,23 @@ export const GraphPage: React.FC = () => {
             Dependency and Call Graph
           </h1>
           <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
-            Multi-tier architectural topology with neighborhood isolation, CAD grid, and reversible view presets.
+            Interactive visual map of how files and functions in this project talk to each other. Click any node to see who depends on it.
           </p>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {/* Beginner-friendly Plain English Guide Button */}
+          <button
+            type="button"
+            onClick={() => setShowGuide(!showGuide)}
+            className={`btn btn-sm ${showGuide ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ gap: '0.35rem', fontSize: '0.8125rem' }}
+            title="Toggle plain-English guide explaining how to understand this graph"
+          >
+            <HelpCircle size={13} />
+            <span>{showGuide ? 'Hide Guide' : 'How to Read'}</span>
+          </button>
+
           {/* Real-time Node Search */}
           <div style={{ position: 'relative' }}>
             <div
@@ -938,6 +998,64 @@ export const GraphPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Plain English Guide Explainer */}
+      {showGuide && (
+        <div
+          className="card"
+          style={{
+            padding: '1rem 1.25rem',
+            marginBottom: '0.85rem',
+            background: 'var(--surface)',
+            borderLeft: '4px solid var(--accent)',
+            borderRadius: 'var(--radius)',
+            animation: 'fadeIn 0.2s ease',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <BookOpen size={16} style={{ color: 'var(--accent)' }} />
+              <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text)' }}>
+                Beginner Guide: How to Read this Code Map in 3 Simple Steps
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowGuide(false)}
+              className="btn btn-ghost btn-sm"
+              style={{ padding: '2px 6px', fontSize: '0.75rem' }}
+            >
+              Dismiss
+            </button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--text)', marginBottom: '0.2rem' }}>
+                1. What are the Dots (Nodes)?
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.45 }}>
+                Each dot represents a specific piece of code. <strong>Green dots</strong> are functions, <strong>purple boxes</strong> are classes/models, and <strong>blue dots</strong> are core hubs that many files share.
+              </p>
+            </div>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--text)', marginBottom: '0.2rem' }}>
+                2. What are the Arrows (Edges)?
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.45 }}>
+                An arrow from <strong>Function A → Function B</strong> means A calls or needs B. A <strong>solid red line</strong> is a confirmed direct call; a <strong>dashed line</strong> is a dynamic or conditional call.
+              </p>
+            </div>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--text)', marginBottom: '0.2rem' }}>
+                3. Why should you care?
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.45 }}>
+                Click any dot to inspect it! If you see <em>Incoming Callers: 8</em>, it means 8 other parts of your app depend on it — editing it without testing could cause unexpected bugs!
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Truncation warning */}
       {isTruncated && (
@@ -1252,6 +1370,31 @@ export const GraphPage: React.FC = () => {
                 >
                   {selectedNode.file_path}
                 </div>
+              </div>
+            )}
+
+            {/* In Plain English Card */}
+            {nodePlainEnglish && (
+              <div
+                style={{
+                  padding: '0.75rem 0.85rem',
+                  background: 'var(--surface-hover)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  marginBottom: '1rem',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <span style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)' }}>
+                    In Plain English
+                  </span>
+                  <span className={`badge ${nodePlainEnglish.riskClass}`} style={{ fontSize: '0.6875rem' }}>
+                    {nodePlainEnglish.riskBadge}
+                  </span>
+                </div>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text)', lineHeight: 1.45, margin: 0 }}>
+                  {nodePlainEnglish.summary}
+                </p>
               </div>
             )}
 

@@ -14,6 +14,9 @@ import {
   Layers,
   ArrowRight,
   Cpu,
+  HelpCircle,
+  BookOpen,
+  Info,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import {
@@ -45,11 +48,13 @@ export const IntelligencePage: React.FC = () => {
 
   const initialTab = (searchParams.get('tab') as TabType) || 'pr'
   const [activeTab, setActiveTab] = useState<TabType>(initialTab)
+  const [showPlainGuide, setShowPlainGuide] = useState(true)
 
   const [symbols, setSymbols] = useState<Symbol[]>([])
   const [selectedSymbolId, setSelectedSymbolId] = useState<number | undefined>(
     searchParams.get('symbol_id') ? Number(searchParams.get('symbol_id')) : undefined
   )
+  const selectedSymbol = symbols.find((s) => s.id === selectedSymbolId)
 
   // PR Review State
   const [diffInput, setDiffInput] = useState('')
@@ -211,27 +216,103 @@ export const IntelligencePage: React.FC = () => {
   return (
     <div style={{ padding: '1.75rem 2rem', maxWidth: '1240px' }}>
       {/* Suite Header */}
-      <div style={{ marginBottom: '1.75rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.35rem' }}>
-          <div
-            style={{
-              padding: '0.45rem',
-              borderRadius: 'var(--radius)',
-              background: 'var(--accent-subtle)',
-              color: 'var(--accent)',
-              display: 'inline-flex',
-            }}
-          >
-            <Sparkles size={22} />
+      <div style={{ marginBottom: '1.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.35rem' }}>
+            <div
+              style={{
+                padding: '0.45rem',
+                borderRadius: 'var(--radius)',
+                background: 'var(--accent-subtle)',
+                color: 'var(--accent)',
+                display: 'inline-flex',
+              }}
+            >
+              <Sparkles size={22} />
+            </div>
+            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em', margin: 0 }}>
+              AI & Machine Learning Intelligence Suite
+            </h1>
           </div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em', margin: 0 }}>
-            AI & Machine Learning Intelligence Suite
-          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem', margin: 0 }}>
+            Automated code review, predictive bug detection, and execution flow tracing — explained in plain English.
+          </p>
         </div>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem', margin: 0 }}>
-          Predictive bug propensity modeling, topological link prediction, autonomous PR blast-radius audits, and regression test synthesis.
-        </p>
+
+        <button
+          type="button"
+          onClick={() => setShowPlainGuide(!showPlainGuide)}
+          className={`btn btn-sm ${showPlainGuide ? 'btn-primary' : 'btn-secondary'}`}
+          style={{ gap: '0.4rem', fontSize: '0.8125rem' }}
+          title="Toggle beginner-friendly plain English explanations for all tabs"
+        >
+          <HelpCircle size={14} />
+          <span>{showPlainGuide ? 'Hide Plain English Guide' : 'Explain Like I\'m 5'}</span>
+        </button>
       </div>
+
+      {/* Contextual Plain English Tab Guide */}
+      {showPlainGuide && (
+        <div
+          className="card"
+          style={{
+            padding: '1rem 1.25rem',
+            marginBottom: '1.75rem',
+            background: 'var(--surface)',
+            borderLeft: '4px solid var(--accent)',
+            borderRadius: 'var(--radius)',
+            animation: 'fadeIn 0.2s ease',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <BookOpen size={16} style={{ color: 'var(--accent)' }} />
+              <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text)' }}>
+                {activeTab === 'pr' && 'Plain English: What is the PR Review Agent?'}
+                {activeTab === 'defects' && 'Plain English: How does AI predict bugs before they happen?'}
+                {activeTab === 'tests' && 'Plain English: What are Automated Unit Tests?'}
+                {activeTab === 'graph' && 'Plain English: What is Execution Flow & Hidden Link Prediction?'}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowPlainGuide(false)}
+              className="btn btn-ghost btn-sm"
+              style={{ padding: '2px 6px', fontSize: '0.75rem' }}
+            >
+              Dismiss
+            </button>
+          </div>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--text)', lineHeight: 1.5, margin: 0 }}>
+            {activeTab === 'pr' && (
+              <>
+                Think of this as an <strong>AI Senior Software Architect</strong>. When a developer submits a code change (Pull Request),
+                this agent automatically scans every other file in the repository to calculate the <strong>Blast Radius</strong> — warning you
+                in advance if modifying this function will accidentally break other features across your website.
+              </>
+            )}
+            {activeTab === 'defects' && (
+              <>
+                Computers don't guess bugs by magic — they detect risky human habits. Software studies show that <strong>80% of software bugs</strong> occur
+                in files that are modified frequently by multiple developers (high churn) and have complex nested logic. Our ML model scores each file
+                from <strong>0% (Healthy & Stable)</strong> to <strong>100% (High Danger Zone)</strong> so you know where to focus testing.
+              </>
+            )}
+            {activeTab === 'tests' && (
+              <>
+                Writing tests manually takes hours of tedious typing. This GenAI engine reads your selected function and automatically writes real,
+                runnable test cases (testing standard inputs, empty/zero values, and invalid edge cases) so you can prove the code works without testing by hand.
+              </>
+            )}
+            {activeTab === 'graph' && (
+              <>
+                <strong>Execution Sequence</strong> traces the exact step-by-step chain of events when code runs (e.g., Step 1 calls Step 2, which calls Step 3).{' '}
+                <strong>Hidden Link Prediction</strong> uncovers 'silent twin' files: files that don't directly import each other, but almost always get changed together in git commits (like updating a database schema and its form).
+              </>
+            )}
+          </p>
+        </div>
+      )}
 
       {/* Primary Sub-Navigation Tabs */}
       <div
@@ -468,6 +549,28 @@ export const IntelligencePage: React.FC = () => {
                 <p style={{ fontSize: '0.9375rem', color: 'var(--text)', lineHeight: 1.5, margin: 0 }}>
                   {prResult.summary}
                 </p>
+
+                {/* Plain English Impact Interpretation */}
+                <div
+                  style={{
+                    marginTop: '1rem',
+                    padding: '0.75rem 1rem',
+                    borderRadius: 'var(--radius)',
+                    background: 'var(--surface-subtle)',
+                    border: '1px solid var(--border)',
+                  }}
+                >
+                  <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--accent)', marginBottom: '0.25rem' }}>
+                    What this verdict means in plain English:
+                  </div>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--text)', margin: 0, lineHeight: 1.5 }}>
+                    {prResult.verdict === 'BLOCKED_HIGH_RISK'
+                      ? '⚠️ High Risk: This code change impacts central functions used across multiple files. Do not merge without updating and testing the affected callers listed below.'
+                      : prResult.verdict === 'REVIEW_REQUIRED'
+                      ? '⚠️ Caution: Several files depend on this function. Please test those files carefully before deploying.'
+                      : '✅ Safe to Merge: This change is self-contained and does not disturb any downstream systems.'}
+                  </p>
+                </div>
               </div>
 
               {/* 2-Column: Breaking Risks & Security Checklist */}
@@ -809,44 +912,99 @@ export const IntelligencePage: React.FC = () => {
 
             {seqResult && !seqLoading && (
               <div>
-                {/* Visual Step Timeline */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.25rem' }}>
-                  {seqResult.steps.map((step, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.75rem',
-                        padding: '0.55rem 0.85rem',
-                        background: 'var(--surface-subtle)',
-                        borderRadius: 'var(--radius)',
-                        border: '1px solid var(--border)',
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '0.8125rem',
-                      }}
-                    >
-                      <span style={{ color: 'var(--text-subtle)', width: '24px', fontWeight: 600 }}>
-                        #{idx + 1}
-                      </span>
-                      <span style={{ fontWeight: 600, color: 'var(--accent)' }}>
-                        {step.caller}
-                      </span>
-                      <ArrowRight size={14} style={{ color: 'var(--text-subtle)' }} />
-                      <span style={{ fontWeight: 600, color: 'var(--text)' }}>
-                        {step.callee}()
-                      </span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
-                        Module: {step.module} &bull; {step.certainty}
-                      </span>
-                    </div>
-                  ))}
+                {/* Story Summary Card */}
+                <div
+                  style={{
+                    padding: '0.85rem 1rem',
+                    background: 'var(--surface-subtle)',
+                    borderRadius: 'var(--radius)',
+                    border: '1px solid var(--border)',
+                    marginBottom: '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.65rem',
+                  }}
+                >
+                  <BookOpen size={16} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--text)', lineHeight: 1.45 }}>
+                    <strong>Execution Story in Plain English:</strong> Running this function triggers a sequence of{' '}
+                    <strong>{seqResult.steps.length} call{seqResult.steps.length === 1 ? '' : 's'}</strong>{' '}
+                    across <strong>{new Set(seqResult.steps.map((s) => s.module)).size} file(s)</strong>.
+                    Follow the numbered steps below to see how control moves through your codebase.
+                  </div>
+                </div>
+
+                {/* Step-by-Step Flow with Plain English Explanations */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                  {seqResult.steps.map((step, idx) => {
+                    const isCertain = step.certainty === 'certain'
+                    return (
+                      <div
+                        key={idx}
+                        style={{
+                          padding: '0.75rem 1rem',
+                          background: 'var(--surface)',
+                          borderRadius: 'var(--radius)',
+                          border: '1px solid var(--border)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.4rem',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                            <span
+                              style={{
+                                background: 'var(--accent-subtle)',
+                                color: 'var(--accent)',
+                                padding: '2px 8px',
+                                borderRadius: 'var(--radius-bubble)',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                              }}
+                            >
+                              Step {idx + 1}
+                            </span>
+                            <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text)', fontSize: '0.875rem' }}>
+                              {step.caller}
+                            </span>
+                            <ArrowRight size={14} style={{ color: 'var(--accent)' }} />
+                            <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--accent)', fontSize: '0.875rem' }}>
+                              {step.callee}()
+                            </span>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span
+                              className={`badge ${isCertain ? 'badge-ok' : 'badge-warn'}`}
+                              style={{ fontSize: '0.6875rem' }}
+                              title={isCertain ? 'Deterministic static code call' : 'Conditional or dynamic invocation'}
+                            >
+                              {isCertain ? 'Direct Call' : 'Conditional Call'}
+                            </span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                              in <code>{step.module}</code>
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Plain English explanation of the call */}
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                          👉 <strong>What happens here:</strong> Code running in <code>{step.caller}</code> hands off execution to{' '}
+                          <code>{step.callee}()</code> in file <code>{step.module}</code>.{' '}
+                          {isCertain
+                            ? 'This call is guaranteed to execute whenever this flow is reached.'
+                            : 'This call only executes if certain input conditions or branch checks pass.'}
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
 
                 {/* Mermaid Code Snippet Preview */}
                 <div style={{ background: 'var(--surface-secondary)', padding: '1rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
                   <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                    Mermaid Diagram Definition:
+                    Mermaid Diagram Definition (Copy & Share):
                   </div>
                   <pre style={{ margin: 0, fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text)' }}>
                     <code>{seqResult.mermaid}</code>
@@ -865,6 +1023,22 @@ export const IntelligencePage: React.FC = () => {
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
                 Discovered non-obvious coupling between modules that lack direct AST imports but frequently co-change or bridge through common nodes.
               </p>
+            </div>
+
+            {/* Plain English Explainer Card */}
+            <div
+              style={{
+                padding: '0.75rem 1rem',
+                background: 'var(--surface-subtle)',
+                borderRadius: 'var(--radius)',
+                border: '1px solid var(--border)',
+                marginBottom: '1rem',
+                fontSize: '0.78rem',
+                color: 'var(--text)',
+                lineHeight: 1.45,
+              }}
+            >
+              💡 <strong>Why this matters to anyone editing code:</strong> Some files are like &quot;silent twins&quot; — for example, updating a payment API often requires updating the checkout receipt page. If you only edit one file and forget the other, bugs happen. Graph ML highlights these hidden links so you know which related files to check.
             </div>
 
             {graphLoading && <LoadingBox height={160} lines={3} />}
@@ -911,7 +1085,11 @@ export const IntelligencePage: React.FC = () => {
                             </td>
                             <td>
                               <span className="badge badge-neutral">
-                                {link.inference_type}
+                                {link.inference_type === 'co_change'
+                                  ? 'Git Co-Editing Habit'
+                                  : link.inference_type === 'common_neighbors'
+                                  ? 'Shared Helper Libraries'
+                                  : link.inference_type}
                               </span>
                             </td>
                             <td style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
